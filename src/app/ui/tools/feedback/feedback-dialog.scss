@@ -17,6 +17,20 @@
         }
     }
 
+    .hint {
+        font-family: var(--ghs-font-text);
+        font-size: 0.9em;
+        color: var(--ghs-color-yellow);
+    }
+
+    .settings {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9em;
+        color: var(--ghs-color-gray);
+    }
+
     .form {
         display: grid;
         grid-template-columns: auto auto;
@@ -38,6 +52,16 @@
             font-size: 0.7em;
             color: var(--ghs-color-gray);
             opacity: 0.9;
+        }
+
+        .warning {
+            grid-column: 2;
+            padding: 0;
+            margin: 0;
+            font-family: var(--ghs-font-text);
+            font-size: 0.9em;
+            color: var(--ghs-color-yellow);
+            width: calc(var(--ghs-unit) * 65 * var(--ghs-dialog-factor));
         }
 
         textarea {

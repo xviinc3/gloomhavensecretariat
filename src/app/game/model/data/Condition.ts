@@ -24,6 +24,7 @@ export enum ConditionName {
   wound_x = "wound_x",
   heal = "heal",
   shield = "shield",
+  retaliate = "retaliate",
   invalid = "invalid",
 }
 
@@ -35,6 +36,7 @@ export enum ConditionType {
   monster = "monster",
   upgrade = "upgrade",
   stack = "stack",
+  stackable = "stackable",
   turn = "turn",
   afterTurn = "afterTurn",
   expire = "expire",
@@ -49,6 +51,7 @@ export enum ConditionType {
   expiredIndicator = "expiredIndicator",
   hidden = "hidden",
   amDeck = "amDeck",
+  highlightOnly = "highlightOnly"
 }
 
 export type FigureCondition = { name: ConditionName, level: number | undefined };
@@ -108,6 +111,10 @@ export class Condition {
       this.types.push(ConditionType.stack);
     }
 
+    if ([ConditionName.chill, ConditionName.bless, ConditionName.curse, ConditionName.enfeeble, ConditionName.empower].indexOf(this.name) != -1) {
+      this.types.push(ConditionType.stackable);
+    }
+
     if ([ConditionName.wound, ConditionName.wound_x, ConditionName.regenerate].indexOf(this.name) != -1) {
       this.types.push(ConditionType.turn);
     }
@@ -148,7 +155,7 @@ export class Condition {
       this.types.push(ConditionType.expiredIndicator);
     }
 
-    if ([ConditionName.heal, ConditionName.shield].indexOf(this.name) != -1) {
+    if ([ConditionName.heal, ConditionName.shield, ConditionName.retaliate].indexOf(this.name) != -1) {
       this.types.push(ConditionType.positive);
       this.types.push(ConditionType.hidden);
       this.types.push(ConditionType.value);
@@ -157,6 +164,10 @@ export class Condition {
     if ([ConditionName.bless, ConditionName.curse, ConditionName.empower, ConditionName.enfeeble].indexOf(this.name) != -1) {
       this.types.push(ConditionType.hidden);
       this.types.push(ConditionType.amDeck);
+    }
+
+    if ([ConditionName.retaliate].indexOf(this.name) != -1) {
+      this.types.push(ConditionType.highlightOnly);
     }
 
     if ([ConditionName.invalid].indexOf(this.name) != -1) {

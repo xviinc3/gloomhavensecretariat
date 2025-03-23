@@ -7,6 +7,7 @@ import { Character, GameCharacterModel } from "src/app/game/model/Character";
 import { Party } from "src/app/game/model/Party";
 import { GameScenarioModel, Scenario, ScenarioCache } from "src/app/game/model/Scenario";
 import { AttackModifierDeck } from "src/app/game/model/data/AttackModifier";
+import { SelectResourceResult } from "src/app/game/model/data/BuildingData";
 import { FH_PROSPERITY_STEPS, GH_PROSPERITY_STEPS } from "src/app/game/model/data/EditionData";
 import { CountIdentifier, Identifier } from "src/app/game/model/data/Identifier";
 import { ItemData } from "src/app/game/model/data/ItemData";
@@ -21,14 +22,17 @@ import { ScenarioSummaryComponent } from "../../footer/scenario/summary/scenario
 import { ghsDialogClosingHelper, ghsInputFullScreenCheck } from "../../helper/Static";
 import { AutocompleteItem } from "../../helper/autocomplete";
 import { CharacterSheetDialog } from "../character/dialogs/character-sheet-dialog";
+import { BuildingUpgradeDialog } from "./buildings/upgrade-dialog/upgrade-dialog";
 import { ScenarioRequirementsDialogComponent } from "./requirements/requirements";
 import { PartyResourcesDialogComponent } from "./resources/resources";
 import { ScenarioChartDialogComponent } from "./scenario-chart/scenario-chart";
+import { StatisticsDialogComponent } from "./statistics/statistics-dialog";
 import { TreasuresDialogComponent } from "./treasures/treasures-dialog";
 import { PartyWeekDialogComponent } from "./week-dialog/week-dialog";
 import { WorldMapComponent } from "./world-map/world-map";
 
 @Component({
+  standalone: false,
   selector: 'ghs-party-sheet-dialog',
   templateUrl: 'party-sheet-dialog.html',
   styleUrls: ['./party-sheet-dialog.scss']
@@ -151,6 +155,8 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
         if (this.party != gameManager.game.party) {
           this.party = gameManager.game.party;
           this.update();
+        } else {
+          this.updateAlways();
         }
 
         if (server && this.townGuardDeck && this.party.townGuardDeck) {
@@ -159,6 +165,12 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
       }
     })
     this.update();
+
+    this.dialogRef.closed.subscribe({
+      next: () => {
+        gameManager.trialsManager.applyTrialCards();
+      }
+    })
   }
 
   uiChangeSubscription: Subscription | undefined;
@@ -171,7 +183,7 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   keyboardShortcuts(event: KeyboardEvent) {
-    if (!this.disableShortcuts && (!window.document.activeElement || window.document.activeElement.tagName != 'INPUT' && window.document.activeElement.tagName != 'SELECT' && window.document.activeElement.tagName != 'TEXTAREA')) {
+    if (settingsManager.settings.keyboardShortcuts && !this.disableShortcuts && (!window.document.activeElement || window.document.activeElement.tagName != 'INPUT' && window.document.activeElement.tagName != 'SELECT' && window.document.activeElement.tagName != 'TEXTAREA')) {
       if (!event.ctrlKey && !event.shiftKey && event.key.toLowerCase() === 'g' && this.worldMap) {
         this.openMap();
         event.stopPropagation();
@@ -216,13 +228,13 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
   }
 
   changePlayer(event: any, index: number) {
-    gameManager.stateManager.before("setPlayer", event.target.value, '' + (index + 1));
+    gameManager.stateManager.before("setPlayer", event.target.value, (index + 1));
     this.party.players[index] = event.target.value;
     gameManager.stateManager.after();
   }
 
   removePlayer(index: number) {
-    gameManager.stateManager.before("removePlayer", this.party.players[index], '' + (index + 1));
+    gameManager.stateManager.before("removePlayer", this.party.players[index], (index + 1));
     this.party.players.splice(index, 1);
     gameManager.stateManager.after();
   }
@@ -523,7 +535,7 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
   addSuccess(scenarioData: ScenarioData, force: boolean = false) {
     if (!gameManager.scenarioManager.isBlocked(scenarioData) && !gameManager.scenarioManager.isLocked(scenarioData) || force) {
       const conclusions = gameManager.sectionData(scenarioData.edition).filter((sectionData) =>
-        sectionData.edition == scenarioData.edition && sectionData.parent == scenarioData.index && sectionData.group == scenarioData.group && sectionData.conclusion);
+        sectionData.edition == scenarioData.edition && sectionData.parent == scenarioData.index && sectionData.group == scenarioData.group && sectionData.conclusion && gameManager.scenarioManager.getRequirements(sectionData).length == 0);
       if (conclusions.length == 0) {
         this.addSuccessIntern(scenarioData);
       } else {
@@ -707,8 +719,14 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
 
       if (editionData.label && editionData.label[settingsManager.settings.locale] && editionData.label[settingsManager.settings.locale].globalAchievements) {
         this.globalAchievements.push(...Object.keys(editionData.label[settingsManager.settings.locale].globalAchievements).map((achievement) => new AutocompleteItem(editionData.label[settingsManager.settings.locale].globalAchievements[achievement], achievement, this.party.globalAchievementsList.indexOf(achievement) != -1)));
-      } else if (editionData.label && editionData.label['en'] && editionData.label['en'].globalAchievements) {
-        this.globalAchievements.push(...Object.keys(editionData.label['en'].globalAchievements).map((achievement) => new AutocompleteItem(editionData.label['en'].globalAchievements[achievement], achievement, this.party.globalAchievementsList.indexOf(achievement) != -1)));
+      }
+
+      if (editionData.label && editionData.label['en'] && editionData.label['en'].globalAchievements) {
+        Object.keys(editionData.label['en'].globalAchievements).map((achievement) => new AutocompleteItem(editionData.label['en'].globalAchievements[achievement], achievement, this.party.globalAchievementsList.indexOf(achievement) != -1)).forEach((item) => {
+          if (this.globalAchievements.every((other) => item.value != other.value)) {
+            this.globalAchievements.push(item);
+          }
+        })
       }
 
       if (editionData.campaign && editionData.campaign.campaignStickers) {
@@ -731,15 +749,8 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
       return +a.name - +b.name;
     });
 
-    this.items = this.itemIdentifier.map((identifier) => gameManager.itemManager.getItem(+identifier.name, identifier.edition, true));
+    this.items = this.itemIdentifier.map((identifier) => gameManager.itemManager.getItem(identifier.name, identifier.edition, true));
     this.summer = Math.max(this.party.weeks - 1, 0) % 20 < 10;
-
-
-    this.availableCharacters = [];
-    this.party.availableCharacters.forEach((characterModel) => {
-      this.availableCharacters[characterModel.number - 1] = this.availableCharacters[characterModel.number - 1] || [];
-      this.availableCharacters[characterModel.number - 1].push(characterModel);
-    })
 
     if (campaign) {
       if (campaign.lowMorale && campaign.lowMorale.length) {
@@ -756,6 +767,15 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
         }
       }
     }
+    this.updateAlways();
+  }
+
+  updateAlways() {
+    this.availableCharacters = [];
+    this.party.availableCharacters.forEach((characterModel) => {
+      this.availableCharacters[characterModel.number - 1] = this.availableCharacters[characterModel.number - 1] || [];
+      this.availableCharacters[characterModel.number - 1].push(characterModel);
+    })
   }
 
   characterIcon(name: string): string {
@@ -791,7 +811,7 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
   removeItem(item: ItemData) {
     const identifier = this.party.unlockedItems.find((identifier) => identifier.name == '' + item.id && identifier.edition == item.edition);
     if (identifier) {
-      gameManager.stateManager.before("removeUnlockedItem", item.edition, '' + item.id, item.name);
+      gameManager.stateManager.before("removeUnlockedItem", item.edition, item.id, item.name);
       this.party.unlockedItems.splice(this.party.unlockedItems.indexOf(identifier), 1);
       gameManager.stateManager.after();
       this.update();
@@ -807,7 +827,7 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
   }
 
   incItemCount(item: ItemData, itemIdentifier: CountIdentifier) {
-    gameManager.stateManager.before("updateUnlockedItemCount", item.edition, '' + item.id, item.name);
+    gameManager.stateManager.before("updateUnlockedItemCount", item.edition, item.id, item.name);
     if (itemIdentifier.count < 0) {
       itemIdentifier.count = 1;
     } else {
@@ -845,7 +865,7 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
         indexElement.classList.add('error');
         const editionData = gameManager.editionData.find((editionData) => editionData.edition == edition);
         if (editionData && editionData.treasures) {
-          const treasureIndex = +treasure - (editionData.treasureOffset || 0);
+          const treasureIndex = +treasure - (editionData.treasureOffset || 0) - 1;
           if (treasureIndex >= 0 && treasureIndex < editionData.treasures.length) {
             gameManager.stateManager.before("addTreasure", edition, treasure);
             this.party.treasures = this.party.treasures || [];
@@ -897,7 +917,7 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
   }
 
   openConclusions(section: string, week: number = -1) {
-    let conclusions: ScenarioData[] = gameManager.sectionData(gameManager.game.edition).filter((sectionData) => sectionData.conclusion && !sectionData.parent && sectionData.parentSections && sectionData.parentSections.find((parentSections) => parentSections.length == 1 && parentSections.indexOf(section) != -1)).map((conclusion) => {
+    let conclusions: ScenarioData[] = gameManager.sectionData(gameManager.game.edition).filter((sectionData) => sectionData.conclusion && !sectionData.parent && sectionData.parentSections && sectionData.parentSections.find((parentSections) => parentSections.length == 1 && parentSections.indexOf(section) != -1) && gameManager.scenarioManager.getRequirements(sectionData).length == 0).map((conclusion) => {
       return conclusion;
     });
 
@@ -912,8 +932,9 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
             if (week != -1) {
               gameManager.stateManager.before("finishConclusion", ...gameManager.scenarioManager.scenarioUndoArgs(scenario));
               gameManager.scenarioManager.finishScenario(scenario, true, scenario, false, undefined, false, gameManager.game.party.campaignMode, true);
-              this.party.weekSections[week] = this.party.weekSections[week] || [];
-              this.party.weekSections[week]?.push(scenario.index);
+              if (!scenario.repeatable) {
+                this.party.weekSections[week] = [...(this.party.weekSections[week] || []), scenario.index];
+              }
               gameManager.stateManager.after();
 
               this.dialog.open(ScenarioSummaryComponent, {
@@ -966,7 +987,7 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
   }
 
   removeConclusion(section: string, edition: string) {
-    gameManager.stateManager.before("removeConclusion", gameManager.game.party.name, section + '');
+    gameManager.stateManager.before("removeConclusion", gameManager.game.party.name, section);
     gameManager.game.party.conclusions = gameManager.game.party.conclusions.filter((conclusion) => conclusion.edition != edition || conclusion.index != section);
     // TODO: remove week
     gameManager.stateManager.after();
@@ -988,20 +1009,20 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
     let conclusions: string[] = [];
     for (let week = this.party.weeks; week < value; week++) {
       this.sectionsForWeekFixed(week).forEach((section) => {
-        if (this.hasConclusions(section)) {
+        if (this.hasConclusions(section) && conclusions.indexOf(section) == -1) {
           conclusions.push(section);
         }
       })
       this.sectionsForWeek(week).forEach((section) => {
-        if (this.hasConclusions(section)) {
+        if (this.hasConclusions(section) && conclusions.indexOf(section) == -1) {
           conclusions.push(section);
         }
       })
-
-      conclusions.forEach((conclusion) => {
-        this.openConclusions(conclusion, value);
-      })
     }
+
+    conclusions.forEach((conclusion) => {
+      this.openConclusions(conclusion, value);
+    })
 
     gameManager.stateManager.before("setPartyWeeks", "" + value);
     for (let week = this.party.weeks; week < value; week++) {
@@ -1042,7 +1063,7 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
 
   openResources() {
     this.dialog.open(PartyResourcesDialogComponent, {
-      panelClass: ['dialog-invert'],
+      panelClass: ['dialog']
     });
   }
 
@@ -1058,14 +1079,14 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
     if (!isNaN(+event.target.value)) {
       const value = +event.target.value - this.moraleDefense;
       if (this.party.defense != value) {
-        gameManager.stateManager.before("setPartyTotalDefense", this.party.name, '' + value);
+        gameManager.stateManager.before("setPartyTotalDefense", this.party.name, value);
         this.party.defense = value;
         gameManager.stateManager.after();
       }
     }
   }
 
-  setSoldiers(value: number) {
+  setSoldiers(value: number, force: boolean = false) {
     if (this.party.soldiers == value) {
       value--;
     }
@@ -1073,9 +1094,51 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
       value = 0;
     }
 
-    gameManager.stateManager.before("setPartySoldiers", "" + value);
-    this.party.soldiers = value;
-    gameManager.stateManager.after();
+    if (value < this.party.soldiers || force) {
+      gameManager.stateManager.before("setPartySoldiers", "" + value);
+      this.party.soldiers = value;
+      gameManager.stateManager.after();
+    } else if (this.soldierAvailable() && value == this.party.soldiers + 1) {
+      this.dialog.open(BuildingUpgradeDialog, {
+        panelClass: ['dialog'],
+        data: {
+          costs: { gold: 3 },
+          repair: 1,
+          action: 'soldiers'
+        }
+      }).closed.subscribe({
+        next: (result) => {
+          if (result) {
+            gameManager.stateManager.before("setPartySoldiers", "" + value);
+            this.party.soldiers = value;
+            if (result instanceof SelectResourceResult) {
+              gameManager.lootManager.applySelectResources(result);
+            }
+            gameManager.stateManager.after();
+          }
+        }
+      })
+    }
+  }
+
+  soldierAvailable(): boolean {
+    if (!this.party.campaignMode) {
+      return true;
+    }
+    const barracks = this.party.buildings.find((buildingModel) => buildingModel.name == 'barracks' && buildingModel.level > 0 && buildingModel.state == "normal");
+    if (barracks && this.party.soldiers < (2 + barracks.level * 2)) {
+      const characters = gameManager.game.figures.filter((figure) => figure instanceof Character).map((figure) => figure as Character);
+      if (characters.length > 0) {
+        const characterGold = characters.map((character) => character.progress.gold).reduce((a, b) => a + b);
+        const characterResourses = characters.map((character) => (character.progress.loot.hide || 0) + (character.progress.loot.lumber || 0) + (character.progress.loot.metal || 0)).reduce((a, b) => a + b);
+        const supplyResources = (this.party.loot.hide || 0) + (this.party.loot.lumber || 0) + (this.party.loot.metal || 0);
+        if (characterGold > 3 && (characterResourses + supplyResources) > 1) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   setMorale(value: number) {
@@ -1145,24 +1208,27 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
   }
 
   addCampaignSticker(campaignStickerElement: HTMLInputElement) {
-    const sticker = campaignStickerElement.value;
+
+    const stickerLabel = campaignStickerElement.value;
+    const sticker = this.campaignStickers.find((item) => item.label == stickerLabel);
+
     if (sticker) {
       this.party.campaignStickers = this.party.campaignStickers || [];
 
       let total = 1;
       const campaign = gameManager.campaignData();
       if (campaign.campaignStickers) {
-        const campaignSticker = campaign.campaignStickers.find((campaignSticker) => campaignSticker.startsWith(sticker.toLowerCase().replaceAll(' ', '-') + ':'));
+        const campaignSticker = campaign.campaignStickers.find((campaignSticker) => campaignSticker.startsWith(sticker.value));
         if (campaignSticker) {
           total = +(campaignSticker.split(':')[1]);
         }
       }
 
-      const count = this.party.campaignStickers.filter((campaignSticker) => campaignSticker.toLowerCase().replaceAll(' ', '-') == sticker.toLowerCase().replaceAll(' ', '-')).length;
+      const count = this.party.campaignStickers.filter((campaignSticker) => campaignSticker.toLowerCase() == sticker.value).length;
 
       if (count < total) {
-        gameManager.stateManager.before("addCampaignSticker", sticker);
-        this.party.campaignStickers.push(sticker);
+        gameManager.stateManager.before("addCampaignSticker", sticker.label);
+        this.party.campaignStickers.push(sticker.value);
         campaignStickerElement.value = "";
         gameManager.stateManager.after();
         this.update();
@@ -1180,9 +1246,8 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
     }
   }
 
-  campaignStickerImage(stringValue: string, stickerIndex: number): string | undefined {
+  campaignStickerImage(sticker: string, stickerIndex: number): string | undefined {
     const campaign = gameManager.campaignData();
-    const sticker = stringValue.toLowerCase().replaceAll(' ', '-');
 
     let total = 0;
     if (campaign.campaignStickers) {
@@ -1231,6 +1296,12 @@ export class PartySheetDialogComponent implements OnInit, OnDestroy {
     this.dialog.open(BattleGoalSetupDialog, {
       panelClass: ['dialog']
     });
+  }
+
+  statistics() {
+    this.dialog.open(StatisticsDialogComponent, {
+      panelClass: ['dialog-invert']
+    })
   }
 
 }

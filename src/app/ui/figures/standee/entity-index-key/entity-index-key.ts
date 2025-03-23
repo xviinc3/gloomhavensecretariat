@@ -4,6 +4,7 @@ import { Entity } from 'src/app/game/model/Entity';
 import { Subscription } from 'rxjs';
 
 @Component({
+	standalone: false,
     selector: 'ghs-entity-index-key',
     templateUrl: './entity-index-key.html',
     styleUrls: ['./entity-index-key.scss']
@@ -12,10 +13,9 @@ export class EntityIndexKeyComponent implements OnInit, OnDestroy {
 
     gameManager: GameManager = gameManager;
     @Input() entity!: Entity;
-    @Input() show : boolean = false;
+    @Input() show: boolean = false;
 
     entityIndex: number = -1;
-
 
     ngOnInit(): void {
         this.uiChangeSubscription = gameManager.uiChange.subscribe({ next: () => this.update() });
@@ -31,7 +31,7 @@ export class EntityIndexKeyComponent implements OnInit, OnDestroy {
     }
 
     update(): void {
-        this.entityIndex = gameManager.entityManager.getIndexForEntity(this.entity);
+        this.entityIndex = gameManager.entityManager.getIndexForEntity(this.entity, gameManager.stateManager.keyboardSelecting === 'w');
         if (this.entityIndex != -1) {
             this.entityIndex++;
         }

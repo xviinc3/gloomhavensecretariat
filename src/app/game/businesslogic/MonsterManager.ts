@@ -57,13 +57,22 @@ export class MonsterManager {
     let stat = monster.stats.find((monsterStat) => {
       return monsterStat.level == monster.level && monsterStat.type == type;
     });
+
+    if (monster.bb) {
+      if (type == MonsterType.elite && monster.stats[0] && monster.stats[0].type == MonsterType.elite) {
+        stat = monster.stats[0];
+      } else {
+        stat = Object.assign(new MonsterStat(type), monster.baseStat);
+      }
+    }
+
     if (!stat) {
       monster.errors = monster.errors || [];
       if (!monster.errors.find((figureError) => figureError.type == FigureErrorType.unknown) && !monster.errors.find((figureError) => figureError.type == FigureErrorType.stat)) {
         console.error("Could not find '" + type + "' stats for monster: " + monster.name + " level: " + monster.level);
         monster.errors.push(new FigureError(FigureErrorType.stat, "monster", monster.name, monster.edition, type, "" + monster.level));
       }
-      return new MonsterStat(type, monster.level, 0, 0, 0, 0);
+      stat = new MonsterStat(type, monster.level);
     }
 
     stat = JSON.parse(JSON.stringify(stat)) as MonsterStat;
@@ -76,6 +85,7 @@ export class MonsterManager {
       statEffect.movement = typeof monster.statEffect.movement === 'string' ? monster.statEffect.movement.replaceAll('M', '' + stat.movement).replace('[', '').replace(']', '') : monster.statEffect.movement;
       statEffect.attack = typeof monster.statEffect.attack === 'string' ? monster.statEffect.attack.replaceAll('A', '' + stat.attack).replace('[', '').replace(']', '') : monster.statEffect.attack;
       statEffect.range = typeof monster.statEffect.range === 'string' ? monster.statEffect.range.replaceAll('R', '' + stat.range).replace('[', '').replace(']', '') : monster.statEffect.range;
+      statEffect.initiative = monster.statEffect.initiative;
       statEffect.flying = monster.statEffect.flying;
       statEffect.actions = monster.statEffect.actions;
       statEffect.special = monster.statEffect.special;
@@ -185,20 +195,22 @@ export class MonsterManager {
       })
     }
 
-    monster.stats.forEach((stat) => {
-      if (stat.special) {
-        stat.special.forEach((special) => {
-          special.forEach((action) => {
-            const summons = this.getActionSpawns(action, monster.edition);
-            summons.forEach((summon) => {
-              if (monsters.indexOf(summon) == -1) {
-                monsters.push(summon);
-              }
+    if (monster.stats) {
+      monster.stats.forEach((stat) => {
+        if (stat.special) {
+          stat.special.forEach((special) => {
+            special.forEach((action) => {
+              const summons = this.getActionSpawns(action, monster.edition);
+              summons.forEach((summon) => {
+                if (monsters.indexOf(summon) == -1) {
+                  monsters.push(summon);
+                }
+              })
             })
           })
-        })
-      }
-    })
+        }
+      })
+    }
     return monsters;
   }
 
@@ -326,6 +338,14 @@ export class MonsterManager {
   }
 
   monsterStandeeShared(monster: Monster, list: Monster[]): Monster[] {
+    if (monster.bb) {
+      this.game.figures.forEach((figure) => {
+        if (figure instanceof Monster && figure.bb && list.indexOf(figure) == -1) {
+          list.push(figure);
+        }
+      })
+      return list;
+    }
 
     if (list.indexOf(monster) == -1) {
       list.push(monster);
@@ -363,6 +383,10 @@ export class MonsterManager {
   }
 
   monsterStandeeMax(monster: Monster): number {
+    if (monster.bb && !settingsManager.settings.bbStandeeLimit) {
+      return 10;
+    }
+
     let max = EntityValueFunction(monster.standeeCount || monster.count || 0, monster.level);
     if ((!max || !monster.standeeCount) && monster.standeeShare) {
       const share = gameManager.monstersData(monster.standeeShareEdition || monster.edition).find((value) => value.name == monster.standeeShare);
@@ -373,8 +397,32 @@ export class MonsterManager {
     return max;
   }
 
+  monsterRandomStandee(monster: Monster): number {
+    let number = -1;
+    const monsterCount = this.monsterStandeeMax(monster);
+
+    if ([...Array(monsterCount).keys()].every((n) => gameManager.monsterManager.monsterStandeeUsed(monster, n + 1))) {
+      console.error("This should not happen: monsterRandomStandee called with all standees used already!");
+      return number;
+    }
+
+    const randomCount = monster.randomCount ? EntityValueFunction(monster.randomCount) : 0;
+    if (randomCount && randomCount < monsterCount && [...Array(randomCount).keys()].some((n) => !gameManager.monsterManager.monsterStandeeUsed(monster, n + 1))) {
+      number = Math.floor(Math.random() * randomCount) + 1;
+      while (gameManager.monsterManager.monsterStandeeUsed(monster, number)) {
+        number = Math.floor(Math.random() * randomCount) + 1;
+      }
+    } else {
+      number = Math.floor(Math.random() * monsterCount) + 1;
+      while (gameManager.monsterManager.monsterStandeeUsed(monster, number)) {
+        number = Math.floor(Math.random() * monsterCount) + 1;
+      }
+    }
+    return number;
+  }
+
   addMonsterEntity(monster: Monster, number: number, type: MonsterType, summon: boolean = false): MonsterEntity | undefined {
-    if (!monster.stats.some((monsterStat) => {
+    if (monster.bb && !monster.baseStat || !monster.bb && !monster.stats.some((monsterStat) => {
       return monsterStat.type == type;
     })) {
       monster.errors = monster.errors || [];
@@ -390,6 +438,10 @@ export class MonsterManager {
     monster.entities = monster.entities.filter((other) => other.number != number);
     monster.entities.push(monsterEntity);
     gameManager.addEntityCount(monster, monsterEntity);
+
+    if (monster.tags.indexOf('addedManually') != -1) {
+      monster.tags = monster.tags.filter((tag) => tag != 'addedManually');
+    }
 
     if (summon) {
       monsterEntity.summon = SummonState.new;
@@ -456,10 +508,7 @@ export class MonsterManager {
       }
 
       if (settingsManager.settings.randomStandees) {
-        number = Math.floor(Math.random() * monsterCount) + 1;
-        while (gameManager.monsterManager.monsterStandeeUsed(monster, number)) {
-          number = Math.floor(Math.random() * monsterCount) + 1;
-        }
+        number = this.monsterRandomStandee(monster);
       } else if (this.monsterStandeeCount(monster, false) == monsterCount - 1) {
         number = 1;
         while (gameManager.monsterManager.monsterStandeeUsed(monster, number)) {
@@ -497,6 +546,14 @@ export class MonsterManager {
       } else {
         monster.off = true;
       }
+
+      if (settingsManager.settings.removeUnusedMonster && monster.entities.length == 0) {
+        this.removeMonster(monster);
+      }
+    }
+
+    if (settingsManager.settings.scenarioStats && monsterEntity.dead) {
+      gameManager.scenarioStatsManager.killMonsterEntity(monsterEntity);
     }
   }
 
@@ -603,7 +660,6 @@ export class MonsterManager {
   }
 
   next() {
-    let removeMonster: Monster[] = [];
     this.game.figures.forEach((figure) => {
       if (figure instanceof Monster) {
         const ability = this.getAbility(figure);
@@ -617,11 +673,7 @@ export class MonsterManager {
 
         figure.entities.forEach((entity) => {
           if (entity.tags) {
-            let roundAction = entity.tags.find((tag) => tag.startsWith('roundAction-'));
-            while (roundAction) {
-              entity.tags.splice(entity.tags.indexOf(roundAction), 1);
-              roundAction = entity.tags.find((tag) => tag.startsWith('roundAction-'));
-            }
+            entity.tags = entity.tags.filter((tag) => !tag.startsWith('roundAction-'));
           }
 
           if (entity.summon == SummonState.new) {
@@ -638,16 +690,10 @@ export class MonsterManager {
           })
         })
 
+        figure.tags = figure.tags.filter((tag) => !tag.startsWith('roundAction-'));
+
         figure.off = figure.entities.length == 0;
-
-        if (figure.off && settingsManager.settings.removeUnusedMonster) {
-          removeMonster.push(figure);
-        }
       }
-    })
-
-    removeMonster.forEach((monster) => {
-      this.removeMonster(monster);
     })
   }
 
@@ -664,6 +710,19 @@ export class MonsterManager {
 
           if (figure.ability >= figure.abilities.length) {
             this.shuffleAbilities(figure);
+          }
+
+          if (figure.bb && figure.tags.indexOf('bb-elite') != -1) {
+            let nextAbility = figure.ability + 1;
+            if (nextAbility >= figure.abilities.length) {
+              nextAbility = 0;
+            }
+            const abilities = gameManager.deckData(figure).abilities;
+            if (abilities[figure.abilities[nextAbility]].initiative < abilities[figure.abilities[figure.ability]].initiative) {
+              const swap = figure.abilities[figure.ability];
+              figure.abilities[figure.ability] = figure.abilities[nextAbility];
+              figure.abilities[nextAbility] = swap;
+            }
           }
         }
       }

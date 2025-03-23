@@ -10,7 +10,7 @@
 
 ## Introduction
 
-*Gloomhaven Secretariat* is a **companion app** for Gloomhaven-based board games. The app supports all official editions, namely **Gloomhaven**, **Frosthaven**, **Jaws of the Lion** and **Forgotten Circles**, the community editions **The Crimson Scales** and **Trail of Ashes** as well as **Solo** scenarios and custom content.
+*Gloomhaven Secretariat* is a **companion app** for Gloomhaven-based board games. The app supports all official editions, namely **Gloomhaven**, **Frosthaven**, **Jaws of the Lion**, **Forgotten Circles** and **Button & Bugs**, the community editions **The Crimson Scales** and **Trail of Ashes** as well as **Solo** scenarios and custom content.
 
 *GHS* is a complete replacement for the abandoned [Gloomhaven Helper](http://esotericsoftware.com/gloomhaven-helper) app (by [Esoteric Software®](http://esotericsoftware.com)), enhanced with more tracking and automation features. As a single-screen web application, *GHS* helps manage scenario play by tracking character and monster turns, automatically setting up monsters separately for each room or section, assisting with scenario-specific rules, attack modifiers, loot deck, and much more. *GHS* also tracks your progress on the Character, Party and Campaign sheets, allowing you to buy and equip items, loot treasures, apply all scenario rewards, register scenario unlocks and manage your outpost. For a more detailed feature list, including a comparison of some popular applications, see [Comparison of Companion Apps](./resources/app-comparison.md).
 
@@ -18,12 +18,14 @@ Multiple clients are supported by a server component [Gloomhaven Secretariat Ser
 
 Since *GHS* is a web application, no installation is required and it runs in any modern browser, even on mobile devices, but it can also be [installed](#install) for offline use.
 
-*Gloomhaven Secretariat* is open-source software built with [Angular](https://angular.io/) and is open for the community to actively [contribute](#contributing) ideas, suggestions and of course feedback and bug fixes.
+An extensive settings menu ensures highly individual customization to suit all requirements. Almost every feature can be switched on/off or customized.
+
+*Gloomhaven Secretariat* is open-source software built with [Angular](https://angular.io/) and is open for the community to actively [contribute](#contributing) ideas, suggestions and of course feedback and bug fixes. You can also help [translating](#translating) the app.
 
 A basic user guide is available [online](https://help.gloomhaven-secretariat.de).
 
 > SPOILER WARNING:
-> The `label-spoiler` folder in the `data` folders, and therefore the final edition data files in the releases in the `./assets/data` folder, contain spoilers by including the appropriate label. 
+> The `label/spoiler` folder in the `data` folders, and therefore the final edition data files in the releases in the `./assets/data` folder, contain spoilers by including the appropriate label. 
 > 
 > [More information about spoilers in this repository](https://github.com/Lurkars/gloomhavensecretariat/discussions/103)
 
@@ -71,7 +73,18 @@ A basic user guide is available [online](https://help.gloomhaven-secretariat.de)
   - Item Cards
   - Battle Goals
   - Building deck (partly!)
-  - World Map (GH/FH)
+  - Frosthaven Decks:
+    <details>
+      <summary>SPOILER WARNING: Building 81</summary>
+
+      > Trials Deck
+    </details>
+    <details>
+      <summary>SPOILER WARNING: Building 90</summary>
+
+      > Challenges Deck
+    </details>
+  - World Map
 - Other features:
   - i18n support (currently en, de, fr and ko, more translations needed. Many thanks to the contributors of french and korean)
   - PWA for installation on all devices!
@@ -81,36 +94,73 @@ A basic user guide is available [online](https://help.gloomhaven-secretariat.de)
   - Load custom JSON edition data for custom content!
   - Edit monster attack modifier and monster ability decks (support for Diviner class mechanics): reveal cards, remove cards, rearrange cards
   - Support for Frosthaven loot deck (including enhancements) and town guard deck
+  - Support for Frosthaven Building 81 and 90 Mechanics including automation (if possible)
   - special ability automation for some characters
     <details>
-      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/gh-music-note.svg" height="20px" style="filter:grayscale(1)"></summary>
-
-      > Enable song to automatically gain 1 XP at start of turn
-    </details>
-    <details>
-      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/gh-lightning.svg" height="20px" style="filter:grayscale(1)"></summary>
-
-      > Enable overhealing up to 26 HP
-      
-      > Toggle immunity for all conditions
-    </details>
-    <details>
-      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/fh-blinkblade.svg" height="20px" style="filter:grayscale(1)"></summary>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/fh-blinkblade.svg" height="20px" style="filter:grayscale(1);"></summary>
 
       > Automatically add/remove time tokens at start of round after defining slow/fast before
     </details>
     <details>
-      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/fh-prism.svg" height="20px" style="filter:grayscale(1)"></summary>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/fh-boneshaper.svg" height="20px" style="filter:grayscale(1);"></summary>
 
-      > Toggle Mode Token for summons (inactive if Mode Token set)
+      > Unholy Prowess: Add +1 Heal to to all Shambling Skeletons
+
+      > Solid Bones: Add +1 HP, +1 Move and Pierce 1 to all Shambling Skeletons
     </details>
     <details>
-      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/jotl-demolitionist.svg" height="20px" style="filter:grayscale(1)"></summary>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/fh-fist.svg" height="20px" style="filter:grayscale(1);"></summary>
+
+      > One with the Mountain: Whenever not having Regenerate, gain Regenerate
+
+      > Gift of the Mountain: Heal 2 self at end of each turn
+    </details>
+    <details>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/fh-kelp.svg" height="20px" style="filter:grayscale(1);"></summary>
+
+      > Perk 11: Start each scenario with 2 Trophy Tokens
+    </details>
+    <details>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/fh-prism.svg" height="20px" style="filter:grayscale(1);"></summary>
+
+      > Toggle Mode Token for summons (inactive if Mode Token set)
+
+      > Repair Drone Mode: Heal 2 self at start of turn
+    </details>
+    <details>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/fh-shards.svg" height="20px" style="filter:grayscale(1);"></summary>
+
+      > Resonance Tokens: At the end of each of your turns, you gain one Resonance Token
+
+      > Perk 10: Start scenario with Brittle to gain 2 Resonance Tokens
+    </details>
+    <details>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/fh-snowflake.svg" height="20px" style="filter:grayscale(1);"></summary>
+
+      > Perk 9: Muddle new revealed Monster
+    </details>
+    <details>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/jotl-demolitionist.svg" height="20px" style="filter:grayscale(1);"></summary>
 
       > Mech Suit (+5 HP, Heal 10)
     </details>
+    <details>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/gh-lightning.svg" height="20px" style="filter:grayscale(1);"></summary>
+
+      > Blood Pact: Summer 1 damage at the start of each of your turns 
+
+      > Unbridled Power: Enable overhealing up to 26 HP
+      
+      > Careless Charge: Toggle immunity for all conditions
+    </details>
+    <details>
+      <summary>SPOILER WARNING: <img src="./src/assets/images/character/icons/gh-music-note.svg" height="20px" style="filter:grayscale(1);"></summary>
+
+      > Automatically gain 1 XP at start of turn for active song
+    </details>
   - Random Dungeons
   - Scenario Flow Chart
+  - Scenario Stats (damage/heal provided and received)
   - Monster data editor (https://gloomhaven-secretariat.de/editor/monster)
   - Includes Solo scenarios
   - Includes the [Seeker of Xorn](https://boardgamegeek.com/thread/2220121/seeker-xorn-bonus-content) campaign: can be enabled under *Data Management*.
@@ -201,6 +251,12 @@ Pull requests are also welcome!
 > Please note: all files in the data subfolder will be automatically formatted and added to each commit. If you have made local changes to these files and do NOT want to commit those changes, please use the `--no-verify` parameter for your `git commit` and `git push` commands.
 
 Thanks to everyone who has already [contributed](https://github.com/Lurkars/gloomhavensecretariat/graphs/contributors), you're awesome!
+
+### Translating
+
+Latest, I am now trying to use [Weblate](https://translate.gloomhaven-secretariat.de/) as a translation tool. You can log in with your *GitHub* account to help translate the application.
+
+<img src="https://translate.gloomhaven-secretariat.de/widget/gloomhavensecretariat/multi-auto.svg" alt="Translation status" />
 
 ## Archive
 

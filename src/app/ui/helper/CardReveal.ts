@@ -1,6 +1,8 @@
 import { Directive, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { settingsManager } from 'src/app/game/businesslogic/SettingsManager';
 
 @Directive({
+	standalone: false,
   selector: '[card-reveal]'
 })
 export class CardRevealDirective {
@@ -18,14 +20,18 @@ export class CardRevealDirective {
     if (!this.disabled) {
       if (this.el.nativeElement.classList.contains("flipped")) {
         this.el.nativeElement.classList.remove("flipped");
-        this.change.emit(false);
+        setTimeout(() => {
+          this.change.emit(false);
+        }, settingsManager.settings.animations ? 1000 : 0)
       } else
         if (!this.clicked) {
           this.clicked = true;
           this.el.nativeElement.classList.add("confirm");
         } else {
           this.el.nativeElement.classList.add("flipped");
-          this.change.emit(true);
+          setTimeout(() => {
+            this.change.emit(true);
+          }, settingsManager.settings.animations ? 1000 : 0)
           this.clicked = false;
           this.el.nativeElement.classList.remove("confirm");
         }

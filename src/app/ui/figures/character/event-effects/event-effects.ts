@@ -1,22 +1,24 @@
+import { Dialog, DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { gameManager, GameManager } from 'src/app/game/businesslogic/GameManager';
-import { DIALOG_DATA, Dialog, DialogRef } from '@angular/cdk/dialog';
-import { Character } from 'src/app/game/model/Character';
 import { Subscription } from 'rxjs';
-import { ConditionName, EntityCondition, EntityConditionState } from 'src/app/game/model/data/Condition';
-import { EntityValueFunction } from 'src/app/game/model/Entity';
-import { ghsValueSign } from 'src/app/ui/helper/Static';
-import { AttackModifier, AttackModifierType } from 'src/app/game/model/data/AttackModifier';
+import { gameManager, GameManager } from 'src/app/game/businesslogic/GameManager';
 import { SettingsManager, settingsManager } from 'src/app/game/businesslogic/SettingsManager';
-import { LootType } from 'src/app/game/model/data/Loot';
-import { EventRandomItemDialogComponent } from './random-item/random-item-dialog';
-import { ItemData } from 'src/app/game/model/data/ItemData';
+import { Character } from 'src/app/game/model/Character';
+import { AttackModifier, AttackModifierType } from 'src/app/game/model/data/AttackModifier';
+import { ConditionName, EntityCondition, EntityConditionState } from 'src/app/game/model/data/Condition';
 import { CountIdentifier } from 'src/app/game/model/data/Identifier';
+import { ItemData } from 'src/app/game/model/data/ItemData';
+import { LootType } from 'src/app/game/model/data/Loot';
 import { ScenarioData } from 'src/app/game/model/data/ScenarioData';
+import { EntityValueFunction } from 'src/app/game/model/Entity';
 import { GameScenarioModel } from 'src/app/game/model/Scenario';
+import { ghsValueSign } from 'src/app/ui/helper/Static';
+import { FavorsComponent } from './favors/favors';
+import { EventRandomItemDialogComponent } from './random-item/random-item-dialog';
 import { EventRandomScenarioDialogComponent } from './random-scenario/random-scenario-dialog';
 
 @Component({
+	standalone: false,
   selector: 'ghs-event-effects',
   templateUrl: './event-effects.html',
   styleUrls: ['./event-effects.scss']
@@ -60,9 +62,16 @@ export class EventEffectsDialog implements OnInit, OnDestroy {
     }
   }
 
-  update() {
-    this.characters = gameManager.game.figures.filter((figure) => figure instanceof Character).map((figure) => figure as Character);
-    this.activeCharacters = this.characters.filter((character) => !character.absent && !character.exhausted);
+  update(toggle: boolean = false) {
+    if (!toggle) {
+      this.characters = gameManager.game.figures.filter((figure) => figure instanceof Character).map((figure) => figure as Character);
+      this.activeCharacters = this.characters.filter((character) => !character.absent && !character.exhausted);
+      this.lootColumns = gameManager.fhRules() ? [LootType.lumber, LootType.metal, LootType.hide, LootType.arrowvine, LootType.axenut, LootType.corpsecap, LootType.flamefruit, LootType.rockroot, LootType.snowthistle] : [];
+    }
+
+    this.entityConditions = [];
+    this.immunities = [];
+    this.newImmunities = [];
 
     this.activeCharacters.forEach((character, index, self) => {
       character.entityConditions.forEach((entityCondition) => {
@@ -78,8 +87,6 @@ export class EventEffectsDialog implements OnInit, OnDestroy {
         }
       })
     })
-
-    this.lootColumns = gameManager.fhRules() ? [LootType.lumber, LootType.metal, LootType.hide, LootType.arrowvine, LootType.axenut, LootType.corpsecap, LootType.flamefruit, LootType.rockroot, LootType.snowthistle] : [];
   }
 
   toggleCharacter(character: Character) {
@@ -88,6 +95,7 @@ export class EventEffectsDialog implements OnInit, OnDestroy {
     } else {
       this.activeCharacters.splice(this.activeCharacters.indexOf(character), 1);
     }
+    this.update(true);
   }
 
   changeHealth(value: number) {
@@ -96,7 +104,7 @@ export class EventEffectsDialog implements OnInit, OnDestroy {
       this.health[i] += value;
 
       let maxHealth = EntityValueFunction(character.maxHealth);
-      if (character.tags.find((tag) => tag === 'overheal')) {
+      if (character.name == 'lightning' && character.tags.find((tag) => tag === 'unbridled-power')) {
         maxHealth = Math.max(maxHealth, 26);
       }
 
@@ -287,10 +295,10 @@ export class EventEffectsDialog implements OnInit, OnDestroy {
         panelClass: ['dialog'],
         data: { item: itemData, blueprint: blueprint }
       }).closed.subscribe({
-        next: (result) => {
+        next: (result: unknown) => {
           if (result) {
             const itemData = result as ItemData;
-            gameManager.stateManager.before("eventEffect.drawRandomItem" + (blueprint ? 'Blueprint' : ''), '' + itemData.id, itemData.edition, itemData.name);
+            gameManager.stateManager.before("eventEffect.drawRandomItem" + (blueprint ? 'Blueprint' : ''), itemData.id, itemData.edition, itemData.name);
             gameManager.game.party.unlockedItems.push(new CountIdentifier('' + itemData.id, itemData.edition));
             gameManager.stateManager.after();
           }
@@ -308,21 +316,16 @@ export class EventEffectsDialog implements OnInit, OnDestroy {
         panelClass: ['dialog'],
         data: { scenario: scenarioData, section: section }
       }).closed.subscribe({
-        next: (result) => {
+        next: (result: unknown) => {
           if (result) {
             const scenarioData = result as ScenarioData;
             if (section) {
               const unlocks = scenarioData.unlocks ? scenarioData.unlocks.map((unlock) => '%data.scenarioNumber:' + unlock + '%').join(', ') : '';
-              gameManager.stateManager.before("eventEffect.drawRandomScenarioSection", '' + scenarioData.index, scenarioData.edition, scenarioData.name, unlocks);
+              gameManager.stateManager.before("eventEffect.drawRandomScenarioSection", scenarioData.index, scenarioData.edition, scenarioData.name, unlocks);
               gameManager.game.party.conclusions.push(new GameScenarioModel('' + scenarioData.index, scenarioData.edition, scenarioData.group));
-              if (scenarioData.unlocks) {
-                scenarioData.unlocks.forEach((unlock) => {
-                  gameManager.game.party.manualScenarios.push(new GameScenarioModel(unlock, scenarioData.edition));
-                })
-              }
               gameManager.stateManager.after();
             } else {
-              gameManager.stateManager.before("eventEffect.drawRandomScenario", '' + scenarioData.index, scenarioData.edition, scenarioData.name);
+              gameManager.stateManager.before("eventEffect.drawRandomScenario", scenarioData.index, scenarioData.edition, scenarioData.name);
               gameManager.game.party.manualScenarios.push(new GameScenarioModel(scenarioData.index, scenarioData.edition, scenarioData.group));
               gameManager.stateManager.after();
             }
@@ -342,9 +345,9 @@ export class EventEffectsDialog implements OnInit, OnDestroy {
       gameManager.stateManager.before(entityCondition.state == EntityConditionState.removed ? "eventEffect.removeCondition" : "eventEffect.addCondition", entityCondition.name, characterIcons);
       this.activeCharacters.find((character) => {
         if (entityCondition.state == EntityConditionState.removed) {
-          gameManager.entityManager.removeCondition(character, entityCondition, entityCondition.permanent);
+          gameManager.entityManager.removeCondition(character, character, entityCondition, entityCondition.permanent);
         } else {
-          gameManager.entityManager.addCondition(character, entityCondition, character.active, character.off, entityCondition.permanent);
+          gameManager.entityManager.addCondition(character, character, entityCondition, entityCondition.permanent);
         }
       })
       gameManager.stateManager.after();
@@ -516,6 +519,12 @@ export class EventEffectsDialog implements OnInit, OnDestroy {
         })
         gameManager.stateManager.after();
       }
+    })
+  }
+
+  openFavors() {
+    this.dialog.open(FavorsComponent, {
+      panelClass: ['dialog']
     })
   }
 }

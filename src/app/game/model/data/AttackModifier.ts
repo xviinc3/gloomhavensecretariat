@@ -133,9 +133,10 @@ export enum AttackModifierEffectType {
   pull = "pull",
   push = "push",
   range = "range",
+  recoverRandomDiscard = "recoverRandomDiscard",
   refreshItem = "refreshItem",
   refreshSpentItem = "refreshSpentItem",
-  recoverRandomDiscard = "recoverRandomDiscard",
+  required = "required",
   retaliate = "retaliate",
   shield = "shield",
   specialTarget = "specialTarget",
@@ -284,50 +285,60 @@ export class AttackModifierDeck {
   attackModifiers: AttackModifier[];
   current: number;
   cards: AttackModifier[];
-  disgarded: number[] = [];
+  discarded: number[] = [];
   active: boolean = true;
   lastVisible: number = 0;
   state: 'advantage' | 'disadvantage' | undefined;
+  bb: boolean;
 
-  constructor(attackModifiers: AttackModifier[] | undefined = undefined) {
-    this.attackModifiers = attackModifiers ? JSON.parse(JSON.stringify(attackModifiers.filter((am, index, self) => self.indexOf(am) == index))) : JSON.parse(JSON.stringify(defaultAttackModifier));
+  constructor(attackModifiers: AttackModifier[] | undefined = undefined, bb: boolean = false) {
+    this.bb = bb;
+    this.attackModifiers = attackModifiers ? JSON.parse(JSON.stringify(attackModifiers.filter((am, index, self) => this.bb || self.indexOf(am) == index))) : JSON.parse(JSON.stringify(defaultAttackModifier));
     this.current = -1;
     this.cards = attackModifiers ? JSON.parse(JSON.stringify(attackModifiers)) : defaultAttackModifierCards.map((id) => defaultAttackModifier.find((attackModifier) => attackModifier.id == id) || new AttackModifier(AttackModifierType.invalid, 0, AttackModifierValueType.default, id));
   }
 
   toModel(): GameAttackModifierDeckModel {
-    return new GameAttackModifierDeckModel(this.current, this.cards.map((attackModifier) => attackModifier && attackModifier.id), this.disgarded, this.active, this.lastVisible, this.state);
+    return new GameAttackModifierDeckModel(this.current, this.cards.map((attackModifier) => attackModifier && attackModifier.id), this.discarded, this.active, this.lastVisible, this.state, this.bb);
   }
 
   merge(attackModifierDeck: AttackModifierDeck) {
     this.attackModifiers = attackModifierDeck.attackModifiers;
     this.current = attackModifierDeck.current;
     this.cards = attackModifierDeck.cards;
-    this.disgarded = attackModifierDeck.disgarded;
+    this.discarded = attackModifierDeck.discarded;
     this.lastVisible = attackModifierDeck.lastVisible;
     this.state = attackModifierDeck.state;
+    this.bb = attackModifierDeck.bb;
   }
 }
 
 export class GameAttackModifierDeckModel {
   current: number;
   cards: string[];
-  disgarded: number[];
+  discarded: number[];
   active: boolean;
   lastVisible: number;
   state: 'advantage' | 'disadvantage' | undefined;
+  bb: boolean;
+  // migration
+  disgarded: number[];
 
   constructor(current: number,
     cards: string[],
-    disgarded: number[],
+    discarded: number[],
     active: boolean,
     lastVisible: number = 0,
-    state: 'advantage' | 'disadvantage' | undefined = undefined) {
+    state: 'advantage' | 'disadvantage' | undefined = undefined,
+    bb: boolean = false) {
     this.current = current;
     this.cards = cards;
-    this.disgarded = JSON.parse(JSON.stringify(disgarded));
+    this.discarded = JSON.parse(JSON.stringify(discarded));
     this.active = active;
     this.lastVisible = lastVisible;
     this.state = state;
+    this.bb = bb;
+    // migration
+    this.disgarded = JSON.parse(JSON.stringify(discarded));
   }
 }

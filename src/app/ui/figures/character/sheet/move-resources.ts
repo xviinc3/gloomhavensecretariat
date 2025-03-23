@@ -8,6 +8,7 @@ import { LootType } from "src/app/game/model/data/Loot";
 import { ghsDialogClosingHelper } from "src/app/ui/helper/Static";
 
 @Component({
+	standalone: false,
     selector: 'ghs-character-move-resources',
     templateUrl: 'move-resources.html',
     styleUrls: ['./move-resources.scss']
@@ -59,7 +60,7 @@ export class CharacterMoveResourcesDialog implements OnInit {
             }
 
             if (value > 0) {
-                gameManager.stateManager.before("moveResource", gameManager.characterManager.characterName(this.character), "game.loot." + lootType, value + '');
+                gameManager.stateManager.before("moveResource", gameManager.characterManager.characterName(this.character), "game.loot." + lootType, value);
                 gameManager.game.party.loot[lootType] = (gameManager.game.party.loot[lootType] || 0) + value;
                 this.character.progress.loot[lootType] = (this.character.progress.loot[lootType] || 0) - value;
                 gameManager.stateManager.after();

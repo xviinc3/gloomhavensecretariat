@@ -1,31 +1,33 @@
 import { Dialog } from '@angular/cdk/dialog';
 import { Overlay } from '@angular/cdk/overlay';
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CharacterManager } from 'src/app/game/businesslogic/CharacterManager';
 import { GameManager, gameManager } from 'src/app/game/businesslogic/GameManager';
 import { SettingsManager, settingsManager } from 'src/app/game/businesslogic/SettingsManager';
-import { AttackModifierType } from 'src/app/game/model/data/AttackModifier';
 import { Character } from 'src/app/game/model/Character';
+import { Action, ActionType } from 'src/app/game/model/data/Action';
+import { AttackModifierType } from 'src/app/game/model/data/AttackModifier';
 import { ConditionType, EntityCondition } from 'src/app/game/model/data/Condition';
+import { EntityValueFunction } from 'src/app/game/model/Entity';
 import { GameState } from 'src/app/game/model/Game';
+import { SummonState } from 'src/app/game/model/Summon';
 import { ghsDefaultDialogPositions, ghsValueSign } from '../../helper/Static';
 import { AttackModiferDeckChange } from '../attackmodifier/attackmodifierdeck';
 import { AttackModifierDeckFullscreenComponent } from '../attackmodifier/attackmodifierdeck-fullscreen';
+import { CharacterBattleGoalsDialog } from '../battlegoal/dialog/battlegoal-dialog';
+import { EntitiesMenuDialogComponent } from '../entities-menu/entities-menu-dialog';
 import { EntityMenuDialogComponent } from '../entity-menu/entity-menu-dialog';
+import { ItemsCharacterDialogComponent } from '../items/character/items-character-dialog';
+import { ItemsDialogComponent } from '../items/dialog/items-dialog';
+import { CharacterInitiativeDialogComponent } from './cards/initiative-dialog';
 import { CharacterSheetDialog } from './dialogs/character-sheet-dialog';
 import { CharacterLootCardsDialog } from './dialogs/loot-cards';
 import { CharacterSummonDialog } from './dialogs/summondialog';
-import { CharacterInitiativeDialogComponent } from './cards/initiative-dialog';
-import { SummonState } from 'src/app/game/model/Summon';
-import { Subscription } from 'rxjs';
-import { CharacterBattleGoalsDialog } from '../battlegoal/dialog/battlegoal-dialog';
-import { ItemsCharacterDialogComponent } from '../items/character/items-character-dialog';
-import { ItemsDialogComponent } from '../items/dialog/items-dialog';
-import { EntitiesMenuDialogComponent } from '../entities-menu/entities-menu-dialog';
-import { EntityValueFunction } from 'src/app/game/model/Entity';
-import { Action, ActionType } from 'src/app/game/model/data/Action';
+import { CharacterSpecialAction } from 'src/app/game/model/data/CharacterStat';
 
 @Component({
+  standalone: false,
   selector: 'ghs-character',
   templateUrl: './character.html',
   styleUrls: ['./character.scss']
@@ -59,6 +61,9 @@ export class CharacterComponent implements OnInit, OnDestroy {
 
   summonCount: number = 0;
   activeConditions: EntityCondition[] = [];
+  specialActions: CharacterSpecialAction[] = [];
+
+  bb: boolean = false;
 
   constructor(private dialog: Dialog, private overlay: Overlay) { }
 
@@ -92,6 +97,8 @@ export class CharacterComponent implements OnInit, OnDestroy {
     }
 
     this.compact = settingsManager.settings.characterCompact && settingsManager.settings.theme != 'modern';
+    this.bb = gameManager.bbRules() || this.character.bb;
+    this.specialActions = this.character.specialActions.filter((specialAction) => this.character.tags.indexOf(specialAction.name) != -1);
   }
 
   beforeAttackModifierDeck(change: AttackModiferDeckChange) {
@@ -188,7 +195,7 @@ export class CharacterComponent implements OnInit, OnDestroy {
   nextIdentity(event: any): void {
     if (settingsManager.settings.characterIdentities && this.character.identities && this.character.identities.length > 1) {
 
-      let timeTokens = this.character.tags.find((tag) => tag === 'time_tokens') && this.character.primaryToken == 0;
+      let timeTokens = this.character.name == 'blinkblade' && this.character.tags.find((tag) => tag === 'time_tokens') && this.character.primaryToken == 0;
 
       if ((gameManager.game.state == GameState.next || gameManager.game.state == GameState.draw && this.character.identity == 0 && this.character.tokenValues[0] == 0) && timeTokens) {
         return;
@@ -227,7 +234,7 @@ export class CharacterComponent implements OnInit, OnDestroy {
   dragHpMove(value: number) {
     this.health = value;
     let maxHealth = EntityValueFunction(this.character.maxHealth);
-    if (this.character.tags.find((tag) => tag === 'overheal')) {
+    if (this.character.name == 'lightning' && this.character.tags.find((tag) => tag === 'unbridled-power')) {
       maxHealth = Math.max(maxHealth, 26);
     }
 
@@ -261,13 +268,23 @@ export class CharacterComponent implements OnInit, OnDestroy {
     }
   }
 
+  addExperience(value: number) {
+    this.experience = value;
+    if (this.character.experience + this.experience >= 0) {
+      gameManager.stateManager.before("changeXP", gameManager.characterManager.characterName(this.character), ghsValueSign(this.experience));
+      this.character.experience += this.experience;
+      gameManager.stateManager.after();
+    }
+    this.experience = 0;
+  }
+
   dragTokenMove(value: number) {
     this.token = value;
     if (this.character.primaryToken < 0 && this.character.token + this.token < 0) {
       this.token = - this.character.token;
     } else if (this.character.primaryToken >= 0 && this.character.tokenValues[this.character.primaryToken] + this.token < 0) {
       this.token = - this.character.tokenValues[this.character.primaryToken];
-    } else if (this.character.tags.find((tag) => tag === 'time_tokens') && this.character.primaryToken == 0 && this.character.tokenValues[0] + this.token > 5) {
+    } else if (this.character.name == 'blinkblade' && this.character.tags.find((tag) => ['time_tokens', 'resonance_token'].indexOf(tag) >= 0) && this.character.primaryToken == 0 && this.character.tokenValues[0] + this.token > 5) {
       this.token = 5 - this.character.tokenValues[this.character.primaryToken];
     }
   }
@@ -275,15 +292,15 @@ export class CharacterComponent implements OnInit, OnDestroy {
   dragTokenEnd(value: number) {
     if (this.token != 0) {
       if (this.character.primaryToken < 0) {
-        gameManager.stateManager.before("setCharacterToken", gameManager.characterManager.characterName(this.character), '' + (this.character.token + this.token));
+        gameManager.stateManager.before("setCharacterToken", gameManager.characterManager.characterName(this.character), (this.character.token + this.token));
         this.character.token += this.token;
         this.token = 0;
         gameManager.stateManager.after();
       } else {
-        gameManager.stateManager.before("setCharacterTokenValue", gameManager.characterManager.characterName(this.character), '%data.characterToken.' + this.character.name + '.' + this.character.tokens[this.character.primaryToken] + '%', '' + (this.character.token + this.token));
+        gameManager.stateManager.before("setCharacterTokenValue", gameManager.characterManager.characterName(this.character), '%data.characterToken.' + this.character.name + '.' + this.character.tokens[this.character.primaryToken] + '%', (this.character.token + this.token));
         this.character.tokenValues[this.character.primaryToken] += this.token;
 
-        if (this.character.tags.find((tag) => tag === 'time_tokens') && this.character.primaryToken == 0 && this.character.tokenValues[0] > 5) {
+        if (this.character.name == 'blinkblade' && this.character.tags.find((tag) => ['time_tokens', 'resonance_token'].indexOf(tag) >= 0) && this.character.primaryToken == 0 && this.character.tokenValues[0] > 5) {
           this.character.tokenValues[0] = 5;
         }
 
@@ -309,6 +326,16 @@ export class CharacterComponent implements OnInit, OnDestroy {
     }
   }
 
+  addLoot(value: number) {
+    this.loot = value;
+    if (this.character.loot + this.loot >= 0) {
+      gameManager.stateManager.before("changeLoot", gameManager.characterManager.characterName(this.character), ghsValueSign(this.loot));
+      this.character.loot += this.loot;
+      gameManager.stateManager.after();
+    }
+    this.loot = 0;
+  }
+
   dragCancel(value: number) {
     this.health = 0;
     this.experience = 0;
@@ -325,6 +352,14 @@ export class CharacterComponent implements OnInit, OnDestroy {
       },
       positionStrategy: this.overlay.position().flexibleConnectedTo(this.characterName).withPositions(ghsDefaultDialogPositions())
     });
+  }
+
+  toggleDamageHP() {
+    if (this.compact) {
+      this.openCharacterSheet();
+    } else if (settingsManager.settings.damageHPToggle) {
+      settingsManager.toggle('damageHP');
+    }
   }
 
   openEntitiesMenu(event: any) {
@@ -358,7 +393,16 @@ export class CharacterComponent implements OnInit, OnDestroy {
     if (immunityIndex != -1) {
       this.character.immunities.splice(immunityIndex, 1);
     }
-    gameManager.entityManager.removeCondition(this.character, entityCondition, entityCondition.permanent);
+    gameManager.entityManager.removeCondition(this.character, this.character, entityCondition, entityCondition.permanent);
+    gameManager.stateManager.after();
+  }
+
+  removeMarker(marker: string) {
+    const markerChar = new Character(gameManager.getCharacterData(marker), 1);
+    const markerName = gameManager.characterManager.characterName(markerChar);
+    const characterIcon = markerChar.name;
+    gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.character, this.character, "removeMarker"), markerName, characterIcon);
+    this.character.markers = this.character.markers.filter((value) => value != marker);
     gameManager.stateManager.after();
   }
 
@@ -374,7 +418,7 @@ export class CharacterComponent implements OnInit, OnDestroy {
       this.character.itemsVisible = !this.character.itemsVisible;
       gameManager.stateManager.saveLocal();
       gameManager.uiChange.emit();
-    } else if (this.character.progress.items.length == 0) {
+    } else if ((this.character.progress.items.length == 0 || force) && !this.bb) {
       this.dialog.open(ItemsDialogComponent, {
         panelClass: ['dialog'],
         data: { edition: gameManager.game.edition, select: this.character, affordable: true }
@@ -467,13 +511,13 @@ export class CharacterComponent implements OnInit, OnDestroy {
   }
 
   removeShield() {
-    gameManager.stateManager.before("removeCharacterShield", gameManager.characterManager.characterName(this.character));
+    gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.character, this.character, "removeEntityShield"));
     this.character.shield = undefined;
     gameManager.stateManager.after();
   }
 
   removeShieldPersistent() {
-    gameManager.stateManager.before("removeCharacterShieldPersistent", gameManager.characterManager.characterName(this.character));
+    gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.character, this.character, "removeEntityShieldPersistent"));
     this.character.shieldPersistent = undefined;
     gameManager.stateManager.after();
   }
@@ -482,9 +526,10 @@ export class CharacterComponent implements OnInit, OnDestroy {
     let retaliate: Action[] = JSON.parse(JSON.stringify(this.character.retaliate));
     retaliate.splice(index, 1);
     if (retaliate.length > 0) {
-      gameManager.stateManager.before("setCharacterRetaliate", gameManager.characterManager.characterName(this.character), retaliate.map((action) => '%game.action.retaliate% ' + EntityValueFunction(action.value) + (action.subActions && action.subActions[0] && action.subActions[0].type == ActionType.range && EntityValueFunction(action.subActions[0].value) > 1 ? ' %game.action.range% ' + EntityValueFunction(action.subActions[0].value) + '' : '')).join(', '));
+      gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.character, this.character, "setEntityRetaliate"), retaliate.map((action) => '%game.action.retaliate% ' + EntityValueFunction(action.value) + (action.subActions && action.subActions[0] && action.subActions[0].type == ActionType.range && EntityValueFunction(action.subActions[0].value) > 1 ? ' %game.action.range% ' + EntityValueFunction(action.subActions[0].value) + '' : '')).join(', '));
+
     } else {
-      gameManager.stateManager.before("removeCharacterRetaliate", gameManager.characterManager.characterName(this.character));
+      gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.character, this.character, "removeEntityRetaliate"));
     }
     this.character.retaliate = retaliate;
     gameManager.stateManager.after();
@@ -494,9 +539,9 @@ export class CharacterComponent implements OnInit, OnDestroy {
     let retaliatePersistent: Action[] = JSON.parse(JSON.stringify(this.character.retaliatePersistent));
     retaliatePersistent.splice(index, 1);
     if (retaliatePersistent.length > 0) {
-      gameManager.stateManager.before("setCharacterRetaliatePersistent", gameManager.characterManager.characterName(this.character), retaliatePersistent.map((action) => '%game.action.retaliate% ' + EntityValueFunction(action.value) + (action.subActions && action.subActions[0] && action.subActions[0].type == ActionType.range && EntityValueFunction(action.subActions[0].value) > 1 ? ' %game.action.range% ' + EntityValueFunction(action.subActions[0].value) + '' : '')).join(', '));
+      gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.character, this.character, "setEntityRetaliatePersistent"), retaliatePersistent.map((action) => '%game.action.retaliate% ' + EntityValueFunction(action.value) + (action.subActions && action.subActions[0] && action.subActions[0].type == ActionType.range && EntityValueFunction(action.subActions[0].value) > 1 ? ' %game.action.range% ' + EntityValueFunction(action.subActions[0].value) + '' : '')).join(', '));
     } else {
-      gameManager.stateManager.before("removeCharacterRetaliatePersistent", gameManager.characterManager.characterName(this.character));
+      gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.character, this.character, "removeEntityRetaliatePersistent"));
     }
     this.character.retaliatePersistent = retaliatePersistent;
     gameManager.stateManager.after();
@@ -506,9 +551,27 @@ export class CharacterComponent implements OnInit, OnDestroy {
     gameManager.stateManager.before("removeSpecialTags", gameManager.characterManager.characterName(this.character), '%data.character.' + this.character.name + '.' + specialAction + '%');
     this.character.tags = this.character.tags.filter((specialTag) => specialTag != specialAction);
 
-    if (this.character.name == 'lightning' && this.character.edition == 'gh' && specialAction.indexOf('immune') != -1) {
+    if (this.character.name == 'lightning' && specialAction == 'careless-charge') {
       this.character.immunities = [];
     }
+
+    if (this.character.name == 'boneshaper') {
+      if (specialAction == 'solid-bones' || specialAction == 'unholy-prowess') {
+        this.character.summons.forEach((summon) => {
+          if (summon.name === 'shambling-skeleton') {
+            summon.maxHealth -= 1;
+            if (summon.health > summon.maxHealth) {
+              summon.health = summon.maxHealth;
+            }
+            if (specialAction == 'solid-bones') {
+              summon.movement -= 1;
+              summon.action = undefined;
+            }
+          }
+        })
+      }
+    }
+
     gameManager.stateManager.after();
   }
 }

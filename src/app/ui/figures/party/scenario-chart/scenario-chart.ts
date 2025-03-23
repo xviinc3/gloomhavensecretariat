@@ -4,7 +4,7 @@ import { AfterViewInit, Component, HostListener, Inject, OnInit, ViewEncapsulati
 import { Overlay } from "@angular/cdk/overlay";
 import L, { LatLngBoundsLiteral } from 'leaflet';
 import mermaid from 'mermaid';
-import { gameManager } from "src/app/game/businesslogic/GameManager";
+import { GameManager, gameManager } from "src/app/game/businesslogic/GameManager";
 import { settingsManager } from "src/app/game/businesslogic/SettingsManager";
 import { PartySheetDialogComponent } from "src/app/ui/figures/party/party-sheet-dialog";
 import { WorldMapComponent } from "src/app/ui/figures/party/world-map/world-map";
@@ -13,6 +13,7 @@ import { ScenarioChartPopupDialog } from "./popup/scenario-chart-popup";
 import { Subscription } from "rxjs";
 
 @Component({
+    standalone: false,
     selector: 'ghs-scenario-chart',
     templateUrl: 'scenario-chart.html',
     styleUrls: ['scenario-chart.scss'],
@@ -26,11 +27,15 @@ export class ScenarioChartDialogComponent implements OnInit, AfterViewInit {
     group: string | undefined;
     worldMap: boolean = false;
     campaignSheet: boolean = false;
+    campaignMode: boolean = true;
     chart!: L.Map;
+
+    gameManager: GameManager = gameManager;
 
     constructor(@Inject(DIALOG_DATA) public data: { edition: string, group: string | undefined }, private dialogRef: DialogRef, private dialog: Dialog, private overlay: Overlay) {
         this.edition = data.edition;
         this.group = data.group;
+        this.campaignMode = gameManager.game.party.campaignMode;
     }
 
     ngOnInit(): void {
@@ -85,7 +90,7 @@ export class ScenarioChartDialogComponent implements OnInit, AfterViewInit {
             this.worldMap = true;
         }
 
-        const scenarios = gameManager.scenarioManager.scenarioData(this.edition).filter((scenarioData) => scenarioData.group == this.group).sort(gameManager.scenarioManager.sortScenarios).sort((a, b) => {
+        const scenarios = gameManager.scenarioManager.scenarioData(this.edition, !this.campaignMode).filter((scenarioData) => scenarioData.group == this.group).sort(gameManager.scenarioManager.sortScenarios).sort((a, b) => {
             if (a.flowChartGroup == b.flowChartGroup) {
                 return 0;
             } else if (!a.flowChartGroup && b.flowChartGroup) {
@@ -101,14 +106,14 @@ export class ScenarioChartDialogComponent implements OnInit, AfterViewInit {
         scenarios.forEach((scenarioData) => {
 
             let state = ":::unplayed";
-            const success = gameManager.scenarioManager.isSuccess(scenarioData);
+            const success = this.campaignMode && gameManager.scenarioManager.isSuccess(scenarioData);
 
             if (success) {
                 state = ":::success";
             }
-            if (gameManager.scenarioManager.isBlocked(scenarioData)) {
+            if (this.campaignMode && gameManager.scenarioManager.isBlocked(scenarioData)) {
                 state = success ? ":::success-blocked" : ":::blocked";
-            } else if (gameManager.scenarioManager.isLocked(scenarioData)) {
+            } else if (this.campaignMode && gameManager.scenarioManager.isLocked(scenarioData)) {
                 state = success ? ":::success-locked" : ":::locked";
             }
 
@@ -145,8 +150,8 @@ export class ScenarioChartDialogComponent implements OnInit, AfterViewInit {
         let unlocks: { a: string, b: string }[] = [];
 
         scenarios.forEach((scenarioData) => {
-            const success = gameManager.game.party.campaignMode && gameManager.scenarioManager.isSuccess(scenarioData);
-            const visible: boolean = !gameManager.game.party.campaignMode || success;
+            const success = this.campaignMode && gameManager.scenarioManager.isSuccess(scenarioData);
+            const visible: boolean = !this.campaignMode || success;
             let links: string[] = [];
             let forcedLinks: string[] = [];
             if (visible) {
@@ -206,8 +211,8 @@ export class ScenarioChartDialogComponent implements OnInit, AfterViewInit {
 
             if (visible) {
                 gameManager.scenarioManager.getSections(scenarioData).filter((sectionData) => sectionData.unlocks && sectionData.unlocks.length).forEach((sectionData) => {
-                    const success = gameManager.game.party.campaignMode && gameManager.game.party.conclusions.find((scenarioModel) => scenarioModel.edition == sectionData.edition && scenarioModel.group == sectionData.group && scenarioModel.index == sectionData.index) != undefined;
-                    const visible: boolean = !gameManager.game.party.campaignMode || success;
+                    const success = this.campaignMode && gameManager.game.party.conclusions.find((scenarioModel) => scenarioModel.edition == sectionData.edition && scenarioModel.group == sectionData.group && scenarioModel.index == sectionData.index) != undefined;
+                    const visible: boolean = !this.campaignMode || success;
 
                     if (visible && sectionData.unlocks) {
                         sectionData.unlocks.forEach((index) => {
@@ -275,11 +280,14 @@ export class ScenarioChartDialogComponent implements OnInit, AfterViewInit {
         var parser = new DOMParser();
         var svgElement = parser.parseFromString(svg, "image/svg+xml").lastChild as SVGElement;
 
-        let subgraphs = svgElement.getElementsByClassName('clusters').length ? svgElement.getElementsByClassName('clusters')[0].getElementsByTagName("rect") : [];
+        let subgraphs: HTMLCollectionOf<SVGRectElement> | undefined[] = svgElement.getElementsByClassName('clusters').length ? svgElement.getElementsByClassName('clusters')[0].getElementsByTagName("rect") : [];
 
         for (let i = 0; i < subgraphs.length; i++) {
-            subgraphs[i].setAttribute("rx", "20");
-            subgraphs[i].setAttribute("ry", "20");
+            const subgraph = subgraphs[i];
+            if (subgraph) {
+                subgraph.setAttribute("rx", "20");
+                subgraph.setAttribute("ry", "20");
+            }
         }
 
         const viewBox = svgElement.getAttribute('viewBox') || "0 0 600 600";
@@ -341,7 +349,7 @@ export class ScenarioChartDialogComponent implements OnInit, AfterViewInit {
 
     @HostListener('document:keydown', ['$event'])
     keyboardShortcuts(event: KeyboardEvent) {
-        if (!this.campaignSheet) {
+        if (settingsManager.settings.keyboardShortcuts && !this.campaignSheet) {
             if (!event.ctrlKey && !event.shiftKey && event.key.toLowerCase() === 'p' && settingsManager.settings.partySheet) {
                 this.openCampaignSheet();
                 event.stopPropagation();
@@ -352,6 +360,16 @@ export class ScenarioChartDialogComponent implements OnInit, AfterViewInit {
                 event.preventDefault();
             }
         }
+    }
+
+    toggleCampaignMode(event: any, force: boolean = false) {
+        if (!this.campaignMode || force) {
+            this.campaignMode = !this.campaignMode;
+            this.updateMap();
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
     }
 
     openWorldMap() {

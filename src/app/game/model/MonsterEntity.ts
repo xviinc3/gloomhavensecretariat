@@ -1,6 +1,8 @@
+import { gameManager } from "../businesslogic/GameManager";
 import { Entity, EntityValueFunction } from "./Entity";
 import { Monster } from "./Monster";
 import { SummonState } from "./Summon";
+import { Action } from "./data/Action";
 import { ConditionName, EntityCondition, GameEntityConditionModel } from "./data/Condition";
 import { FigureError, FigureErrorType } from "./data/FigureError";
 import { MonsterStat } from "./data/MonsterStat";
@@ -26,17 +28,19 @@ export class MonsterEntity implements Entity {
   immunities: ConditionName[] = [];
   markers: string[] = [];
   tags: string[] = [];
+  shield: Action | undefined;
+  shieldPersistent: Action | undefined;
+  retaliate: Action[] = [];
+  retaliatePersistent: Action[] = [];
 
   constructor(number: number, type: MonsterType, monster: Monster) {
     this.number = number;
     this.type = type;
 
-    const stat = monster.stats.find((stat) => {
-      return stat.level == monster.level && stat.type == type;
-    });
+    const stat = gameManager.monsterManager.getStat(monster, type);
 
     if (!stat) {
-      this.stat = new MonsterStat(type, monster.level, 0, 0, 0, 0);
+      this.stat = new MonsterStat(type, monster.level);
       monster.errors = monster.errors || [];
       if (!monster.errors.find((figureError) => figureError.type == FigureErrorType.unknown) && !monster.errors.find((figureError) => figureError.type == FigureErrorType.stat)) {
         console.error("Could not find '" + type + "' stats for monster: " + monster.name + " level: " + monster.level);
@@ -55,7 +59,7 @@ export class MonsterEntity implements Entity {
   }
 
   toModel(): GameMonsterEntityModel {
-    return new GameMonsterEntityModel(this.number, this.marker, this.type, this.dead, this.summon, this.active, this.off, this.revealed, this.dormant, this.health, this.maxHealth, this.entityConditions.map((condition) => condition.toModel()), this.immunities, this.markers, this.tags || []);
+    return new GameMonsterEntityModel(this.number, this.marker, this.type, this.dead, this.summon, this.active, this.off, this.revealed, this.dormant, this.health, this.maxHealth, this.entityConditions.map((condition) => condition.toModel()), this.immunities, this.markers, this.tags || [], this.shield, this.shieldPersistent, this.retaliate, this.retaliatePersistent);
   }
 
   fromModel(model: GameMonsterEntityModel) {
@@ -79,6 +83,11 @@ export class MonsterEntity implements Entity {
     this.immunities = model.immunities || [];
     this.markers = model.markers || [];
     this.tags = model.tags || [];
+
+    this.shield = model.shield ? JSON.parse(model.shield) : undefined;
+    this.shieldPersistent = model.shieldPersistent ? JSON.parse(model.shieldPersistent) : undefined;
+    this.retaliate = (model.retaliate || []).map((value) => JSON.parse(value));
+    this.retaliatePersistent = (model.retaliatePersistent || []).map((value) => JSON.parse(value));
   }
 
 
@@ -100,6 +109,10 @@ export class GameMonsterEntityModel {
   immunities: ConditionName[];
   markers: string[];
   tags: string[];
+  shield: string;
+  shieldPersistent: string;
+  retaliate: string[];
+  retaliatePersistent: string[];
 
   constructor(number: number,
     marker: string,
@@ -115,7 +128,11 @@ export class GameMonsterEntityModel {
     entityConditions: GameEntityConditionModel[],
     immunities: ConditionName[],
     markers: string[],
-    tags: string[]) {
+    tags: string[],
+    shield: Action | undefined,
+    shieldPersistent: Action | undefined,
+    retaliate: Action[],
+    retaliatePersistent: Action[]) {
     this.number = number;
     this.marker = marker;
     this.type = type;
@@ -131,5 +148,9 @@ export class GameMonsterEntityModel {
     this.immunities = JSON.parse(JSON.stringify(immunities));
     this.markers = JSON.parse(JSON.stringify(markers));
     this.tags = JSON.parse(JSON.stringify(tags));
+    this.shield = shield ? JSON.stringify(shield) : "";
+    this.shieldPersistent = shieldPersistent ? JSON.stringify(shieldPersistent) : "";
+    this.retaliate = retaliate.map((action) => JSON.stringify(action));
+    this.retaliatePersistent = retaliatePersistent.map((action) => JSON.stringify(action));
   }
 }

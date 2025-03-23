@@ -13,8 +13,11 @@ import { ScenarioSetupComponent } from "../scenario-setup/scenario-setup";
 import { SectionDialogComponent } from "../section/section-dialog";
 import { ScenarioSummaryComponent } from "../summary/scenario-summary";
 import { ScenarioTreasuresDialogComponent } from "../treasures/treasures-dialog";
+import { ScenarioRulesDialogComponent } from "../../scenario-rules/dialog/scenario-rules-dialog";
+import { FavorsComponent } from "src/app/ui/figures/character/event-effects/favors/favors";
 
 @Component({
+	standalone: false,
     selector: 'ghs-scenario-dialog',
     templateUrl: './scenario-dialog.html',
     styleUrls: ['./scenario-dialog.scss']
@@ -40,7 +43,7 @@ export class ScenarioDialogComponent {
     finishScenario(success: boolean) {
         this.close();
         const conclusions = gameManager.scenarioManager.availableSections(true).filter((sectionData) =>
-            sectionData.edition == this.scenario.edition && sectionData.parent == this.scenario.index && sectionData.group == this.scenario.group && sectionData.conclusion);
+            sectionData.edition == this.scenario.edition && sectionData.parent == this.scenario.index && sectionData.group == this.scenario.group && sectionData.conclusion && gameManager.scenarioManager.getRequirements(sectionData).length == 0);
         if (conclusions.length < 2 || !success) {
             this.dialog.open(ScenarioSummaryComponent, {
                 panelClass: ['dialog'],
@@ -55,7 +58,7 @@ export class ScenarioDialogComponent {
                 panelClass: ['dialog'],
                 data: { conclusions: conclusions, parent: this.scenario }
             }).closed.subscribe({
-                next: (conclusion) => {
+                next: (conclusion: unknown) => {
                     if (conclusion) {
                         this.dialog.open(ScenarioSummaryComponent, {
                             panelClass: ['dialog'],
@@ -86,6 +89,11 @@ export class ScenarioDialogComponent {
         gameManager.stateManager.after(1000);
     }
 
+    showScenarioRules() {
+        this.dialog.open(ScenarioRulesDialogComponent, { panelClass: ['dialog'] });
+        this.close();
+    }
+
     openTreasures(event: any) {
         this.dialog.open(ScenarioTreasuresDialogComponent,
             {
@@ -106,7 +114,7 @@ export class ScenarioDialogComponent {
             console.error("Could not find edition data!");
             return;
         }
-        gameManager.stateManager.before(roomData.marker ? "openRoomMarker" : "openRoom", this.scenario.index, "data.scenario." + this.scenario.name, '' + roomData.ref, roomData.marker || '');
+        gameManager.stateManager.before(roomData.marker ? "openRoomMarker" : "openRoom", this.scenario.index, gameManager.scenarioManager.scenarioTitle(this.scenario), roomData.ref, roomData.marker || '');
         gameManager.scenarioManager.openRoom(roomData, this.scenario, false);
         gameManager.stateManager.after();
         this.setupComponent && this.setupComponent.updateMonster();
@@ -118,12 +126,18 @@ export class ScenarioDialogComponent {
                 panelClass: ['dialog'],
                 data: sectionData
             }).closed.subscribe({
-                next: (added) => {
+                next: (added: unknown) => {
                     if (added) {
                         this.close();
                     }
                 }
             });
+    }
+
+    openFavors() {
+        this.dialog.open(FavorsComponent, {
+            panelClass: ['dialog']
+        })
     }
 
     close() {

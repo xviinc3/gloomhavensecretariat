@@ -1,11 +1,12 @@
 import { ghsShuffleArray } from "src/app/ui/helper/Static";
 import { Character } from "../model/Character";
+import { SelectResourceResult } from "../model/data/BuildingData";
 import { Condition, ConditionName } from "../model/data/Condition";
+import { CountIdentifier, Identifier } from "../model/data/Identifier";
 import { ItemData } from "../model/data/ItemData";
+import { appliableLootTypes, fullLootDeck, Loot, LootDeck, LootDeckConfig, LootType } from "../model/data/Loot";
 import { TreasureData, TreasureReward, TreasureRewardType } from "../model/data/RoomData";
 import { Game } from "../model/Game";
-import { CountIdentifier, Identifier } from "../model/data/Identifier";
-import { appliableLootTypes, fullLootDeck, Loot, LootDeck, LootDeckConfig, LootType } from "../model/data/Loot";
 import { GameScenarioModel } from "../model/Scenario";
 import { gameManager } from "./GameManager";
 import { settingsManager } from "./SettingsManager";
@@ -17,7 +18,7 @@ export class LootManager {
     this.game = game;
   }
 
-  drawCard(deck: LootDeck, character: Character | undefined): ItemData | undefined {
+  drawCard(deck: LootDeck, character: Character | undefined = undefined): ItemData | undefined {
     let result: ItemData | undefined = undefined;
     deck.current++;
     if (deck.current >= deck.cards.length) {
@@ -51,6 +52,13 @@ export class LootManager {
     }
 
     character.lootCards.push(index);
+
+    if (gameManager.trialsManager.apply && gameManager.trialsManager.trialsEnabled) {
+      const trialCharacter = this.game.figures.find((figure) => figure instanceof Character && figure != character && figure.progress.trial && figure.progress.trial.edition == 'fh' && figure.progress.trial.name == '351') as Character;
+      if (trialCharacter) {
+        gameManager.entityManager.changeHealth(trialCharacter, trialCharacter, - Math.ceil(this.game.level / 3));
+      }
+    }
 
     return result;
   }
@@ -90,9 +98,17 @@ export class LootManager {
     let rewardResults: string[][] = [];
     const editionData = gameManager.editionData.find((editionData) => editionData.edition == edition);
     if (editionData && editionData.treasures) {
-      index = index - (editionData.treasureOffset || 0);
+      index = index < 0 ? index : index - (editionData.treasureOffset || 0);
       if (index >= 0 && index < editionData.treasures.length) {
         const tresureString = editionData.treasures[index];
+        const treasure = new TreasureData(tresureString, index);
+        if (treasure.rewards) {
+          treasure.rewards.forEach((reward) => {
+            rewardResults.push(this.applyTreasureReward(character, reward, edition));
+          });
+        }
+      } else if (index < 0 && editionData.treasures.length + index + 1 > 0) {
+        const tresureString = editionData.treasures[editionData.treasures.length + index + 1];
         const treasure = new TreasureData(tresureString, index);
         if (treasure.rewards) {
           treasure.rewards.forEach((reward) => {
@@ -168,7 +184,7 @@ export class LootManager {
         if (typeof reward.value === 'string') {
           reward.value.split('+').forEach((condition) => {
             if (!gameManager.entityManager.hasCondition(character, new Condition(condition as ConditionName))) {
-              gameManager.entityManager.addCondition(character, new Condition(condition as ConditionName), character.active, character.off);
+              gameManager.entityManager.addCondition(character, character, new Condition(condition as ConditionName));
             }
           })
         }
@@ -210,10 +226,7 @@ export class LootManager {
         if (reward.value && typeof reward.value === 'string' && reward.value.split('-').length > 1) {
           const section = reward.value.split('-')[0];
           const week = gameManager.game.party.weeks + (+reward.value.split('-')[1]);
-          if (!gameManager.game.party.weekSections[week]) {
-            gameManager.game.party.weekSections[week] = [];
-          }
-          gameManager.game.party.weekSections[week]?.push(section);
+          gameManager.game.party.weekSections[week] = [...(gameManager.game.party.weekSections[week] || []), section];
         }
         break;
       case TreasureRewardType.campaignSticker:
@@ -230,7 +243,7 @@ export class LootManager {
         if (typeof reward.value === 'number') {
           gameManager.game.lootDeck.active = true;
           for (let i = 0; i < reward.value; i++) {
-            this.drawCard(gameManager.game.lootDeck, character);
+            this.drawCard(gameManager.game.lootDeck);
           }
           gameManager.uiChange.emit();
         }
@@ -248,7 +261,7 @@ export class LootManager {
           let scenarioData = gameManager.scenarioManager.drawRandomScenario(edition);
           if (scenarioData) {
             gameManager.game.party.manualScenarios.push(new GameScenarioModel('' + scenarioData.index, scenarioData.edition, scenarioData.group));
-            result.push(scenarioData.index, 'data.scenario.' + scenarioData.name);
+            result.push(scenarioData.index, gameManager.scenarioManager.scenarioTitle(scenarioData));
           }
         }
         break;
@@ -257,7 +270,7 @@ export class LootManager {
           let sectionData = gameManager.scenarioManager.drawRandomScenarioSection(edition);
           if (sectionData) {
             gameManager.game.party.conclusions.push(new GameScenarioModel('' + sectionData.index, sectionData.edition, sectionData.group));
-            result.push(sectionData.index, 'data.section.' + sectionData.name, sectionData.unlocks ? sectionData.unlocks.map((unlock) => '%data.scenarioNumber:' + unlock + '%').join(', ') : '');
+            result.push(sectionData.index, gameManager.scenarioManager.scenarioTitle(sectionData, true), sectionData.unlocks ? sectionData.unlocks.map((unlock) => '%data.scenarioNumber:' + unlock + '%').join(', ') : '');
           }
         }
         break;
@@ -307,7 +320,7 @@ export class LootManager {
     return value;
   }
 
-  draw(): void {
+  firstRound(): void {
     this.shuffleDeck(this.game.lootDeck);
   }
 
@@ -368,6 +381,32 @@ export class LootManager {
       return "%game.loot.player.4% +" + loot.value4P + "/%game.loot.player.2-3% +" + loot.value2P;
     } else {
       return "%game.loot.player.4% +" + loot.value4P + "/%game.loot.player.3% +" + loot.value3P + "/%game.loot.player.2% +" + loot.value2P;
+    }
+  }
+
+  applySelectResources(result: SelectResourceResult) {
+    result.characters.forEach((character, index) => {
+      if (result.characterSpent[index].gold) {
+        character.progress.gold -= result.characterSpent[index].gold;
+      }
+      if (result.characterSpent[index].hide) {
+        character.progress.loot[LootType.hide] = (character.progress.loot[LootType.hide] || 0) - (result.characterSpent[index].hide);
+      }
+      if (result.characterSpent[index].lumber) {
+        character.progress.loot[LootType.lumber] = (character.progress.loot[LootType.lumber] || 0) - (result.characterSpent[index].lumber);
+      }
+      if (result.characterSpent[index].metal) {
+        character.progress.loot[LootType.metal] = (character.progress.loot[LootType.metal] || 0) - (result.characterSpent[index].metal);
+      }
+    })
+    if (result.fhSupportSpent.hide) {
+      gameManager.game.party.loot[LootType.hide] = (gameManager.game.party.loot[LootType.hide] || 0) - (result.fhSupportSpent.hide);
+    }
+    if (result.fhSupportSpent.lumber) {
+      gameManager.game.party.loot[LootType.lumber] = (gameManager.game.party.loot[LootType.lumber] || 0) - (result.fhSupportSpent.lumber);
+    }
+    if (result.fhSupportSpent.metal) {
+      gameManager.game.party.loot[LootType.metal] = (gameManager.game.party.loot[LootType.metal] || 0) - (result.fhSupportSpent.metal);
     }
   }
 

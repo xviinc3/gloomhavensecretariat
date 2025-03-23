@@ -83,12 +83,17 @@
                 "value": "wound"
               },
               {
-                "type": "condition",
-                "value": "wound",
+                "type": "required",
                 "effects": [
                   {
-                    "type": "specialTarget",
-                    "value": "self"
+                    "type": "condition",
+                    "value": "wound",
+                    "effects": [
+                      {
+                        "type": "specialTarget",
+                        "value": "self"
+                      }
+                    ]
                   }
                 ]
               }
@@ -166,7 +171,7 @@
             "effects": [
               {
                 "type": "custom",
-                "value": "Add +1 %game.action.attack% for each condition you have"
+                "value": "%data.custom.perks.core.1%"
               }
             ]
           }
@@ -285,21 +290,21 @@
     {
       "type": "custom",
       "count": 1,
-      "custom": "At the start of each scenario you may perform \"%game.condition.strengthen%, %game.condition.wound%, Self\" or \"%game.condition.ward%, %game.condition.immobilize%, Self\""
+      "custom": "%data.custom.perks.core.2%"
     },
     {
       "type": "custom",
       "count": 1,
-      "custom": "Once each scenario, avoid an Overdrive exhaustion check"
+      "custom": "%data.custom.perks.core.3%"
     },
     {
       "type": "custom",
       "count": 1,
-      "custom": "Once each scenario, during your turn, remove any number of negative conditions you have"
+      "custom": "%data.custom.perks.core.4%"
     }
   ],
   "masteries": [
-    "Kill the last enemy to die in the scenario and finish with nine ability cards in your lost pile",
-    "Trigger an ongoing effect on Chaotic Recursion six or more times in one round"
+    "%data.custom.perks.core.5%",
+    "%data.custom.perks.core.6%"
   ]
 }

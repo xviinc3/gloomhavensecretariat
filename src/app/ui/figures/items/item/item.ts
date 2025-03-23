@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { Subscription } from "rxjs";
 import { GameManager, gameManager } from "src/app/game/businesslogic/GameManager";
 import { SettingsManager, settingsManager } from "src/app/game/businesslogic/SettingsManager";
 import { Action, ActionType } from "src/app/game/model/data/Action";
@@ -6,11 +7,12 @@ import { Identifier } from "src/app/game/model/data/Identifier";
 import { ItemData } from "src/app/game/model/data/ItemData";
 
 @Component({
+    standalone: false,
     selector: 'ghs-item',
     templateUrl: './item.html',
     styleUrls: ['./item.scss']
 })
-export class ItemComponent implements OnInit, AfterViewInit {
+export class ItemComponent implements OnInit, AfterViewInit, OnDestroy {
 
     @ViewChild('container') containerElement!: ElementRef;
     @Input() item!: ItemData | undefined;
@@ -29,10 +31,13 @@ export class ItemComponent implements OnInit, AfterViewInit {
     @Output() clickedSlotBack = new EventEmitter<number>();
     @Output() clickedPersistent = new EventEmitter<boolean>();
     fhStyle: boolean = false;
+    bb: boolean = false;
     craft: boolean = false;
     edition: string = "";
     slots: Action[] = [];
     slotsBack: Action[] = [];
+    idNumber: boolean = false;
+    usable: boolean = true;
 
     settingsManager: SettingsManager = settingsManager;
     gameManager: GameManager = gameManager;
@@ -40,7 +45,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
 
     ngOnInit(): void {
         if (!this.item && this.identifier) {
-            this.item = gameManager.itemManager.getItem(+this.identifier.name, this.identifier.edition, true);
+            this.item = gameManager.itemManager.getItem(this.identifier.name, this.identifier.edition, true);
         }
 
         if (this.item) {
@@ -50,6 +55,10 @@ export class ItemComponent implements OnInit, AfterViewInit {
 
             if (this.item.edition == 'fh') {
                 this.fhStyle = true;
+            }
+
+            if (this.item.edition == 'bb') {
+                this.bb = true;
             }
 
             if (this.item.resources && Object.values(this.item.resources).some((value) => value) || this.item.requiredItems && this.item.requiredItems.length > 0 || this.item.resourcesAny && this.item.resourcesAny.length > 0) {
@@ -71,13 +80,27 @@ export class ItemComponent implements OnInit, AfterViewInit {
                 action.small = true;
                 this.item.actions.push(action);
             }
+
+            this.idNumber = typeof this.item.id === 'number';
+            this.usable = gameManager.itemManager.itemUsable(this.item);
         }
 
-        gameManager.uiChange.subscribe({
+        this.uiChangeSubscription = gameManager.uiChange.subscribe({
             next: () => {
-                this.fontsize = (this.containerElement.nativeElement.offsetWidth * 0.072) + 'px';;
+                this.fontsize = (this.containerElement.nativeElement.offsetWidth * 0.072) + 'px';
+                if (this.item) {
+                    this.usable = gameManager.itemManager.itemUsable(this.item);
+                }
             }
         })
+    }
+
+    uiChangeSubscription: Subscription | undefined;
+
+    ngOnDestroy(): void {
+        if (this.uiChangeSubscription) {
+            this.uiChangeSubscription.unsubscribe();
+        }
     }
 
     ngAfterViewInit(): void {

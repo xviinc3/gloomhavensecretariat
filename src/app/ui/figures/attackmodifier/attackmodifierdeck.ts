@@ -1,23 +1,23 @@
 import { Dialog } from '@angular/cdk/dialog';
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { gameManager, GameManager } from 'src/app/game/businesslogic/GameManager';
 import { SettingsManager, settingsManager } from 'src/app/game/businesslogic/SettingsManager';
-import { AttackModifier, AttackModifierDeck, AttackModifierType } from 'src/app/game/model/data/AttackModifier';
 import { Character } from 'src/app/game/model/Character';
+import { AttackModifier, AttackModifierDeck, AttackModifierType } from 'src/app/game/model/data/AttackModifier';
 import { GameState } from 'src/app/game/model/Game';
+import { CharacterBattleGoalsDialog } from '../battlegoal/dialog/battlegoal-dialog';
 import { AttackModifierDeckDialogComponent } from './attackmodifierdeck-dialog';
 import { AttackModifierDeckFullscreenComponent } from './attackmodifierdeck-fullscreen';
-import { Subscription } from 'rxjs';
-import { CharacterBattleGoalsDialog } from '../battlegoal/dialog/battlegoal-dialog';
 
 export class AttackModiferDeckChange {
 
   deck: AttackModifierDeck;
   type: string;
-  values: string[];
+  values: (string | number | boolean)[];
 
   constructor(deck: AttackModifierDeck,
-    type: string, ...values: string[]) {
+    type: string, ...values: (string | number | boolean)[]) {
     this.deck = deck;
     this.type = type;
     this.values = values;
@@ -26,6 +26,7 @@ export class AttackModiferDeckChange {
 }
 
 @Component({
+  standalone: false,
   selector: 'ghs-attackmodifier-deck',
   templateUrl: './attackmodifierdeck.html',
   styleUrls: ['./attackmodifierdeck.scss']
@@ -72,6 +73,10 @@ export class AttackModifierDeckComponent implements OnInit, OnDestroy, OnChanges
   compact: boolean = false;
   initServer: boolean = false;
 
+  bbCurrent: number = 0;
+  bbRows: number = 0;
+  activeAMs: AttackModifier[] = [];
+
   @ViewChild('drawCard') drawCard!: ElementRef;
 
   constructor(public element: ElementRef, private dialog: Dialog) {
@@ -96,6 +101,11 @@ export class AttackModifierDeckComponent implements OnInit, OnDestroy, OnChanges
     this.current = this.deck.current;
     this.lastVisible = this.deck.lastVisible;
     this.compact = !this.drawing && this.fullscreen && settingsManager.settings.automaticAttackModifierFullscreen && settingsManager.settings.portraitMode && (window.innerWidth < 800 || window.innerHeight < 400);
+
+    if (this.deck.bb) {
+      this.bbCurrent = Math.ceil((this.deck.current + 1) / 3);
+      this.bbRows = Math.ceil(this.deck.cards.length / 3);
+    }
 
     if (!this.init) {
       this.drawTimeout = setTimeout(() => {
@@ -177,10 +187,17 @@ export class AttackModifierDeckComponent implements OnInit, OnDestroy, OnChanges
       if (this.current < this.deck.current) {
         this.queue = Math.max(0, this.deck.current - this.current);
         if (!this.queueTimeout) {
-          this.queue--;
-          this.current++;
-          this.lastVisible = this.deck.lastVisible;
-          this.drawQueue();
+          if (this.deck.bb) {
+            this.queue = 0;
+            this.current = this.deck.current;
+            this.lastVisible = this.deck.lastVisible;
+            this.drawQueue();
+          } else {
+            this.queue--;
+            this.current++;
+            this.lastVisible = this.deck.lastVisible;
+            this.drawQueue();
+          }
         }
       } else if (!this.queueTimeout || this.deck.current < this.current + this.queue) {
         if (this.queueTimeout) {
@@ -204,7 +221,14 @@ export class AttackModifierDeckComponent implements OnInit, OnDestroy, OnChanges
       this.newStyle = true;
     }
 
+    if (this.deck.bb) {
+      this.bbCurrent = Math.ceil((this.current + 1) / 3);
+      this.bbRows = Math.ceil(this.deck.cards.length / 3);
+    }
+
     this.compact = settingsManager.settings.automaticAttackModifierFullscreen && settingsManager.settings.portraitMode && (window.innerWidth < 800 || window.innerHeight < 400);
+
+    this.activeAMs = this.deck.cards.filter((am, i) => am.active && i < this.deck.lastVisible && this.deck.discarded.indexOf(i) == -1);
   }
 
   drawQueue() {
@@ -291,10 +315,10 @@ export class AttackModifierDeckComponent implements OnInit, OnDestroy, OnChanges
   clickCard(index: number, event: any) {
     if (!this.drawing || index > this.current) {
       const am: AttackModifier = this.deck.cards[index];
-      if (am.active && this.deck.disgarded.indexOf(index) == -1) {
-        this.before.emit(new AttackModiferDeckChange(this.deck, "disgard", "" + index));
-        this.deck.disgarded.push(index);
-        this.after.emit(new AttackModiferDeckChange(this.deck, "disgard", "" + index));
+      if (am.active && this.deck.discarded.indexOf(index) == -1) {
+        this.before.emit(new AttackModiferDeckChange(this.deck, "discard", index));
+        this.deck.discarded.push(index);
+        this.after.emit(new AttackModiferDeckChange(this.deck, "discard", index));
       } else {
         this.open(event);
       }

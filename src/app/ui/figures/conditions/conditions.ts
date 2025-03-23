@@ -1,21 +1,21 @@
-import { Component, EventEmitter, HostListener, Input, OnInit, Output } from "@angular/core";
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from "@angular/core";
+import { Subscription } from "rxjs";
 import { GameManager, gameManager } from "src/app/game/businesslogic/GameManager";
 import { SettingsManager, settingsManager } from "src/app/game/businesslogic/SettingsManager";
-import { Character } from "src/app/game/model/Character";
 import { Entity } from "src/app/game/model/Entity";
 import { Figure } from "src/app/game/model/Figure";
-import { Monster } from "src/app/game/model/Monster";
 import { MonsterEntity } from "src/app/game/model/MonsterEntity";
 import { ObjectiveContainer } from "src/app/game/model/ObjectiveContainer";
 import { Condition, ConditionName, ConditionType, EntityCondition, EntityConditionState } from "src/app/game/model/data/Condition";
 import { MonsterType } from "src/app/game/model/data/MonsterType";
 
 @Component({
+  standalone: false,
   selector: 'ghs-conditions',
   templateUrl: './conditions.html',
   styleUrls: ['./conditions.scss']
 })
-export class ConditionsComponent implements OnInit {
+export class ConditionsComponent implements OnInit, OnDestroy {
 
   @Input() entityConditions!: EntityCondition[];
   @Input() immunities!: ConditionName[];
@@ -42,14 +42,6 @@ export class ConditionsComponent implements OnInit {
   timeout: any;
   numberStore: number = 0;
 
-  constructor() {
-    gameManager.uiChange.subscribe({
-      next: () => {
-        this.initializeConditions();
-      }
-    })
-  }
-
   ngOnInit(): void {
     this.initializeConditions();
     if (this.entities) {
@@ -58,24 +50,37 @@ export class ConditionsComponent implements OnInit {
         this.monsterType = types[0];
       }
     }
+    this.uiChangeSubscription = gameManager.uiChange.subscribe({
+      next: () => {
+        this.initializeConditions();
+      }
+    })
+  }
+
+  uiChangeSubscription: Subscription | undefined;
+
+  ngOnDestroy(): void {
+    if (this.uiChangeSubscription) {
+      this.uiChangeSubscription.unsubscribe();
+    }
   }
 
   @HostListener('document:keydown', ['$event'])
   onKeyPress(event: KeyboardEvent) {
-    if (event.key in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
+    if (settingsManager.settings.keyboardShortcuts && event.key in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
       const keyNumber = +event.key;
       if (this.timeout) {
         clearTimeout(this.timeout);
         const combined: number = this.numberStore * 10 + keyNumber;
         this.numberStore = combined;
         this.selectCondition();
-      } else if (keyNumber * 10 <= this.conditions.length + 2) {
+      } else if (keyNumber > 0 && keyNumber * 10 <= this.conditions.length + 3) {
         this.numberStore = keyNumber;
         this.timeout = setTimeout(() => {
           this.selectCondition();
         }, 1000);
       } else {
-        this.numberStore = keyNumber;
+        this.numberStore = keyNumber == 0 ? 10 : keyNumber;
         this.selectCondition();
       }
 
@@ -146,16 +151,12 @@ export class ConditionsComponent implements OnInit {
       immune = this.immunities.indexOf(conditionName) != -1;
     }
 
-    if (!immune && this.figure instanceof Monster) {
-      if (!(this.entity instanceof MonsterEntity)) {
-        immune = this.entities.every((entity) => this.figure instanceof Monster && entity instanceof MonsterEntity && gameManager.entityManager.isImmune(entity, this.figure, conditionName, true));
-      } else {
+    if (!immune) {
+      if (this.entity) {
         immune = gameManager.entityManager.isImmune(this.entity, this.figure, conditionName, true);
+      } else if (this.entities) {
+        immune = this.entities.every((entity) => gameManager.entityManager.isImmune(entity, this.figure, conditionName, true));
       }
-    }
-
-    if (!immune && this.figure instanceof Character) {
-      immune = gameManager.entityManager.isImmune(this.entity, this.figure, conditionName, true);
     }
 
     return immune;

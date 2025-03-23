@@ -12,9 +12,11 @@ import { ItemsDialogComponent } from "src/app/ui/figures/items/dialog/items-dial
 import { PartySheetDialogComponent } from "src/app/ui/figures/party/party-sheet-dialog";
 import { WorldMapComponent } from "src/app/ui/figures/party/world-map/world-map";
 import { ScenarioChartDialogComponent } from "../../../figures/party/scenario-chart/scenario-chart";
+import { PartyResourcesDialogComponent } from "src/app/ui/figures/party/resources/resources";
 
 
 @Component({
+	standalone: false,
     selector: 'ghs-campaign-menu',
     templateUrl: 'campaign.html',
     styleUrls: ['../menu.scss', 'campaign.scss']
@@ -31,6 +33,7 @@ export class CampaignMenuComponent implements OnInit {
     editionConditions: ConditionName[] = [];
     characters: Character[] = [];
     confirmPartyDelete: number = -1;
+    confirmResetCampaign: boolean = false;
     worldMap: boolean = false;
 
     constructor(private dialog: Dialog) { }
@@ -66,11 +69,11 @@ export class CampaignMenuComponent implements OnInit {
 
     setEdition(edition: string | undefined = undefined) {
         gameManager.stateManager.before(edition ? "setEdition" : "setEditionAll", edition ? "data.edition." + edition : '');
-        if (settingsManager.settings.automaticTheme) {
-            if (edition == 'fh') {
-                settingsManager.set('fhStyle', true);
-            } else if (edition) {
-                settingsManager.set('fhStyle', false);
+        if (settingsManager.settings.automaticTheme && settingsManager.settings.theme != 'modern') {
+            if (edition == 'fh' || edition == 'bb') {
+                settingsManager.set('theme', edition);
+            } else {
+                settingsManager.set('theme', 'default');
             }
         }
         gameManager.game.edition = edition;
@@ -158,6 +161,12 @@ export class CampaignMenuComponent implements OnInit {
         this.close.emit();
     }
 
+    openResources() {
+        this.dialog.open(PartyResourcesDialogComponent, {
+            panelClass: ['dialog']
+        });
+        this.close.emit();
+    }
 
     addParty() {
         let party = new Party();
@@ -207,5 +216,20 @@ export class CampaignMenuComponent implements OnInit {
             gameManager.game.party.name = event.target.value;
             gameManager.stateManager.after();
         }
+    }
+
+    resetCampaign() {
+        if (!this.confirmResetCampaign) {
+            this.confirmResetCampaign = true;
+        } else {
+            gameManager.stateManager.before("resetCampaign");
+            gameManager.resetCampaign();
+            gameManager.stateManager.after();
+            this.close.emit();
+        }
+    }
+
+    cancelResetCampaign() {
+        this.confirmResetCampaign = false;
     }
 }

@@ -2,11 +2,12 @@ import { registerLocaleData } from "@angular/common";
 import localeDe from '@angular/common/locales/de';
 import localeFr from '@angular/common/locales/fr';
 import localeKo from '@angular/common/locales/ko';
+import { Character } from "../model/Character";
 import { Settings } from "../model/Settings";
 import { BuildingData } from "../model/data/BuildingData";
 import { EditionData } from "../model/data/EditionData";
 import { Spoilable } from "../model/data/Spoilable";
-import { debugManager } from "./DebugManager";
+import { DebugManager, debugManager } from "./DebugManager";
 import { gameManager } from "./GameManager";
 import { storageManager } from "./StorageManager";
 
@@ -17,13 +18,15 @@ declare global {
 export class SettingsManager {
 
   defaultLocale: string = 'en';
-  defaultEditions: string[] = ["gh", "fh", "jotl", "fc", "cs", "toa", "solo"];
-  defaultEditionDataUrls: string[] = ["./assets/data/gh.json", "./assets/data/fh.json", "./assets/data/jotl.json", "./assets/data/fc.json", "./assets/data/cs.json", "./assets/data/toa.json", "./assets/data/solo.json", "./assets/data/fh-crossover.json", "./assets/data/gh-envx.json", "./assets/data/toa-envv.json", "./assets/data/sc.json", "./assets/data/gh-solo-items.json", "./assets/data/sox.json", "./assets/data/ir.json", "./assets/data/bas.json", "./assets/data/cc.json", "./assets/data/r100kc.json"];
+  defaultEditions: string[] = ["gh", "fh", "jotl", "fc", "cs", "toa", "bb", "solo"];
+
+  defaultEditionDataUrls: string[] = ["./assets/data/gh.json", "./assets/data/fh.json", "./assets/data/jotl.json", "./assets/data/fc.json", "./assets/data/cs.json", "./assets/data/toa.json", "./assets/data/bb.json", "./assets/data/solo.json", "./assets/data/fh-crossover.json", "./assets/data/gh-envx.json", "./assets/data/toa-envv.json", "./assets/data/sc.json", "./assets/data/gh-solo-items.json", "./assets/data/sox.json", "./assets/data/bas.json", "./assets/data/cc.json", "./assets/data/gh2e.json", "./assets/data/ir.json", "./assets/data/r100kc.json", "./assets/data/sits.json"];
 
   settings: Settings = new Settings();
   label: any = {};
-  locales: string[] = ["en", "de", "fr", "ko"];
+  locales: string[] = ["en", "de", "fr", "ko", "es", "zh_Hans", "it"];
   developent: boolean = false;
+  debugManager: DebugManager = debugManager;
 
 
   async init(developent: boolean) {
@@ -49,7 +52,7 @@ export class SettingsManager {
       } else {
         loadDefault = true;
       }
-    } catch {
+    } catch (e) {
       loadDefault = true;
     }
 
@@ -64,7 +67,7 @@ export class SettingsManager {
           }).then((value: Settings) => {
             this.setSettings(Object.assign(new Settings(), value));
           });
-      } catch {
+      } catch (e) {
         this.setSettings(new Settings());
       }
     }
@@ -161,9 +164,11 @@ export class SettingsManager {
     this.loadSettings();
   }
 
-  async set(setting: string, value: any) {
+  async set(setting: string, value: any, apply: boolean = true) {
     this.settings[setting] = value;
-    await this.apply(setting, value);
+    if (apply) {
+      await this.apply(setting, value);
+    }
     this.storeSettings();
   }
 
@@ -174,9 +179,9 @@ export class SettingsManager {
   async apply(setting: string, value: any) {
     if (setting === 'fullscreen') {
       if (value) {
-        document.body.requestFullscreen();
+        document.body.requestFullscreen && document.body.requestFullscreen();
       } else {
-        document.exitFullscreen();
+        document.exitFullscreen && document.exitFullscreen();
       }
     } else if (setting === 'locale') {
       await this.updateLocale(value as string);
@@ -192,12 +197,19 @@ export class SettingsManager {
       } else {
         document.body.classList.remove('portrait-mode');
       }
-    } else if (setting === 'fhStyle' && this.settings.automaticTheme) {
-      if (value && this.settings.theme == 'default') {
-        this.settings.theme = 'fh';
-      } else if (!value && this.settings.theme == 'fh') {
-        this.settings.theme = 'default';
+    } else if (setting === 'theme' && this.settings.automaticTheme) {
+      if (value == 'fh' || value == 'bb') {
+        this.settings.fhStyle = true;
+      } else {
+        this.settings.fhStyle = false;
       }
+    } else if (setting === 'bbAm') {
+      gameManager.game.monsterAttackModifierDeck.bb = value || false;
+      gameManager.game.figures.forEach((figure) => {
+        if (figure instanceof Character) {
+          figure.attackModifierDeck.bb = value || false;
+        }
+      })
     }
   }
 
@@ -328,19 +340,19 @@ export class SettingsManager {
     gameManager.editionData = [];
   }
 
-  async loadEditionData(url: string, force: boolean = false): Promise<boolean> {
+  async loadEditionData(url: string, force: boolean = false): Promise<EditionData | undefined> {
     try {
       const success = await fetch(url)
         .then(response => {
           if (!response.ok) {
             console.warn("Invalid data url: " + url + " [" + response.statusText + "]");
-            return;
+            return undefined;
           }
           return response.json();
         }).then((value: EditionData) => {
           if (gameManager.editions(true).indexOf(value.edition) != -1 && !force) {
             console.warn("Edition already exists: " + value.edition);
-            return false;
+            return undefined;
           }
 
           if (force) {
@@ -356,6 +368,10 @@ export class SettingsManager {
           value.conditions = value.conditions || [];
           value.battleGoals = value.battleGoals || [];
           value.events = value.events || [];
+          value.challenges = value.challenges || [];
+          value.trials = value.trials || [];
+          value.favors = value.favors || [];
+          value.pets = value.pets || [];
           value.personalQuests = value.personalQuests || [];
           value.label = value.label || {};
           value.labelSpoiler = value.labelSpoiler || {};
@@ -409,6 +425,46 @@ export class SettingsManager {
             })
           }
 
+          value.challenges.map((challenge, index) => {
+            if (!challenge.edition) {
+              challenge.edition = value.edition;
+            }
+            if (!challenge.cardId) {
+              challenge.cardId = (index + 1);
+            }
+            return challenge;
+          })
+
+          value.trials.map((trialCard, index) => {
+            if (!trialCard.edition) {
+              trialCard.edition = value.edition;
+            }
+            if (!trialCard.cardId) {
+              trialCard.cardId = (index + 1);
+            }
+            return trialCard;
+          })
+
+          value.favors.map((favor, index) => {
+            if (!favor.edition) {
+              favor.edition = value.edition;
+            }
+            if (!favor.name) {
+              favor.name = 'favor-' + (index + 1);
+            }
+            return favor;
+          })
+
+          value.pets.map((pet, index) => {
+            if (!pet.edition) {
+              pet.edition = value.edition;
+            }
+            if (!pet.id) {
+              pet.id = (index < 9 ? '0' : '') + (index + 1);
+            }
+            return pet;
+          })
+
           gameManager.editionData.push(value);
           gameManager.editionData.sort((a, b) => {
             return this.settings.editionDataUrls.indexOf(a.url) - this.settings.editionDataUrls.indexOf(b.url);
@@ -419,12 +475,12 @@ export class SettingsManager {
           } else {
             this.loadEditionLabel(value);
           }
-          return true;
+          return value;
         });
       return success;
     } catch (error) {
       console.warn("Invalid data url: " + url + " [" + error + "]");
-      return false;
+      return undefined;
     }
   }
 
@@ -551,7 +607,7 @@ export class SettingsManager {
                 if (!result[key]) {
                   result[key] = {};
                 } else if (!this.isObject(result[key])) {
-                  result[key] = { '.': result[key] };
+                  result[key] = { "": result[key] };
                 }
                 this.merge(result[key], overwrite, elm[key]);
               } else {
@@ -570,16 +626,18 @@ export class SettingsManager {
     return result;
   };
 
-  getEditionByUrl(url: string) {
-    if (!gameManager.editionData.some((editionData) => editionData.url == url)) {
-      console.error("No edition data found for url '" + url + "'");
-      return;
+  getEditionByUrl(url: string): string {
+    const editionData = gameManager.editionData.find((editionData) => editionData.url == url);
+
+    if (editionData) {
+      return editionData.url;
     }
 
-    return gameManager.editionData.find((editionData) => editionData.url == url)?.edition;
+    console.error("No edition data found for url '" + url + "'");
+    return "";
   }
 
-  async addEditionDataUrl(editionDataUrl: string): Promise<boolean> {
+  async addEditionDataUrl(editionDataUrl: string): Promise<EditionData | undefined> {
     if (this.settings.editionDataUrls.indexOf(editionDataUrl) == -1) {
       const success = await this.loadEditionData(editionDataUrl);
       if (success) {
@@ -591,11 +649,11 @@ export class SettingsManager {
           this.settings.excludeEditionDataUrls.splice(this.settings.excludeEditionDataUrls.indexOf(editionDataUrl), 1);
         }
         this.storeSettings();
-        return true;
+        return success;
       }
     }
 
-    return false;
+    return undefined;
   }
 
   async removeEditionDataUrl(editionDataUrl: string) {
@@ -693,8 +751,8 @@ export class SettingsManager {
       return empty ? this.emptyLabel(key, args, path) : (path && key ? this.getLabel(key) : key || "");
     } else if (from[key]) {
       if (typeof from[key] === 'object') {
-        if (from[key]["."]) {
-          return this.insertLabelArguments(from[key]["."], args, argLabel);
+        if (from[key][""]) {
+          return this.insertLabelArguments(from[key][""], args, argLabel);
         }
         return empty ? this.emptyLabel(key, args, path) : (path && key ? this.getLabel(key) : key || "");
       }

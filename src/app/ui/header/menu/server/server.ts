@@ -1,4 +1,5 @@
-import { Component, OnInit, } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Subscription } from "rxjs";
 import { GameManager, gameManager } from "src/app/game/businesslogic/GameManager";
 import { settingsManager, SettingsManager } from "src/app/game/businesslogic/SettingsManager";
 import { Character } from "src/app/game/model/Character";
@@ -10,11 +11,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 @Component({
+  standalone: false,
   selector: 'ghs-server-menu',
   templateUrl: 'server.html',
   styleUrls: ['../menu.scss', 'server.scss']
 })
-export class ServerMenuComponent implements OnInit {
+export class ServerMenuComponent implements OnInit, OnDestroy {
 
   gameManager: GameManager = gameManager;
   settingsManager: SettingsManager = settingsManager;
@@ -31,6 +33,7 @@ export class ServerMenuComponent implements OnInit {
 
   createPermissions: boolean = false;
 
+  serverUpdateVersion: { latest: boolean, version: string, url: string } | undefined;
 
   async ngOnInit() {
 
@@ -49,6 +52,17 @@ export class ServerMenuComponent implements OnInit {
     }
 
     this.updateServer();
+    this.checkServerVersion();
+
+    this.uiChangeSubscription = gameManager.uiChange.subscribe({ next: () => { this.checkServerVersion() } });
+  }
+
+  uiChangeSubscription: Subscription | undefined;
+
+  ngOnDestroy(): void {
+    if (this.uiChangeSubscription) {
+      this.uiChangeSubscription.unsubscribe();
+    }
   }
 
   connect(url: string, port: string, code: string): void {
@@ -84,6 +98,7 @@ export class ServerMenuComponent implements OnInit {
   selectServer(event: any) {
     this.selectedServerIndex = -1;
     if (!isNaN(+event.target.value)) {
+      gameManager.stateManager.serverVersion = "";
       this.selectedServerIndex = +event.target.value;
       if (this.selectedServerIndex > -1 && this.selectedServerIndex < this.publicServer.length) {
         const server = this.publicServer[this.selectedServerIndex];
@@ -102,6 +117,21 @@ export class ServerMenuComponent implements OnInit {
         return;
       }
     })
+  }
+
+  async checkServerVersion() {
+    this.serverUpdateVersion = undefined
+    if (gameManager.stateManager.serverVersion) {
+      await fetch('https://api.github.com/repos/lurkars/ghs-server/releases/latest')
+        .then(response => {
+          if (!response.ok) {
+            throw Error();
+          }
+          return response.json();
+        }).then((value: any) => {
+          this.serverUpdateVersion = { latest: value.tag_name == gameManager.stateManager.serverVersion || value.tag_name == 'v' + gameManager.stateManager.serverVersion, version: value.tag_name, url: value.html_url };
+        });
+    }
   }
 
   setServerUrl(event: any) {

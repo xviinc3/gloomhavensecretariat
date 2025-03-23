@@ -15,6 +15,7 @@ import { valueCalc } from '../../helper/valueCalc';
 export const ActionTypesIcons: ActionType[] = [ActionType.attack, ActionType.damage, ActionType.fly, ActionType.heal, ActionType.jump, ActionType.loot, ActionType.move, ActionType.range, ActionType.retaliate, ActionType.shield, ActionType.target, ActionType.teleport];
 
 @Component({
+	standalone: false,
   selector: 'ghs-action',
   templateUrl: './action.html',
   styleUrls: ['./action.scss']
@@ -27,6 +28,7 @@ export class ActionComponent implements OnInit, OnDestroy {
   @Input('action') origAction!: Action | undefined;
   @Input() relative: boolean = false;
   @Input() inline: boolean = false;
+  @Input() textBlack: boolean = false;
   @Input() right: boolean = false;
   @Input() highlight: boolean = false;
   @Input() interactiveAbilities: boolean = false;
@@ -38,9 +40,14 @@ export class ActionComponent implements OnInit, OnDestroy {
   @Input() style: 'gh' | 'fh' | false = false;
 
   action!: Action | undefined;
+  normalValue: number | string = "";
+  eliteValue: number | string = "";
+  values: string[] = [];
+  specialActions: Action[] = [];
   subActions: Action[] = [];
   fhStyle: boolean = false;
   flying: boolean = false;
+  isInteractiveApplicableAction: boolean = false;
 
   settingsManager: SettingsManager = settingsManager;
   EntityValueFunction = EntityValueFunction;
@@ -101,6 +108,8 @@ export class ActionComponent implements OnInit, OnDestroy {
     }
 
     this.updateSubActions();
+    this.applyChallenges();
+
     this.forceRelative = this.monster != undefined && !this.hasEntities();
     if (this.monster && !this.relative && !this.forceRelative && settingsManager.settings.calculate && this.action && (this.action.type == ActionType.shield || this.action.type == ActionType.retaliate) && this.action.valueType != ActionValueType.minus && this.action.subActions && this.action.subActions.find((subAction) => subAction.type == ActionType.specialTarget && !(subAction.value + '').startsWith('self'))) {
       this.forceRelative = true;
@@ -117,6 +126,15 @@ export class ActionComponent implements OnInit, OnDestroy {
     if (this.monster) {
       this.flying = this.monster.flying && (!this.monster.statEffect || this.monster.statEffect.flying != 'disabled') || this.monster.statEffect != undefined && this.monster.statEffect.flying == true;
     }
+
+    if (this.action) {
+      this.normalValue = this.getNormalValue();
+      this.eliteValue = this.getEliteValue();
+      this.values = this.getValues(this.action, true);
+      this.specialActions = this.getSpecial(this.action);
+    }
+
+    this.isInteractiveApplicableAction = this.interactiveAbilities && this.monster && this.monster.entities.some((entity) => this.origAction && gameManager.actionsManager.isInteractiveApplicableAction(entity, this.origAction, this.actionIndex)) || this.objective && this.objective.entities.some((entity) => this.origAction && gameManager.actionsManager.isInteractiveApplicableAction(entity, this.origAction, this.actionIndex)) || false;
   }
 
   hasEntities(type: MonsterType | string | undefined = undefined): boolean {
@@ -153,7 +171,7 @@ export class ActionComponent implements OnInit, OnDestroy {
     if (this.monster) {
       return gameManager.monsterManager.getStat(this.monster, type);
     }
-    return new MonsterStat(type, gameManager.game.level, 0, 0, 0, 0);
+    return new MonsterStat(type, gameManager.game.level);
   }
 
   getRange(type: MonsterType = MonsterType.normal): string | number {
@@ -172,7 +190,10 @@ export class ActionComponent implements OnInit, OnDestroy {
     return this.getRange(MonsterType.elite);
   }
 
-  getValues(action: Action): string[] {
+  getValues(action: Action, force: boolean = false): string[] {
+    if (!force) {
+      return [...this.values];
+    }
     return gameManager.actionsManager.getValues(action);
   }
 
@@ -217,7 +238,7 @@ export class ActionComponent implements OnInit, OnDestroy {
           } else {
             try {
               statValue = EntityValueFunction(stat.attack, this.level);
-            } catch {
+            } catch (e) {
               sign = false;
             }
           }
@@ -511,11 +532,50 @@ export class ActionComponent implements OnInit, OnDestroy {
   }
 
   subActionExists(additionalSubActions: Action[], subAction: Action, stackableCondition: boolean = true): boolean {
-    if (stackableCondition && subAction.type == ActionType.condition && (new Condition(subAction.value + '').types.indexOf(ConditionType.stack) != -1)) {
+    if (stackableCondition && subAction.type == ActionType.condition && (new Condition(subAction.value + '').types.indexOf(ConditionType.stackable) != -1)) {
       return false;
     }
 
     return additionalSubActions.some((action) => action.type == subAction.type && action.value == subAction.value && (action.valueType || ActionValueType.fixed) == (subAction.valueType || ActionValueType.fixed));
+  }
+
+  applyChallenges() {
+
+    if (this.action && this.monster) {
+      if (gameManager.challengesManager.apply && gameManager.challengesManager.isActive(1488, 'fh')) {
+        if (this.action.type == ActionType.attack) {
+          this.additionalSubActions.forEach((subAction) => {
+            if (this.monster && subAction.type == ActionType.range) {
+              subAction.value = EntityValueFunction(subAction.value, this.monster.level) + (subAction.valueType == ActionValueType.minus || subAction.valueType == ActionValueType.subtract ? -1 : 1);
+            }
+          })
+        }
+
+        if (this.action.type == ActionType.move) {
+          this.action.value = EntityValueFunction(this.action.value, this.monster.level) + (this.action.valueType == ActionValueType.minus || this.action.valueType == ActionValueType.subtract ? -1 : 1);
+        }
+      }
+
+      if (gameManager.challengesManager.apply && gameManager.challengesManager.isActive(1498, 'fh')) {
+        if (this.action.type == ActionType.attack && this.additionalSubActions.find((subAction) => subAction.type == ActionType.range)) {
+          this.additionalSubActions.push(new Action(ActionType.push, 1, ActionValueType.fixed, [], true));
+        }
+      }
+
+      if (gameManager.challengesManager.apply && gameManager.challengesManager.isActive(1521, 'fh')) {
+        if (this.action.type == ActionType.move && !this.additionalSubActions.find((subAction) => subAction.type == ActionType.jump)) {
+          this.additionalSubActions.push(new Action(ActionType.jump, "", ActionValueType.fixed, [], true));
+        }
+      }
+
+      if (gameManager.challengesManager.apply && gameManager.challengesManager.isActive(1522, 'fh')) {
+        if (this.action.type == ActionType.attack && !this.additionalSubActions.find((subAction) => subAction.type == ActionType.target) && !this.additionalSubActions.find((subAction) => subAction.type == ActionType.area)) {
+          this.action.value = EntityValueFunction(this.action.value, this.monster.level) - (this.action.valueType == ActionValueType.minus || this.action.valueType == ActionValueType.subtract ? -1 : 1);
+          this.additionalSubActions.push(new Action(ActionType.target, 2, ActionValueType.fixed, [], true));
+        }
+      }
+    }
+
   }
 
   isGhsSvg(type: ActionType) {
@@ -526,12 +586,8 @@ export class ActionComponent implements OnInit, OnDestroy {
     return this.interactiveActions.find((interactiveAction) => interactiveAction.index == this.actionIndex) != undefined || false;
   }
 
-  isInteractiveApplicableAction(): boolean {
-    return this.interactiveAbilities && this.monster && this.monster.entities.some((entity) => this.origAction && gameManager.actionsManager.isInteractiveApplicableAction(entity, this.origAction, this.actionIndex)) || this.objective && this.objective.entities.some((entity) => this.origAction && gameManager.actionsManager.isInteractiveApplicableAction(entity, this.origAction, this.actionIndex)) || false;
-  }
-
   toggleHighlight(event: MouseEvent | TouchEvent) {
-    if (this.isInteractiveApplicableAction()) {
+    if (this.isInteractiveApplicableAction) {
       if (this.highlightAction()) {
         this.interactiveActions = this.interactiveActions.filter((interactiveAction) => !interactiveAction.index.startsWith(this.actionIndex));
       } else if (this.origAction) {

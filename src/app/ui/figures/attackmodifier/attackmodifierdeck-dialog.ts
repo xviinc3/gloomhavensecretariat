@@ -1,20 +1,22 @@
 import { DIALOG_DATA, DialogRef } from "@angular/cdk/dialog";
 import { CdkDragDrop, moveItemInArray } from "@angular/cdk/drag-drop";
-import { Component, ElementRef, EventEmitter, Inject, OnInit, ViewChild } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Subscription } from "rxjs";
 import { GameManager, gameManager } from "src/app/game/businesslogic/GameManager";
-import { settingsManager } from "src/app/game/businesslogic/SettingsManager";
+import { SettingsManager, settingsManager } from "src/app/game/businesslogic/SettingsManager";
 import { Character } from "src/app/game/model/Character";
 import { GameState } from "src/app/game/model/Game";
 import { AttackModifier, AttackModifierDeck, AttackModifierType, additionalTownGuardAttackModifier } from "src/app/game/model/data/AttackModifier";
-import { AttackModiferDeckChange } from "./attackmodifierdeck";
 import { ConditionName } from "src/app/game/model/data/Condition";
+import { AttackModiferDeckChange } from "./attackmodifierdeck";
 
 @Component({
+  standalone: false,
   selector: 'ghs-attackmodifier-deck-dialog',
   templateUrl: './attackmodifierdeck-dialog.html',
   styleUrls: ['./attackmodifierdeck-dialog.scss',]
 })
-export class AttackModifierDeckDialogComponent implements OnInit {
+export class AttackModifierDeckDialogComponent implements OnInit, OnDestroy {
 
   deck: AttackModifierDeck;
   character: Character;
@@ -24,6 +26,7 @@ export class AttackModifierDeckDialogComponent implements OnInit {
 
   @ViewChild('menu') menuElement!: ElementRef;
   gameManager: GameManager = gameManager;
+  settingsManager: SettingsManager = settingsManager;
   GameState = GameState;
   reveal: number = 0;
   edit: boolean = false;
@@ -32,6 +35,7 @@ export class AttackModifierDeckDialogComponent implements OnInit {
   ally: boolean = false;
   newStyle: boolean = false;
   townGuard: boolean = false;
+  bbTable: boolean = false;
 
   AttackModifierType = AttackModifierType;
   type: AttackModifierType = AttackModifierType.minus1;
@@ -40,7 +44,7 @@ export class AttackModifierDeckDialogComponent implements OnInit {
 
   drawing: boolean = false;
   upcomingCards: AttackModifier[] = [];
-  disgardedCards: AttackModifier[] = [];
+  discardedCards: AttackModifier[] = [];
   deletedCards: AttackModifier[] = [];
 
   empowerChars: Character[] = [];
@@ -70,11 +74,28 @@ export class AttackModifierDeckDialogComponent implements OnInit {
       this.maxHeight = 'calc(80vh - ' + this.menuElement.nativeElement.offsetHeight + 'px)';
     }, !settingsManager.settings.animations ? 0 : 250);
     this.update();
-    gameManager.uiChange.subscribe({ next: () => this.update() });
+    this.uiChangeSubscription = gameManager.uiChange.subscribe({ next: () => this.update() });
+  }
+
+  uiChangeSubscription: Subscription | undefined;
+
+  ngOnDestroy(): void {
+    if (this.uiChangeSubscription) {
+      this.uiChangeSubscription.unsubscribe();
+    }
   }
 
   toggleEdit() {
     this.edit = !this.edit;
+    this.bbTable = false;
+    setTimeout(() => {
+      this.maxHeight = 'calc(80vh - ' + this.menuElement.nativeElement.offsetHeight + 'px)';
+    }, 0);
+  }
+
+  toggleBB() {
+    this.bbTable = !this.bbTable;
+    this.edit = false;
     setTimeout(() => {
       this.maxHeight = 'calc(80vh - ' + this.menuElement.nativeElement.offsetHeight + 'px)';
     }, 0);
@@ -82,7 +103,7 @@ export class AttackModifierDeckDialogComponent implements OnInit {
 
   update() {
     this.upcomingCards = this.deck.cards.filter((attackModifier, index) => index > this.deck.current);
-    this.disgardedCards = this.deck.cards.filter((AttackModifier, index) => index <= this.deck.current).reverse();
+    this.discardedCards = this.deck.cards.filter((AttackModifier, index) => index <= this.deck.current).reverse();
     let originalDeck: AttackModifierDeck | undefined;
     if (this.character) {
       originalDeck = gameManager.attackModifierManager.buildCharacterAttackModifierDeck(this.character);
@@ -135,8 +156,16 @@ export class AttackModifierDeckDialogComponent implements OnInit {
     } else if (this.townGuard) {
       this.deck = gameManager.attackModifierManager.buildTownGuardAttackModifierDeck(gameManager.game.party, gameManager.campaignData());
       gameManager.game.party.townGuardDeck = this.deck.toModel();
-    } else {
+    } else if (!gameManager.bbRules()) {
       this.deck = new AttackModifierDeck();
+    } else {
+      const editionData = gameManager.editionData.find((editionData) => editionData.edition == 'bb' && editionData.monsterAmTables && editionData.monsterAmTables.length);
+      if (editionData) {
+        const monsterDifficulty = gameManager.levelManager.bbMonsterDifficutly();
+        this.deck = new AttackModifierDeck(editionData.monsterAmTables[monsterDifficulty].map((value) => new AttackModifier(value as AttackModifierType)), settingsManager.settings.bbAm);
+      } else {
+        this.deck = new AttackModifierDeck();
+      }
     }
     this.after.emit(new AttackModiferDeckChange(this.deck, "restoreDefault"));
     this.update();
@@ -147,7 +176,9 @@ export class AttackModifierDeckDialogComponent implements OnInit {
       (attackModifier: AttackModifier, index: number) =>
         index <= this.deck.current &&
         (attackModifier.type == AttackModifierType.bless ||
-          attackModifier.type == AttackModifierType.curse)
+          attackModifier.type == AttackModifierType.curse ||
+          attackModifier.type == AttackModifierType.empower ||
+          attackModifier.type == AttackModifierType.enfeeble)
     );
   }
 
@@ -165,7 +196,7 @@ export class AttackModifierDeckDialogComponent implements OnInit {
     this.update();
   }
 
-  dropDisgarded(event: CdkDragDrop<AttackModifier[]>) {
+  dropDiscarded(event: CdkDragDrop<AttackModifier[]>) {
     this.before.emit(new AttackModiferDeckChange(this.deck, "reorder"));
     if (event.container == event.previousContainer) {
       moveItemInArray(this.deck.cards, this.deck.current - event.previousIndex, this.deck.current - event.currentIndex);
@@ -180,20 +211,20 @@ export class AttackModifierDeckDialogComponent implements OnInit {
   }
 
   remove(index: number) {
-    this.before.emit(new AttackModiferDeckChange(this.deck, "removeCard", "" + index));
+    this.before.emit(new AttackModiferDeckChange(this.deck, "removeCard", index));
     if (index <= this.deck.current) {
       this.deck.current--;
       this.currentAttackModifier = this.deck.current;
     }
     this.deck.cards.splice(index, 1);
-    this.after.emit(new AttackModiferDeckChange(this.deck, "removeCard", "" + index));
+    this.after.emit(new AttackModiferDeckChange(this.deck, "removeCard", index));
     this.update();
   }
 
   restore(index: number) {
-    this.before.emit(new AttackModiferDeckChange(this.deck, "restoreCard", "" + index));
+    this.before.emit(new AttackModiferDeckChange(this.deck, "restoreCard", index));
     this.deck.cards.splice(this.deck.current + 1, 0, this.deletedCards[index]);
-    this.after.emit(new AttackModiferDeckChange(this.deck, "restoreCard", "" + index));
+    this.after.emit(new AttackModiferDeckChange(this.deck, "restoreCard", index));
     this.update();
   }
 
@@ -345,7 +376,7 @@ export class AttackModifierDeckDialogComponent implements OnInit {
         }
       } else {
         for (let i = 0; i < value * -1; i++) {
-          const empower = this.deck.cards.find((am, index) => index > this.deck.current && am.type == AttackModifierType.empower && am.id && am.id.startsWith("additional-" + this.empowerChars[index].name));
+          const empower = this.deck.cards.find((am, index) => this.empowerChars[index] && index > this.deck.current && am.type == AttackModifierType.empower && am.id && am.id.startsWith("additional-" + this.empowerChars[index].name));
           if (empower) {
             this.deck.cards.splice(this.deck.cards.indexOf(empower), 1);
           }
@@ -366,7 +397,7 @@ export class AttackModifierDeckDialogComponent implements OnInit {
         }
       } else {
         for (let i = 0; i < value * -1; i++) {
-          const enfeeble = this.deck.cards.find((am, index) => index > this.deck.current && am.type == AttackModifierType.enfeeble && am.id && am.id.startsWith("additional-" + this.empowerChars[index].name));
+          const enfeeble = this.deck.cards.find((am, index) => this.empowerChars[index] && index > this.deck.current && am.type == AttackModifierType.enfeeble && am.id && am.id.startsWith("additional-" + this.empowerChars[index].name));
           if (enfeeble) {
             this.deck.cards.splice(this.deck.cards.indexOf(enfeeble), 1);
           }

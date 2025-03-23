@@ -1,15 +1,16 @@
 import { Dialog, DialogRef } from "@angular/cdk/dialog";
-import { Component } from "@angular/core";
+import { Component, HostListener } from "@angular/core";
 import { gameManager, GameManager } from "src/app/game/businesslogic/GameManager";
 import { settingsManager } from "src/app/game/businesslogic/SettingsManager";
 import { Character } from "src/app/game/model/Character";
 import { GameState } from "src/app/game/model/Game";
-import { ScenarioSummaryComponent } from "../scenario/summary/scenario-summary";
-import { ScenarioConclusionComponent } from "../scenario/scenario-conclusion/scenario-conclusion";
 import { ObjectiveContainer } from "src/app/game/model/ObjectiveContainer";
 import { ghsDialogClosingHelper } from "../../helper/Static";
+import { ScenarioConclusionComponent } from "../scenario/scenario-conclusion/scenario-conclusion";
+import { ScenarioSummaryComponent } from "../scenario/summary/scenario-summary";
 
 @Component({
+    standalone: false,
     selector: 'ghs-hint-dialog',
     templateUrl: './hint-dialog.html',
     styleUrls: ['./hint-dialog.scss']
@@ -39,7 +40,7 @@ export class HintDialogComponent {
         if (gameManager.game.scenario) {
             const conclusions = gameManager.sectionData(gameManager.game.scenario.edition).filter((sectionData) => {
                 if (gameManager.game.scenario) {
-                    return sectionData.edition == gameManager.game.scenario.edition && sectionData.parent == gameManager.game.scenario.index && sectionData.group == gameManager.game.scenario.group && sectionData.conclusion;
+                    return sectionData.edition == gameManager.game.scenario.edition && sectionData.parent == gameManager.game.scenario.index && sectionData.group == gameManager.game.scenario.group && sectionData.conclusion && gameManager.scenarioManager.getRequirements(sectionData).length == 0;
                 }
                 return false;
             });
@@ -95,7 +96,7 @@ export class HintDialogComponent {
     }
 
     battleGoals(): boolean {
-        return !this.missingInitiative() && settingsManager.settings.battleGoals && settingsManager.settings.battleGoalsReminder && gameManager.game.scenario != undefined && gameManager.roundManager.firstRound && !gameManager.game.figures.every((figure) => !(figure instanceof Character) || figure.battleGoal || figure.absent);
+        return !this.missingInitiative() && settingsManager.settings.battleGoals && settingsManager.settings.battleGoalsReminder && gameManager.game.scenario != undefined && gameManager.roundManager.firstRound && !gameManager.game.figures.every((figure) => !(figure instanceof Character) || figure.battleGoal || figure.absent) && !gameManager.bbRules();
     }
 
     finish(): boolean {
@@ -106,4 +107,21 @@ export class HintDialogComponent {
         return !this.active() && !this.empty() && gameManager.game.figures.some((figure) => figure instanceof Character) && gameManager.game.figures.every((figure) => !(figure instanceof Character) || figure instanceof Character && (!gameManager.entityManager.isAlive(figure) || figure.absent));
     }
 
+
+    @HostListener('document:keydown', ['$event'])
+    onKeyEnter(event: KeyboardEvent) {
+        if (settingsManager.settings.keyboardShortcuts && event.key === 'Enter') {
+            if (this.active()) {
+                this.confirm();
+            } else if (this.finish()) {
+                this.finishScenario(true);
+            } else if (this.failed()) {
+                this.finishScenario(false);
+            } else if (this.battleGoals()) {
+                this.confirm();
+            }
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }
 }

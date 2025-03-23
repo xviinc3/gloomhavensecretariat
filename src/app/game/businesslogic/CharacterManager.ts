@@ -6,6 +6,7 @@ import { Game, GameState } from "../model/Game";
 import { Monster } from "../model/Monster";
 import { ObjectiveContainer } from "../model/ObjectiveContainer";
 import { Summon, SummonColor, SummonState } from "../model/Summon";
+import { Action, ActionType } from "../model/data/Action";
 import { CharacterData } from "../model/data/CharacterData";
 import { CharacterStat } from "../model/data/CharacterStat";
 import { Condition, ConditionName } from "../model/data/Condition";
@@ -24,8 +25,14 @@ export class CharacterManager {
     this.game = game;
   }
 
-  characterIcon(character: string): string {
-    const characterData = gameManager.getCharacterData(character);
+  characterIcon(character: CharacterData | string): string {
+    let characterData: CharacterData;
+    if (character instanceof CharacterData) {
+      characterData = character;
+    } else {
+      characterData = gameManager.getCharacterData(character);
+    }
+
     if (characterData.iconUrl) {
       return characterData.iconUrl;
     }
@@ -147,10 +154,15 @@ export class CharacterManager {
     if (this.game.levelCalculation) {
       gameManager.levelManager.calculateScenarioLevel();
     }
+    gameManager.trialsManager.applyTrialCards();
   }
 
   removeCharacter(character: Character, retirement: boolean = false) {
-    this.game.figures.splice(this.game.figures.indexOf(character), 1);
+    const index = this.game.figures.indexOf(character);
+    if (index == -1) {
+      return;
+    }
+    this.game.figures.splice(index, 1);
 
     if (retirement && settingsManager.settings.applyRetirement) {
       gameManager.game.party.prosperity += gameManager.fhRules() ? 2 : 1;
@@ -182,6 +194,21 @@ export class CharacterManager {
   addSummon(character: Character, summon: Summon) {
     character.summons = character.summons.filter((value) => value.name != summon.name || value.number != summon.number || value.color != summon.color);
     character.summons.push(summon);
+
+    if (character.name == 'boneshaper') {
+      if (character.tags.indexOf('solid-bones') != -1 || character.tags.indexOf('unholy-prowess') != -1) {
+        if (summon.name === 'shambling-skeleton') {
+          summon.maxHealth += 1;
+          if (summon.health == summon.maxHealth - 1) {
+            summon.health = summon.maxHealth;
+          }
+          if (character.tags.indexOf('solid-bones') != -1) {
+            summon.movement += 1;
+            summon.action = new Action(ActionType.pierce, 1);
+          }
+        }
+      }
+    }
   }
 
   removeSummon(character: Character, summon: Summon) {
@@ -246,6 +273,10 @@ export class CharacterManager {
     if (this.game.levelCalculation) {
       gameManager.levelManager.calculateScenarioLevel();
     }
+
+    if (character.bb) {
+      character.attackModifierDeck = gameManager.attackModifierManager.buildCharacterAttackModifierDeck(character);
+    }
   }
 
   createSpecialSummon(character: Character, summonData: SummonData) {
@@ -280,13 +311,13 @@ export class CharacterManager {
 
   itemEffect(itemData: ItemData): boolean {
     if (itemData.edition == 'gh') {
-      return [16, 38, 52, 101, 103, 108].indexOf(itemData.id) != -1;
+      return typeof itemData.id === 'number' && [16, 38, 52, 101, 103, 108].indexOf(itemData.id) != -1;
     } else if (itemData.edition == 'cs') {
-      return [157, 71].indexOf(itemData.id) != -1;
+      return typeof itemData.id === 'number' && [157, 71].indexOf(itemData.id) != -1;
     } else if (itemData.edition == 'toa') {
-      return [101, 107].indexOf(itemData.id) != -1;
+      return typeof itemData.id === 'number' && [101, 107].indexOf(itemData.id) != -1;
     } else if (itemData.edition == 'fh') {
-      return [3, 11, 41, 60, 132, 138, 178].indexOf(itemData.id) != -1;
+      return typeof itemData.id === 'number' && [3, 11, 41, 60, 132, 138, 178].indexOf(itemData.id) != -1;
     }
     return false;
   }
@@ -332,16 +363,22 @@ export class CharacterManager {
           }
         });
 
-        if (figure instanceof Character && figure.tags.find((tag) => tag === 'time_tokens') && figure.primaryToken == 0) {
+        if (figure instanceof Character && figure.name == 'blinkblade' && figure.tags.find((tag) => tag === 'time_tokens') && figure.primaryToken == 0) {
           figure.identity = 0;
         }
 
         if (figure.progress.equippedItems.find((identifier) => identifier.edition == 'cs' && identifier.name == '57') && gameManager.entityManager.hasCondition(figure, new Condition(ConditionName.wound)) && !gameManager.entityManager.hasCondition(figure, new Condition(ConditionName.regenerate))) {
-          gameManager.entityManager.addCondition(figure, new Condition(ConditionName.regenerate), figure.active, figure.off);
+          gameManager.entityManager.addCondition(figure, figure, new Condition(ConditionName.regenerate));
         }
 
-        figure.shield = undefined;
-        figure.retaliate = [];
+        if (figure.tags) {
+          figure.tags = figure.tags.filter((tag) => !tag.startsWith('roundAction-'));
+        }
+
+        if (gameManager.trialsManager.apply && gameManager.trialsManager.trialsEnabled && settingsManager.settings.battleGoals && figure.progress.trial && figure.progress.trial.edition == 'fh' && figure.progress.trial.name == '356' && figure.tags.indexOf('trial-fh-356') != -1) {
+          figure.tags.splice(figure.tags.indexOf('trial-fh-356'), 1);
+          gameManager.battleGoalManager.drawBattleGoal(figure, true);
+        }
       }
     })
   }
@@ -358,7 +395,7 @@ export class CharacterManager {
           figure.off = false;
         }
 
-        if (figure.tags.find((tag) => tag === 'time_tokens') && figure.primaryToken == 0) {
+        if (figure.name == 'blinkblade' && figure.tags.find((tag) => tag === 'time_tokens') && figure.primaryToken == 0) {
           if (figure.identity == 0 && figure.tokenValues[0] < 2) {
             figure.tokenValues[0] += 1;
           } else if (figure.identity == 1) {
@@ -369,6 +406,10 @@ export class CharacterManager {
               figure.tokenValues[0] = 1;
             }
           }
+        }
+
+        if (gameManager.trialsManager.apply && gameManager.trialsManager.trialsEnabled && settingsManager.settings.battleGoals && figure.progress.trial && figure.progress.trial.edition == 'fh' && figure.progress.trial.name == '356' && figure.tags.indexOf('trial-fh-356') != -1) {
+          figure.tags.splice(figure.tags.indexOf('trial-fh-356'), 1);
         }
       }
     })

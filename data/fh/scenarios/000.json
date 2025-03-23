@@ -16,6 +16,13 @@
   "forcedLinks": [
     "1"
   ],
+  "rewards": {
+    "custom": "%data.scenario.rewards.fh.000%",
+    "ignoredBonus": [
+      "inspiration"
+    ],
+    "calendarIgnore": true
+  },
   "monsters": [
     "hound"
   ],

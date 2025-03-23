@@ -1,14 +1,16 @@
 import { Dialog } from '@angular/cdk/dialog';
 import { ConnectionPositionPair, Overlay } from '@angular/cdk/overlay';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { GameManager, gameManager } from 'src/app/game/businesslogic/GameManager';
 import { SettingsManager, settingsManager } from 'src/app/game/businesslogic/SettingsManager';
 import { Character } from 'src/app/game/model/Character';
 import { GameState } from 'src/app/game/model/Game';
 import { Monster } from 'src/app/game/model/Monster';
 import { ObjectiveContainer } from 'src/app/game/model/ObjectiveContainer';
-import { AttackModiferDeckChange } from '../figures/attackmodifier/attackmodifierdeck';
-import { LootDeckChange } from '../figures/loot/loot-deck';
+import { AttackModiferDeckChange, AttackModifierDeckComponent } from '../figures/attackmodifier/attackmodifierdeck';
+import { ChallengeDeckChange } from '../figures/challenges/challenge-deck';
+import { LootDeckChange, LootDeckComponent } from '../figures/loot/loot-deck';
 import { HintDialogComponent } from './hint-dialog/hint-dialog';
 import { LevelComponent } from './level/level';
 import { ScenarioComponent } from './scenario/scenario';
@@ -16,24 +18,28 @@ import { ScenarioConclusionComponent } from './scenario/scenario-conclusion/scen
 import { ScenarioSummaryComponent } from './scenario/summary/scenario-summary';
 
 @Component({
+  standalone: false,
   selector: 'ghs-footer',
   templateUrl: './footer.html',
   styleUrls: ['./footer.scss']
 })
-export class FooterComponent implements OnInit {
+export class FooterComponent implements OnInit, OnDestroy {
 
   @ViewChild('nextButton', { static: false }) nextButton!: ElementRef;
   @ViewChild('footer', { static: false }) footer!: ElementRef;
   @ViewChild('monsterDeck', { static: false }) monsterDeck!: ElementRef;
   @ViewChild('ghsLevel', { static: false }) ghsLevel!: LevelComponent;
   @ViewChild('ghsScenario', { static: false }) ghsScenario!: ScenarioComponent;
+  @ViewChild('monsterAttackModifierDeck', { static: false }) monsterAttackModifierDeck!: AttackModifierDeckComponent;
+  @ViewChild('allyAttackModifierDeck', { static: false }) allyAttackModifierDeck!: AttackModifierDeckComponent;
+  @ViewChild('lootDeck', { static: false }) lootDeck!: LootDeckComponent;
 
   gameManager: GameManager = gameManager;
   settingsManager: SettingsManager = settingsManager;
   GameState = GameState;
   currentTime: string = "";
   hasAllyAttackModifierDeck: boolean = false;
-  lootDeck: boolean = false;
+  lootDeckEnabeld: boolean = false;
 
   compact: boolean = false;
 
@@ -44,12 +50,12 @@ export class FooterComponent implements OnInit {
   ngOnInit(): void {
     this.hasAllyAttackModifierDeck = settingsManager.settings.allyAttackModifierDeck && (settingsManager.settings.alwaysAllyAttackModifierDeck || gameManager.fhRules() && gameManager.game.figures.some((figure) => figure instanceof Monster && (figure.isAlly || figure.isAllied) || figure instanceof ObjectiveContainer && figure.objectiveId && gameManager.objectiveManager.objectiveDataByObjectiveIdentifier(figure.objectiveId)?.allyDeck) || gameManager.game.scenario && gameManager.game.scenario.allyDeck) || false;
 
-    this.lootDeck = settingsManager.settings.lootDeck && Object.keys(gameManager.game.lootDeck.cards).length > 0;
+    this.lootDeckEnabeld = settingsManager.settings.lootDeck && Object.keys(gameManager.game.lootDeck.cards).length > 0;
 
-    gameManager.uiChange.subscribe({
+    this.uiChangeSubscription = gameManager.uiChange.subscribe({
       next: () => {
         this.hasAllyAttackModifierDeck = settingsManager.settings.allyAttackModifierDeck && (settingsManager.settings.alwaysAllyAttackModifierDeck || gameManager.fhRules() && gameManager.game.figures.some((figure) => figure instanceof Monster && (figure.isAlly || figure.isAllied) || figure instanceof ObjectiveContainer && figure.objectiveId && gameManager.objectiveManager.objectiveDataByObjectiveIdentifier(figure.objectiveId)?.allyDeck) || gameManager.game.scenario && gameManager.game.scenario.allyDeck) || false;
-        this.lootDeck = settingsManager.settings.lootDeck && Object.keys(gameManager.game.lootDeck.cards).length > 0;
+        this.lootDeckEnabeld = settingsManager.settings.lootDeck && Object.keys(gameManager.game.lootDeck.cards).length > 0;
       }
     })
 
@@ -82,6 +88,14 @@ export class FooterComponent implements OnInit {
     window.addEventListener('resize', (event) => {
       this.compact = this.monsterDeck && this.monsterDeck.nativeElement.clientWidth > this.footer.nativeElement.clientWidth * 0.3;
     });
+  }
+
+  uiChangeSubscription: Subscription | undefined;
+
+  ngOnDestroy(): void {
+    if (this.uiChangeSubscription) {
+      this.uiChangeSubscription.unsubscribe();
+    }
   }
 
   next(force: boolean = false): void {
@@ -154,6 +168,15 @@ export class FooterComponent implements OnInit {
     gameManager.stateManager.after();
   }
 
+  beforeChallengeDeck(change: ChallengeDeckChange) {
+    gameManager.stateManager.before(change.type, ...change.values)
+  }
+
+  afterChallengeDeck(change: ChallengeDeckChange) {
+    gameManager.game.challengeDeck = change.deck;
+    gameManager.stateManager.after();
+  }
+
   confirmTurns() {
     gameManager.game.figures.forEach((figure) => gameManager.roundManager.afterTurn(figure));
     this.next(true);
@@ -163,7 +186,7 @@ export class FooterComponent implements OnInit {
     if (gameManager.game.scenario) {
       const conclusions = gameManager.sectionData(gameManager.game.scenario.edition).filter((sectionData) => {
         if (gameManager.game.scenario) {
-          return sectionData.edition == gameManager.game.scenario.edition && sectionData.parent == gameManager.game.scenario.index && sectionData.group == gameManager.game.scenario.group && sectionData.conclusion;
+          return sectionData.edition == gameManager.game.scenario.edition && sectionData.parent == gameManager.game.scenario.index && sectionData.group == gameManager.game.scenario.group && sectionData.conclusion && gameManager.scenarioManager.getRequirements(sectionData).length == 0;
         }
         return false;
       });
@@ -232,7 +255,7 @@ export class FooterComponent implements OnInit {
   }
 
   battleGoals(): boolean {
-    return !this.missingInitiative() && settingsManager.settings.battleGoals && settingsManager.settings.battleGoalsReminder && gameManager.game.scenario != undefined && gameManager.roundManager.firstRound && !gameManager.game.figures.every((figure) => !(figure instanceof Character) || figure.battleGoal || figure.absent);
+    return !this.missingInitiative() && settingsManager.settings.battleGoals && settingsManager.settings.battleGoalsReminder && gameManager.game.scenario != undefined && gameManager.roundManager.firstRound && !gameManager.game.figures.every((figure) => !(figure instanceof Character) || figure.battleGoal || figure.absent) && !gameManager.bbRules();
   }
 
   activeHint(): boolean {
@@ -272,8 +295,9 @@ export class FooterComponent implements OnInit {
 
   toggleActiveMonsterAttackModifierDeck() {
     this.beforeMonsterAttackModifierDeck(new AttackModiferDeckChange(gameManager.game.monsterAttackModifierDeck, gameManager.game.monsterAttackModifierDeck.active && (!this.compact || !gameManager.game.lootDeck.active) ? 'amDeckHide' : 'amDeckShow'));
-    if (this.compact && gameManager.game.lootDeck.active) {
+    if (this.compact && (gameManager.game.lootDeck.active || gameManager.game.challengeDeck.active)) {
       gameManager.game.lootDeck.active = false;
+      gameManager.game.challengeDeck.active = false;
       gameManager.game.monsterAttackModifierDeck.active = true;
     } else {
       gameManager.game.monsterAttackModifierDeck.active = !gameManager.game.monsterAttackModifierDeck.active;
@@ -287,4 +311,9 @@ export class FooterComponent implements OnInit {
     this.afterLootDeck(new LootDeckChange(gameManager.game.lootDeck, !gameManager.game.lootDeck.active ? 'lootDeckHide' : 'lootDeckShow'));
   }
 
+  toggleChallengeDeck() {
+    this.beforeChallengeDeck(new ChallengeDeckChange(gameManager.game.challengeDeck, gameManager.game.challengeDeck.active ? 'challengeDeck.hide' : 'challengeDeck.show'));
+    gameManager.game.challengeDeck.active = !gameManager.game.challengeDeck.active;
+    this.afterChallengeDeck(new ChallengeDeckChange(gameManager.game.challengeDeck, !gameManager.game.challengeDeck.active ? 'challengeDeck.hide' : 'challengeDeck.show'));
+  }
 }

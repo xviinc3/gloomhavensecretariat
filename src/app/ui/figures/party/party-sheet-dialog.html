@@ -155,6 +155,9 @@
           <img *ngIf="worldMap" (click)="openMap()" src="./assets/images/map.svg" [ghs-tooltip]="'party.campaign.map'">
         </span>
 
+        <span class="next" *ngIf="party.weeks == (80 + 80*calendarSheet)" (click)="setWeek(party.weeks+1)"><span
+            [ghs-label]="'party.campaign.sheet.nextWeek'"></span> <img src="./assets/images/right.svg"></span>
+
         <div class="weeks">
           <div class="week" *ngFor="let week of [] | ghsRange:80; let index = index" ghs-pointer-input
             [ghs-tooltip]="'party.campaign.sheet.weekSections.hint'" (singleClick)="setWeek(index+1 + 80*calendarSheet)"
@@ -171,12 +174,10 @@
               {{section}}
             </div>
           </div>
-          <span class="next" *ngIf="party.weeks == (80 + 80*calendarSheet)" (click)="setWeek(party.weeks+1)"><span
-              [ghs-label]="'party.campaign.sheet.nextWeek'"></span> <img src="./assets/images/right.svg"></span>
         </div>
 
         <div class="name">
-          <label><span [ghs-label]="'party.campaign.sheet.name'"></span>:</label>
+          <label><span [ghs-label]="'party.campaign.sheet.name'"></span></label>
           <input type="text" [value]="party.name" (change)="setName($event)" [ghs-label]="'party.campaign.sheet.name'"
             [ghs-label-attribute]="'placeholder'">
 
@@ -294,8 +295,10 @@
                 <span>{{level+1}}</span>
               </label>
               <div class="soldiers-line">
-                <div class="soldier" *ngFor="let soldier of [] | ghsRange:(level > 0 ? 2 : 4);"
-                  (click)="setSoldiers(soldier + (level > 0 ? 2 + level * 2 : 0) + 1)">
+                <div class="soldier" *ngFor="let soldier of [] | ghsRange:(level > 0 ? 2 : 4);" ghs-pointer-input
+                  (singleClick)="setSoldiers(soldier + (level > 0 ? 2 + level * 2 : 0) + 1)"
+                  (doubleClick)="setSoldiers(soldier + (level > 0 ? 2 + level * 2 : 0) + 1, true)"
+                  [ngClass]="{'disabled' : (soldier + (level > 0 ? 2 + level * 2 : 0))  >= party.soldiers + (soldierAvailable() ? 1 : 0)}">
                   <img src="./assets/images/fh/party/soldier.svg">
                   <div class="check"
                     [ngClass]="{'checked' : (soldier + (level > 0 ? 2 + level * 2 : 0)) < party.soldiers}"></div>
@@ -378,20 +381,20 @@
         </div>
 
         <div class="campaign-stickers">
-          <form class="header" (submit)="addCampaignSticker(campaignSticker)">
+          <form class="header" (submit)="addCampaignSticker(campaignStickerEl)">
             <label><span [ghs-label]="'party.campaign.sheet.campaignStickers'"></span></label>
-            <input type="text" #campaignSticker [autocomplete]="campaignStickers"
+            <input type="text" #campaignStickerEl [autocomplete]="campaignStickers"
               [emptyLabel]="'party.campaign.sheet.campaignStickers.empty'"
               [ghs-label]="'party.campaign.sheet.campaignStickers'" [ghs-label-attribute]="'placeholder'"
-              (keyup.enter)="addCampaignSticker(campaignSticker)">
-            <img src="./assets/images/plus.svg" (click)="addCampaignSticker(campaignSticker)">
+              (keyup.enter)="addCampaignSticker(campaignStickerEl)">
+            <img src="./assets/images/plus.svg" (click)="addCampaignSticker(campaignStickerEl)">
           </form>
           <div class="stickers ignore-denied"
             [ngClass]="{'denied' : gameManager.stateManager.permissions && !gameManager.stateManager.permissions.party}">
             <div class="sticker" *ngFor="let sticker of party.campaignStickers; let index = index">
-              <span class="text" *ngIf="!campaignStickerImage(sticker,index)">{{sticker}}</span>
+              <span class="text" *ngIf="!campaignStickerImage(sticker,index)" [ghs-label]="'data.campaignSticker.' + sticker"></span>
               <img *ngIf="campaignStickerImage(sticker,index)" class="image" [src]="campaignStickerImage(sticker,index)"
-                [title]="sticker">
+              [ghs-tooltip]="'data.campaignSticker.' + sticker">
               <img class="remove" src="./assets/images/minus.svg" (click)="removeCampaignSticker(sticker)">
             </div>
           </div>
@@ -477,7 +480,7 @@
                 [ghs-tooltip]="scenarioData.isBlocked ? 'scenario.blocked' : (scenarioData.isLocked ? 'scenario.locked'  : '')"
                 [toggable]="false" (click)="scenarioRequirements(scenarioData)">
                 <img *ngIf="scenarioData.isBlocked || scenarioData.isLocked" src="./assets/images/close.svg">
-                <span [ghs-label]="'data.scenario.' + scenarioData.name"></span>
+                <span [ghs-label]="gameManager.scenarioManager.scenarioTitle(scenarioData)"></span>
               </span>
               <span>
                 <span class="spacer"></span>
@@ -552,7 +555,8 @@
                     <span *ngIf="scenarioData.group" [ghs-label]="'data.scenario.group.' + scenarioData.group"></span>
                   </span>
                   <span class="scenario-title">
-                    <span *ngIf="scenarioData.named" [ghs-label]="'data.scenario.' + scenarioData.name"></span>
+                    <span *ngIf="scenarioData.named"
+                      [ghs-label]="gameManager.scenarioManager.scenarioTitle(scenarioData)"></span>
                     <span *ngIf="scenarioData.parent"
                       [ghs-label]="'%data.scenarioNumber:' + scenarioData.parent + '%'"></span>
                   </span>
@@ -584,11 +588,20 @@
         </div>
 
         <div class="prosperity" *ngIf="gameManager.fhRules() || gameManager.editionRules('gh')"
-          [ngClass]="{'fh' : settingsManager.settings.fhStyle}">
-          <div class="legend" (click)="setProsperity(0)">
-            <div class="level"><span [ghs-label]="'party.prosperity'"></span> <img
-                *ngIf="settingsManager.settings.fhStyle" src="./assets/images/fh/prosperity.svg">:</div>
-            <div class="check" *ngIf="!settingsManager.settings.fhStyle">
+          [ngClass]="{'fh' : settingsManager.settings.fhStyle, 'wrapped': settingsManager.settings.wrapProsperity}">
+          <div class="legend">
+            <div class="level">
+              <span [ghs-label]="'party.prosperity'" [ghs-tooltip]="'party.prosperity.reset'"
+                (click)="setProsperity(0)"></span>
+              <img *ngIf="settingsManager.settings.fhStyle" [ghs-tooltip]="'party.prosperity.reset'"
+                src="./assets/images/fh/prosperity.svg" (click)="setProsperity(0)">
+              <span>:</span>
+              <img class="toggle-wrapped" (click)="settingsManager.toggle('wrapProsperity')"
+                [ghs-tooltip]="'party.prosperity.wrap.' + (settingsManager.settings.wrapProsperity ? 'shrink' : 'expand')"
+                [src]="'./assets/images/' + (settingsManager.settings.wrapProsperity ? 'shrink' : 'expand') + '.svg'">
+            </div>
+            <div class="check" *ngIf="!settingsManager.settings.fhStyle" [ghs-tooltip]="'party.prosperity.reset'"
+              (click)="setProsperity(0)">
               <span class="checkbox checked disabled"></span><span>:</span>
             </div>
           </div>
@@ -762,7 +775,7 @@
                 <div class="available-characters" *ngIf="availableCharacters[index]">
                   <a class="available-character" *ngFor="let characterModel of availableCharacters[index]"
                     ghs-pointer-input (singleClick)="openCharacterSheet(characterModel)"
-                    (doubleClick)="replayCharacter(characterModel)" [ghs-tooltip]="'character.replay'">
+                    (doubleClick)="replayCharacter(characterModel)" [ghs-tooltip]="'character.replay.hint'">
                     <img
                       [src]="'./assets/images/character/icons/' + characterModel.edition + '-' + characterModel.name + '.svg'" />
                   </a>
@@ -825,9 +838,12 @@
           </div>
         </div>
 
-        <div class="row time">
+        <div class="row bottom-sheet">
           <span [ghs-label]="'party.campaign.totalTime'"
             [ghs-label-args]="[(gameManager.game.totalSeconds| ghsDurationLabel:true)]"></span>
+          <span class="spacer"></span>
+          <a (click)="statistics()" [ghs-tooltip]="'scenario.stats'"><img class="ghs-svg"
+              src="./assets/images/stats.svg"></a>
         </div>
       </div>
     </div>

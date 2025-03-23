@@ -1,403 +1,1149 @@
 {
-    "character": {
-        "brute": "Brute",
-        "cragheart": "Cragheart",
-        "mindthief": "Mindthief",
-        "scoundrel": "Scoundrel",
-        "spellweaver": "Spellweaver",
-        "tinkerer": "Tinkerer"
+  "ability": {
+    "A Moment's Peace": "A Moment's Peace",
+    "Accelerated End": "Accelerated End",
+    "Amputate": "Amputate",
+    "Ancient WDard": "Ancient WDard",
+    "Angel of Death": "Angel of Death",
+    "Angelic Ascension": "Angelic Ascension",
+    "Armor of the Jlight": "Armor of the Jlight",
+    "Aualanche": "Aualanche",
+    "Backstab": "Backstab",
+    "Backup Hmmunition": "Backup Hmmunition",
+    "Bag of Holding": "Bag of Holding",
+    "Balanced Measure": "Balanced Measure",
+    "Baneful Hex": "Baneful Hex",
+    "Battlefield Medicine": "Battlefield Medicine",
+    "Beacon of Light": "Beacon of Light",
+    "Bedside Mllanner": "Bedside Mllanner",
+    "Bentleman s Anger": "Bentleman s Anger",
+    "Biting Gnats": "Biting Gnats",
+    "Biting Wind": "Biting Wind",
+    "Black Arrot": "Black Arrot",
+    "Black Fire": "Black Fire",
+    "Black Hole": "Black Hole",
+    "Black Knives": "Black Knives",
+    "Black Tides": "Black Tides",
+    "Bladed Boomerang": "Bladed Boomerang",
+    "Blind Destruction": "Blind Destruction",
+    "Blistering Uortex": "Blistering Uortex",
+    "Blood Hunger": "Blood Hunger",
+    "Blood Pact": "Blood Pact",
+    "Blood Transfusion": "Blood Transfusion",
+    "Bloody Saw": "Bloody Saw",
+    "Blunt Force": "Blunt Force",
+    "Boiling Arc": "Boiling Arc",
+    "Bonded Might": "Bonded Might",
+    "Bone Breaker": "Bone Breaker",
+    "Booming Proclamation": "Booming Proclamation",
+    "Booster Shot": "Booster Shot",
+    "Borrowed Essence": "Borrowed Essence",
+    "Bounce Back": "Bounce Back",
+    "Brain Leech": "Brain Leech",
+    "Break the Chains": "Break the Chains",
+    "Bright Aegis": "Bright Aegis",
+    "Brilliant Flash": "Brilliant Flash",
+    "Brilliant Prayer": "Brilliant Prayer",
+    "Brisly Trauma": "Brisly Trauma",
+    "Brutal Momentum": "Brutal Momentum",
+    "Brute Force": "Brute Force",
+    "Burial": "Burial",
+    "Burning Flash": "Burning Flash",
+    "Burning Hatred": "Burning Hatred",
+    "Burning Uil": "Burning Uil",
+    "Calastrophic Bomb": "Calastrophic Bomb",
+    "Call to Action": "Call to Action",
+    "Camouflage": "Camouflage",
+    "Captidating Performance": "Captidating Performance",
+    "Careless Charge": "Careless Charge",
+    "Carthen Clod": "Carthen Clod",
+    "Cataclysm": "Cataclysm",
+    "Cauterize": "Cauterize",
+    "Cautious Adance": "Cautious Adance",
+    "Chain Lightning": "Chain Lightning",
+    "Change Tempo": "Change Tempo",
+    "Chimeric Formula": "Chimeric Formula",
+    "Chromatic Explosion": "Chromatic Explosion",
+    "Claws of the llight": "Claws of the llight",
+    "Cleansing Force": "Cleansing Force",
+    "Clear the Way": "Clear the Way",
+    "Cleaving Axe": "Cleaving Axe",
+    "Cloak of Shade": "Cloak of Shade",
+    "Cloom Darts": "Cloom Darts",
+    "Clorious Bolt": "Clorious Bolt",
+    "Cold Fire": "Cold Fire",
+    "Cold Front": "Cold Front",
+    "Commanding Presence": "Commanding Presence",
+    "Concealed Dominance": "Concealed Dominance",
+    "Concentrated Rage": "Concentrated Rage",
+    "Conjured Hid": "Conjured Hid",
+    "Continual Supply": "Continual Supply",
+    "Convert the Flock": "Convert the Flock",
+    "Corrupting Embrace": "Corrupting Embrace",
+    "Cpidemic": "Cpidemic",
+    "Crackling Hir": "Crackling Hir",
+    "Cranium Overload": "Cranium Overload",
+    "Crank Bot": "Crank Bot",
+    "Crashing Wade": "Crashing Wade",
+    "Crater": "Crater",
+    "Creeping Curse": "Creeping Curse",
+    "Crippling Bow": "Crippling Bow",
+    "Crippling Chorus": "Crippling Chorus",
+    "Crippling Offensive": "Crippling Offensive",
+    "Crippling Poison": "Crippling Poison",
+    "Crippling lloose": "Crippling lloose",
+    "Crushing Grasp": "Crushing Grasp",
+    "Crushing Hammer": "Crushing Hammer",
+    "Crystallizing Blast": "Crystallizing Blast",
+    "Cull the Weak": "Cull the Weak",
+    "Curatide Herosol": "Curatide Herosol",
+    "Curative Mixture": "Curative Mixture",
+    "Cuthanize": "Cuthanize",
+    "Dancing Shadows": "Dancing Shadows",
+    "Dangerous Contraption": "Dangerous Contraption",
+    "Dark Cloud": "Dark Cloud",
+    "Dark Frenzy": "Dark Frenzy",
+    "Darkened Skies": "Darkened Skies",
+    "Daybreak": "Daybreak",
+    "Dazing Wound": "Dazing Wound",
+    "Dazzling Charge": "Dazzling Charge",
+    "Defensite": "Defensite",
+    "Defensive Stance": "Defensive Stance",
+    "Defensive Tactics": "Defensive Tactics",
+    "Defiance of Death": "Defiance of Death",
+    "Detonation": "Detonation",
+    "Devastating Hack": "Devastating Hack",
+    "Devil Horns": "Devil Horns",
+    "Dig Pit": "Dig Pit",
+    "Dirt Tornado": "Dirt Tornado",
+    "Disappearing Wounds": "Disappearing Wounds",
+    "Disintegration Beam": "Disintegration Beam",
+    "Disorienting Dirge": "Disorienting Dirge",
+    "Disorienting Flash": "Disorienting Flash",
+    "Disorienting Roar": "Disorienting Roar",
+    "Divided Mind": "Divided Mind",
+    "Divine Interoention": "Divine Interoention",
+    "Do Ilo Harm": "Do Ilo Harm",
+    "Domination": "Domination",
+    "Doomed Breeze": "Doomed Breeze",
+    "Duelist s Advance": "Duelist s Advance",
+    "Earthen Spikes": "Earthen Spikes",
+    "Earthen Steed": "Earthen Steed",
+    "Echoing Aria": "Echoing Aria",
+    "Elemental Aid": "Elemental Aid",
+    "Elemental Hegis": "Elemental Hegis",
+    "Empathetic Assault": "Empathetic Assault",
+    "Empowering Command": "Empowering Command",
+    "Empowering Void": "Empowering Void",
+    "Encompassing Shadow": "Encompassing Shadow",
+    "Endless Spikes": "Endless Spikes",
+    "Enerdating Wound": "Enerdating Wound",
+    "Energizing Strire": "Energizing Strire",
+    "Energizing Tonic": "Energizing Tonic",
+    "Engulfed in Flames": "Engulfed in Flames",
+    "Engulfng Radiance": "Engulfng Radiance",
+    "Enhancement Field": "Enhancement Field",
+    "Eternal Equilibrium": "Eternal Equilibrium",
+    "Ethereal Mllanifestation": "Ethereal Mllanifestation",
+    "Ethereal Uines": "Ethereal Uines",
+    "Explosive Punch": "Explosive Punch",
+    "Expose": "Expose",
+    "Eye for an Eye": "Eye for an Eye",
+    "Eye of the Hurricane": "Eye of the Hurricane",
+    "Eyes of the Ilight": "Eyes of the Ilight",
+    "Face Your End": "Face Your End",
+    "Fanking Strike": "Fanking Strike",
+    "Fatal Advance": "Fatal Advance",
+    "Fatal Fury": "Fatal Fury",
+    "Fearsome Blade": "Fearsome Blade",
+    "Feedback Loop": "Feedback Loop",
+    "Felling": "Felling",
+    "Feral Instincts": "Feral Instincts",
+    "Fetid Flurry": "Fetid Flurry",
+    "Final Fight": "Final Fight",
+    "Fire Orbs": "Fire Orbs",
+    "First Aid": "First Aid",
+    "Flame Strike": "Flame Strike",
+    "Flamethrower": "Flamethrower",
+    "Flashing Burst": "Flashing Burst",
+    "Flight of Flame": "Flight of Flame",
+    "Flintlock": "Flintlock",
+    "Flurry of Axes": "Flurry of Axes",
+    "Flurry of Blades": "Flurry of Blades",
+    "Focused Aggression": "Focused Aggression",
+    "Foot Snare": "Foot Snare",
+    "Forceful Storm": "Forceful Storm",
+    "Forceful Swipe": "Forceful Swipe",
+    "Forged Ferocity": "Forged Ferocity",
+    "Forked Beam": "Forked Beam",
+    "Formless Power": "Formless Power",
+    "Fortified Position": "Fortified Position",
+    "Foul Wind": "Foul Wind",
+    "Freezing Iloda": "Freezing Iloda",
+    "Frenzied Onslaught": "Frenzied Onslaught",
+    "Fresh Kill": "Fresh Kill",
+    "Frightening Curse": "Frightening Curse",
+    "Frigid Apparition": "Frigid Apparition",
+    "Frigid Torrent": "Frigid Torrent",
+    "From the Brink": "From the Brink",
+    "Frost Armor": "Frost Armor",
+    "Frozen Ilight": "Frozen Ilight",
+    "Frozen Mind": "Frozen Mind",
+    "Furious Aid": "Furious Aid",
+    "Gas Canister": "Gas Canister",
+    "Gathering Doom": "Gathering Doom",
+    "Giant Club": "Giant Club",
+    "Glass Hammer": "Glass Hammer",
+    "Gnawing Horde": "Gnawing Horde",
+    "Grab and Go": "Grab and Go",
+    "Grasping Vermin": "Grasping Vermin",
+    "Grasping the Void": "Grasping the Void",
+    "Gravel Uortex": "Gravel Uortex",
+    "Grim Bargain": "Grim Bargain",
+    "Grim Sustenance": "Grim Sustenance",
+    "Growing Rage": "Growing Rage",
+    "Gruesome Addantage": "Gruesome Addantage",
+    "Hammer Blot": "Hammer Blot",
+    "Hamstring": "Hamstring",
+    "Hand of the Surgeon": "Hand of the Surgeon",
+    "Hardened Spikes": "Hardened Spikes",
+    "Harmless Contraption": "Harmless Contraption",
+    "Harsh Stimulants": "Harsh Stimulants",
+    "Hastened Step": "Hastened Step",
+    "Heaving Swing": "Heaving Swing",
+    "Hid from the Ether": "Hid from the Ether",
+    "Hidden Daggers": "Hidden Daggers",
+    "Hirborne Toxin": "Hirborne Toxin",
+    "Hold Back the Pain": "Hold Back the Pain",
+    "Holy Strike": "Holy Strike",
+    "Hook Gun": "Hook Gun",
+    "Hook and Chain": "Hook and Chain",
+    "Horned Majesty": "Horned Majesty",
+    "Hostile Takeover": "Hostile Takeover",
+    "Howling Bolfs": "Howling Bolfs",
+    "Huto Turret": "Huto Turret",
+    "IDild Command": "IDild Command",
+    "Ice Spikes": "Ice Spikes",
+    "Icy Blast": "Icy Blast",
+    "Iistful Wounding": "Iistful Wounding",
+    "Ilature s Hunger": "Ilature s Hunger",
+    "Ilet Shooter": "Ilet Shooter",
+    "Ilild Animation": "Ilild Animation",
+    "Ilimble Knife": "Ilimble Knife",
+    "Illuminate the Target": "Illuminate the Target",
+    "Iloxious Uials": "Iloxious Uials",
+    "Immortality": "Immortality",
+    "Immovable Phalanx": "Immovable Phalanx",
+    "Impaling Eruption": "Impaling Eruption",
+    "Impaling Spear": "Impaling Spear",
+    "Impending End": "Impending End",
+    "Inescapable Fate": "Inescapable Fate",
+    "Inexorable Momentum": "Inexorable Momentum",
+    "Infernal Uortex": "Infernal Uortex",
+    "Inferno": "Inferno",
+    "Info the Night": "Info the Night",
+    "Ink Bomb": "Ink Bomb",
+    "Inspiring Anthem": "Inspiring Anthem",
+    "Inspiring Sanctity": "Inspiring Sanctity",
+    "Interdening Apparitions": "Interdening Apparitions",
+    "Interplanar Mastery": "Interplanar Mastery",
+    "Iron Bulwark": "Iron Bulwark",
+    "Jaws of Death": "Jaws of Death",
+    "Jet Propulsion": "Jet Propulsion",
+    "Juggernaut": "Juggernaut",
+    "Kinetic Assault": "Kinetic Assault",
+    "King of the Hill": "King of the Hill",
+    "Large Medical Pack": "Large Medical Pack",
+    "Lash Out": "Lash Out",
+    "Lava Eruption": "Lava Eruption",
+    "Lay on Hands": "Lay on Hands",
+    "Lead to Slaughter": "Lead to Slaughter",
+    "Leaping Cleave": "Leaping Cleave",
+    "Leathery E": "Leathery E",
+    "Lethal Injection": "Lethal Injection",
+    "Living Ilight": "Living Ilight",
+    "Living Mountain": "Living Mountain",
+    "Living Torch": "Living Torch",
+    "Long Con": "Long Con",
+    "Lumbering Bash": "Lumbering Bash",
+    "Lurking Ruin": "Lurking Ruin",
+    "Mana Bolt": "Mana Bolt",
+    "Many as One": "Many as One",
+    "Marching Beat": "Marching Beat",
+    "Mass Extinction": "Mass Extinction",
+    "Mass Hysteria": "Mass Hysteria",
+    "Massive Boulder": "Massive Boulder",
+    "Master Physician": "Master Physician",
+    "Maul": "Maul",
+    "Medical Pack": "Medical Pack",
+    "Melody and Harmony": "Melody and Harmony",
+    "Meteor": "Meteor",
+    "Micro Bots": "Micro Bots",
+    "Mighty Bond": "Mighty Bond",
+    "Mllalleable Evocation": "Mllalleable Evocation",
+    "Mobile Response": "Mobile Response",
+    "Mobilizing Axiom": "Mobilizing Axiom",
+    "Mobilizing Measure": "Mobilizing Measure",
+    "Multi Pronged Assault": "Multi Pronged Assault",
+    "Murderous Contraption": "Murderous Contraption",
+    "Natural Remedy": "Natural Remedy",
+    "Nature's Lift": "Nature's Lift",
+    "Negative Energy": "Negative Energy",
+    "Nightfall": "Nightfall",
+    "Nightmare Serenade": "Nightmare Serenade",
+    "Nightmarish Affliction": "Nightmarish Affliction",
+    "Numb the Pain": "Numb the Pain",
+    "Obsidian Shards": "Obsidian Shards",
+    "Oozing Manifestation": "Oozing Manifestation",
+    "Open Wound": "Open Wound",
+    "Opposing Strike": "Opposing Strike",
+    "Overhelming Assault": "Overhelming Assault",
+    "Owersized Pack": "Owersized Pack",
+    "Pains End": "Pains End",
+    "Palch Fur": "Palch Fur",
+    "Paralyzing Bite": "Paralyzing Bite",
+    "Parasitic Influence": "Parasitic Influence",
+    "Path of": "Path of",
+    "Perverse Edge": "Perverse Edge",
+    "Petrify": "Petrify",
+    "Phantasmal Killer": "Phantasmal Killer",
+    "Pilfer": "Pilfer",
+    "Portable Ballista": "Portable Ballista",
+    "Possesion": "Possesion",
+    "Potent Potables": "Potent Potables",
+    "Power Ballad": "Power Ballad",
+    "Practical Plans": "Practical Plans",
+    "Pragmatic Reinforcement": "Pragmatic Reinforcement",
+    "Precaution": "Precaution",
+    "Predator and Prey": "Predator and Prey",
+    "Prep for Surgery": "Prep for Surgery",
+    "Prepare for the Kill": "Prepare for the Kill",
+    "Prescription": "Prescription",
+    "Press the Attack": "Press the Attack",
+    "Prevention Is Key": "Prevention Is Key",
+    "Primal Blessing": "Primal Blessing",
+    "Primal Duality": "Primal Duality",
+    "Proficiency": "Proficiency",
+    "Protective Blessing": "Protective Blessing",
+    "Prouoke Terror": "Prouoke Terror",
+    "Provoking Roar": "Provoking Roar",
+    "Proximity Mine": "Proximity Mine",
+    "Psychic Projection": "Psychic Projection",
+    "Pull the Strings": "Pull the Strings",
+    "Pulverize": "Pulverize",
+    "Punch Through": "Punch Through",
+    "Pure Augmentation": "Pure Augmentation",
+    "Purifying Hura": "Purifying Hura",
+    "Quick Hands": "Quick Hands",
+    "Quiet Frenzy": "Quiet Frenzy",
+    "Quietus": "Quietus",
+    "Quiver of Arrows": "Quiver of Arrows",
+    "Race to the Grade": "Race to the Grade",
+    "Rain of Arrows": "Rain of Arrows",
+    "Rampage": "Rampage",
+    "Raw Enhancement": "Raw Enhancement",
+    "Reckless Offensive": "Reckless Offensive",
+    "Redibing Ether": "Redibing Ether",
+    "Reforge": "Reforge",
+    "Refreshment": "Refreshment",
+    "Regeneratite Tissue": "Regeneratite Tissue",
+    "Reinforced Steel": "Reinforced Steel",
+    "Reinvigorating Clixir": "Reinvigorating Clixir",
+    "Relentless Ally": "Relentless Ally",
+    "Relentless Offenside": "Relentless Offenside",
+    "Research the Cure": "Research the Cure",
+    "Reserved Energy": "Reserved Energy",
+    "Resolute Stand": "Resolute Stand",
+    "Restock": "Restock",
+    "Restoratite Mist": "Restoratite Mist",
+    "Reviving Shock": "Reviving Shock",
+    "Ride the Wind": "Ride the Wind",
+    "Righteous Strength": "Righteous Strength",
+    "Rising Momentum": "Rising Momentum",
+    "Rock Slide": "Rock Slide",
+    "Rock Tunnel": "Rock Tunnel",
+    "Rocky End": "Rocky End",
+    "Rot Ilaggots": "Rot Ilaggots",
+    "Rumbling Advance": "Rumbling Advance",
+    "Sacrifice": "Sacrifice",
+    "Sap Life": "Sap Life",
+    "Scales of Justice": "Scales of Justice",
+    "Scattered Terror": "Scattered Terror",
+    "Scroll of Annihilation": "Scroll of Annihilation",
+    "Scroll of Blizzards": "Scroll of Blizzards",
+    "Scroll of Judgment": "Scroll of Judgment",
+    "Scroll of Lightning": "Scroll of Lightning",
+    "Scroll of Recall": "Scroll of Recall",
+    "Scurry": "Scurry",
+    "Seeing Red": "Seeing Red",
+    "Selfish Retribution": "Selfish Retribution",
+    "Sentient Growth": "Sentient Growth",
+    "Shadow Puppets": "Shadow Puppets",
+    "Shaping the Ether": "Shaping the Ether",
+    "Shared Nightmare": "Shared Nightmare",
+    "Sharpening Kit": "Sharpening Kit",
+    "Shield Bash": "Shield Bash",
+    "Shiny Distraction": "Shiny Distraction",
+    "Side Pouch": "Side Pouch",
+    "Silent Force": "Silent Force",
+    "Silent Scream": "Silent Scream",
+    "Simulacrum": "Simulacrum",
+    "Singing Arrow": "Singing Arrow",
+    "Single Out": "Single Out",
+    "Singular Focus": "Singular Focus",
+    "Sinister Opportunity": "Sinister Opportunity",
+    "Sione Sigil": "Sione Sigil",
+    "Skewer": "Skewer",
+    "Skirmishing Maneuver": "Skirmishing Maneuver",
+    "Smoke": "Smoke",
+    "Smoke Bomb": "Smoke Bomb",
+    "Soaring Ally": "Soaring Ally",
+    "Solid Bot": "Solid Bot",
+    "Song of Speed": "Song of Speed",
+    "Soothing Lullaby": "Soothing Lullaby",
+    "Soulfire": "Soulfire",
+    "Spare Dagger": "Spare Dagger",
+    "Special Mixture": "Special Mixture",
+    "Spiked Armor": "Spiked Armor",
+    "Spirit Swap": "Spirit Swap",
+    "Spirit of Doom": "Spirit of Doom",
+    "Spirit of the Ilight": "Spirit of the Ilight",
+    "Spread the Plague": "Spread the Plague",
+    "Spreading Scourge": "Spreading Scourge",
+    "Spring the Trap": "Spring the Trap",
+    "Staff of Uisions": "Staff of Uisions",
+    "Stamina Booster": "Stamina Booster",
+    "Stick to the Shadows": "Stick to the Shadows",
+    "Stiletto Storm": "Stiletto Storm",
+    "Stinging Cloud": "Stinging Cloud",
+    "Stoking Hail": "Stoking Hail",
+    "Stone Fists": "Stone Fists",
+    "Stone Pummel": "Stone Pummel",
+    "Storm Sigil": "Storm Sigil",
+    "Storm of": "Storm of",
+    "Strength in llumbers": "Strength in llumbers",
+    "Strengthen in Agony": "Strengthen in Agony",
+    "Stun Shot": "Stun Shot",
+    "Submissive Affliction": "Submissive Affliction",
+    "Succumb fo the Gift": "Succumb fo the Gift",
+    "Supportive Chant": "Supportive Chant",
+    "Surgeon's Satchel": "Surgeon's Satchel",
+    "Swallowed by Fear": "Swallowed by Fear",
+    "Sweeping Blow": "Sweeping Blow",
+    "Swift Bow": "Swift Bow",
+    "Swift Trickery": "Swift Trickery",
+    "Syringe": "Syringe",
+    "Tactical Order": "Tactical Order",
+    "Teamwork": "Teamwork",
+    "Tear the Fabric": "Tear the Fabric",
+    "Terror Blade": "Terror Blade",
+    "The Hunt Begins": "The Hunt Begins",
+    "The Maw of Madness": "The Maw of Madness",
+    "The Mind's Weakness": "The Mind's Weakness",
+    "Thief s Knack": "Thief s Knack",
+    "Throw Uoice": "Throw Uoice",
+    "Throwing Knives": "Throwing Knives",
+    "Tinkerer s Tools": "Tinkerer s Tools",
+    "Toxic Bolt": "Toxic Bolt",
+    "Trample": "Trample",
+    "Tranquil Trill": "Tranquil Trill",
+    "Tremulant Cyclone": "Tremulant Cyclone",
+    "Triage": "Triage",
+    "Tribal Sigil": "Tribal Sigil",
+    "Trickster S Reversal": "Trickster S Reversal",
+    "Tuning the Outcome": "Tuning the Outcome",
+    "Twin Restoration": "Twin Restoration",
+    "Tyrannical Force": "Tyrannical Force",
+    "Uaccine": "Uaccine",
+    "Uengeance": "Uengeance",
+    "Uenom Shio": "Uenom Shio",
+    "Uicious": "Uicious",
+    "Uile Pestilence": "Uile Pestilence",
+    "Uital Charge": "Uital Charge",
+    "Uital Strike": "Uital Strike",
+    "Unbridled Power": "Unbridled Power",
+    "Under the Skin": "Under the Skin",
+    "Unending Chant": "Unending Chant",
+    "Unending Dominance": "Unending Dominance",
+    "Unseen bread": "Unseen bread",
+    "Unstable Upheadal": "Unstable Upheadal",
+    "Unstoppable Beast": "Unstoppable Beast",
+    "Unstoppable Chard": "Unstoppable Chard",
+    "Unstoppable Destruction": "Unstoppable Destruction",
+    "Unwadering Hand": "Unwadering Hand",
+    "Unwadering Mandate": "Unwadering Mandate",
+    "Uoice of the Ilight": "Uoice of the Ilight",
+    "Uolatile Concoction": "Uolatile Concoction",
+    "Uolatile Consumption": "Uolatile Consumption",
+    "Uolatile Flame": "Uolatile Flame",
+    "Utherworldly Rage": "Utherworldly Rage",
+    "Vengeful Barrage": "Vengeful Barrage",
+    "Venomous Hlly": "Venomous Hlly",
+    "Vicious Blood": "Vicious Blood",
+    "Virulent Strain": "Virulent Strain",
+    "Visage of the Inevitable": "Visage of the Inevitable",
+    "Wall of Doom": "Wall of Doom",
+    "Warding Dagger": "Warding Dagger",
+    "Warding Strength": "Warding Strength",
+    "Watch It Burn": "Watch It Burn",
+    "Weapon of Purity": "Weapon of Purity",
+    "Whirlwind": "Whirlwind",
+    "Winged Congregation": "Winged Congregation",
+    "Wings of the Night": "Wings of the Night",
+    "Winter s Edge": "Winter s Edge",
+    "Withering Claw": "Withering Claw",
+    "Wretched Creature": "Wretched Creature",
+    "Wretched Swarm": "Wretched Swarm",
+    "Zephyr": "Zephyr"
+  },
+  "battleGoals": {
+    "458": {
+      "": "Streamliner",
+      "text": "Have five or more total cards in your hand and discard at the end of the scenario."
     },
-    "edition": {
-        "gh": "Gloomhaven"
+    "459": {
+      "": "Layabout",
+      "text": "Gain 7 or fewer experience points during the scenario."
     },
-    "monster": {
-        "ancient-artillery": "Ancient Artillery",
-        "arcane-golem": "Arcane Golem",
-        "bandit-archer": "Bandit Archer",
-        "bandit-commander": "Bandit Commander",
-        "bandit-guard": "Bandit Guard",
-        "black-imp": "Black Imp",
-        "bloated-regent": "Bloated Regent",
-        "captain-of-the-guard": "Captain of the Guard",
-        "cave-bear": "Cave Bear",
-        "city-archer": "City Archer",
-        "city-guard": "City Guard",
-        "cultist": "Cultist",
-        "dark-rider": "Dark Rider",
-        "deep-terror": "Deep Terror",
-        "earth-demon": "Earth Demon",
-        "elder-drake": "Elder Drake",
-        "flame-demon": "Flame Demon",
-        "forest-imp": "Forest Imp",
-        "frost-demon": "Frost Demon",
-        "giant-ooze": "Giant Ooze",
-        "giant-viper": "Giant Viper",
-        "harrower-infester": "Harrower Infester",
-        "hound": "Hound",
-        "hungry-soul": "Hungry Soul",
-        "infiltrator": "Infiltrator",
-        "inox-archer": "Inox Archer",
-        "inox-bodyguard": "Inox Bodyguard",
-        "inox-guard": "Inox Guard",
-        "inox-shaman": "Inox Shaman",
-        "jekserah": "Jekserah",
-        "living-bones": "Living Bones",
-        "living-corpse": "Living Corpse",
-        "living-spirit": "Living Spirit",
-        "lurker": "Lurker",
-        "lurker-king": "Lurker King",
-        "merciless-overseer": "Merciless Overseer",
-        "night-demon": "Night Demon",
-        "ooze": "Ooze",
-        "prime-demon": "Prime Demon",
-        "prime-lieutenant": "Prime Lieutenant",
-        "rending-drake": "Rending Drake",
-        "savvas-icestorm": "Savvas Icestorm",
-        "savvas-lavaflow": "Savvas Lavaflow",
-        "siege-cannon": "Siege Cannon",
-        "spitting-drake": "Spitting Drake",
-        "stone-golem": "Stone Golem",
-        "sun-demon": "Sun Demon",
-        "the-betrayer": "The Betrayer",
-        "the-colorless": "The Colorless",
-        "the-gloom": "The Gloom",
-        "the-harvester": "The Harvester",
-        "the-sightless-eye": "The Sightless Eye",
-        "vermling-scout": "Vermling Scout",
-        "vermling-shaman": "Vermling Shaman",
-        "wind-demon": "Wind Demon",
-        "winged-horror": "Winged Horror"
+    "460": {
+      "": "Workhorse",
+      "text": "Gain 13 or more experience points during the scenario."
     },
-    "objective": {
-        "zephyr": "Zephyr"
+    "461": {
+      "": "Zealot",
+      "text": "Have three or fewer total cards in your hand and discard at the end of the scenario."
     },
-    "deck": {
-        "archer": "Archer",
-        "boss": "Boss",
-        "guard": "Guard",
-        "imp": "Imp",
-        "scout": "Scout",
-        "shaman": "Shaman"
+    "462": {
+      "": "Masochist",
+      "text": "Your current hit point value must be equal to or less than 2 at the end of the scenario."
     },
-    "ability": {},
-    "scenario": {
-        "group": {
-            "randomDungeon": "%scenario.random%",
-            "randomMonsterCard": "Random Monster Cards"
-        },
-        "rules": {
-            "gh": {
-                "19": {
-                    "1": "towards the altar %game.mapMarker.b%"
-                },
-                "22": {
-                    "1": "For each altar that isn't destroyed, regardless of whether it has been revealed, the maximum hit point and attack values of all demons is increased by 1 and their movement and range values are increased by 0.5 (rounded up). Melee attacks do not increase in range."
-                },
-                "36": {
-                    "1": "The Prime Demon starts the scenario with twice the number of hit points indicated on its stat card."
-                },
-                "38": {
-                    "1": "towards the shaman on the D tile"
-                },
-                "42": {
-                    "1": "All monsters add +1 %game.action.attack% to all their attacks",
-                    "2": "All monsters gain Advantage on all their attacks",
-                    "3": "All monsters heal 1 hit point at the start of each of their turns",
-                    "4": "All characters and character summons suffer 1 damage at the start of each of their turns.",
-                    "5": "All characters and character summons gain Disadvantage on all their attacks.",
-                    "6": "All characters and character summons deduct -1 Attack from all their attacks."
-                },
-                "54": {
-                    "1": "All Cave Bears add %game.condition.poison% to all their attacks."
-                },
-                "71": {
-                    "1": "Move left",
-                    "2": "Move up",
-                    "3": "Move right",
-                    "4": "Move down"
-                },
-                "73": {
-                    "1": "Roll boulders down."
-                },
-                "74": {
-                    "1": "Add water tile."
-                },
-                "78": {
-                    "1": "The two Cultists %game.mapMarker.b%, as well as the victim %game.mapMarker.a%, are immune to forced movement, %game.condition.immobilize%, and %game.condition.stun%, and can also open doors.",
-                    "2": "Immune to forced movement",
-                    "3": "Can open doors"
-                },
-                "79": {
-                    "1": "Move to starting location, if moved off, then perform"
-                },
-                "86": {
-                    "1": "towards the end of the docks %game.mapMarker.b%"
-                },
-                "89": {
-                    "1": "All Cultists summon elite Giant Vipers instead of normal Living Bones."
-                }
-            }
-        }
+    "463": {
+      "": "Fast Healer",
+      "text": "Your current hit point value must be equal to your maximum hit point value at the end of the scenario."
     },
-    "partyAchievements": {
-        "A Demon's Errand": "A Demon's Errand",
-        "A Map to Treasure": "A Map to Treasure",
-        "Across the Divide": "Across the Divide",
-        "An Invitation": "An Invitation",
-        "Bad Business": "Bad Business",
-        "Dark Bounty": "Dark Bounty",
-        "Debt Collection": "Debt Collection",
-        "First Steps": "First Steps",
-        "Fish's Aid": "Fish's Aid",
-        "Following Clues": "Following Clues",
-        "Grave Job": "Grave Job",
-        "High Sea Escort": "High Sea Escort",
-        "Jekserah's Plans": "Jekserah's Plans",
-        "Redthorn's Aid": "Redthorn's Aid",
-        "Sin-Ra": "Sin-Ra",
-        "Stonebreaker's Censer": "Stonebreaker's Censer",
-        "Sun-Blessed": "Sun-Blessed",
-        "The Drake's Command": "The Drake's Command",
-        "The Drake's Treasure": "The Drake's Treasure",
-        "The Poison's Source": "The Poison's Source",
-        "The Scepter and the Voice": "The Scepter and the Voice",
-        "The Voice's Command": "The Voice's Command",
-        "The Voice's Treasure": "The Voice's Treasure",
-        "Through the Nest": "Through the Nest",
-        "Through the Ruins": "Through the Ruins",
-        "Through the Trench": "Through the Trench",
-        "Tremors": "Tremors",
-        "Water Staff": "Water Staff"
+    "464": {
+      "": "Neutralizer",
+      "text": "Cause a trap to be sprung or disarmed on your turn or on the turn of one of your summons during the scenario."
     },
-    "globalAchievements": {
-        "Ancient Technology": "Ancient Technology",
-        "Annihilation of Order": "Annihilation of Order",
-        "Artifact: Cleansed": "Artifact: Cleansed",
-        "Artifact: Lost": "Artifact: Lost",
-        "Artifact: Recovered": "Artifact: Recovered",
-        "City Rule: Demonic": "City Rule: Demonic",
-        "City Rule: Economic": "City Rule: Economic",
-        "City Rule: Militaristic": "City Rule: Militaristic",
-        "End of Corruption": "End of Corruption",
-        "End of Gloom": "End of Gloom",
-        "End of the Invasion": "End of the Invasion",
-        "The Dead Invade": "The Dead Invade",
-        "The Drake Slain": "The Drake Slain",
-        "The Edge of Darkness": "The Edge of Darkness",
-        "The Merchant Flees": "The Merchant Flees",
-        "The Power of Enhancement": "The Power of Enhancement",
-        "The Rift Neutralized": "The Rift Neutralized",
-        "The Voice Freed": "The Voice Freed",
-        "The Voice Silenced": "The Voice Silenced",
-        "Water-Breathing": "Water-Breathing"
+    "465": {
+      "": "Plunderer",
+      "text": "Loot a treasure overlay tile during the scenario."
     },
-    "battleGoals": {
-        "458": {
-            ".": "Streamliner",
-            "text": "Have five or more total cards in your hand and discard at the end of the scenario."
-        },
-        "459": {
-            ".": "Layabout",
-            "text": "Gain 7 or fewer experience points during the scenario."
-        },
-        "460": {
-            ".": "Workhorse",
-            "text": "Gain 13 or more experience points during the scenario."
-        },
-        "461": {
-            ".": "Zealot",
-            "text": "Have three or fewer total cards in your hand and discard at the end of the scenario."
-        },
-        "462": {
-            ".": "Masochist",
-            "text": "Your current hit point value must be equal to or less than 2 at the end of the scenario."
-        },
-        "463": {
-            ".": "Fast Healer",
-            "text": "Your current hit point value must be equal to your maximum hit point value at the end of the scenario."
-        },
-        "464": {
-            ".": "Neutralizer",
-            "text": "Cause a trap to be sprung or disarmed on your turn or on the turn of one of your summons during the scenario."
-        },
-        "465": {
-            ".": "Plunderer",
-            "text": "Loot a treasure overlay tile during the scenario."
-        },
-        "466": {
-            ".": "Protector",
-            "text": "Allow none of your character allies to become exhausted during the scenario."
-        },
-        "467": {
-            ".": "Explorer",
-            "text": "Reveal a room tile by opening a door on your turn during the scenario."
-        },
-        "468": {
-            ".": "Hoarder",
-            "text": "Loot five or more money tokens during the scenario."
-        },
-        "469": {
-            ".": "Indigent",
-            "text": "Loot no money tokens or treasure overlay tiles during the scenario."
-        },
-        "470": {
-            ".": "Pacifist",
-            "text": "Kill three or fewer monsters during the scenario."
-        },
-        "471": {
-            ".": "Sadist",
-            "text": "Kill five or more monsters during the scenario."
-        },
-        "472": {
-            ".": "Hunter",
-            "text": "Kill one or more elite monsters during the scenario."
-        },
-        "473": {
-            ".": "Professional",
-            "text": "Use your equipped items a number of times equal to or greater than your level plus 2 during the scenario."
-        },
-        "474": {
-            ".": "Aggressor",
-            "text": "Have one or more monsters present on the map at the beginning of every round during the scenario."
-        },
-        "475": {
-            ".": "Dynamo",
-            "text": "Kill a monster during the scenario by causing at least 4 more points of damage to it than is necessary."
-        },
-        "476": {
-            ".": "Purist",
-            "text": "Use no items during the scenario."
-        },
-        "477": {
-            ".": "Opener",
-            "text": "Be the first to kill a monster during the scenario."
-        },
-        "478": {
-            ".": "Diehard",
-            "text": "Never allow your current hit point value to drop below half your maximum hit point value (rounded up) during the scenario."
-        },
-        "479": {
-            ".": "Executioner",
-            "text": "Kill an undamaged monster with a single attack during the scenario."
-        },
-        "480": {
-            ".": "Straggler",
-            "text": "Take only long rests during the scenario."
-        },
-        "481": {
-            ".": "Scrambler",
-            "text": "Take only short rests during the scenario."
-        }
+    "466": {
+      "": "Protector",
+      "text": "Allow none of your character allies to become exhausted during the scenario."
     },
-    "personalQuest": {
-        "510": "Seeker of Xorn",
-        "511": "Merchant Class",
-        "512": "Greed Is Gold",
-        "513": "Finding the Cure",
-        "514": "A Study of Anatomy",
-        "515": "Law Bringer",
-        "516": "Pounds of Flesh",
-        "517": "Trophy Hunt",
-        "518": "Eternal Wanderer",
-        "519": "Battle Legend",
-        "520": "Implement of Light",
-        "521": "Take Back the Trees",
-        "522": "The Thin Places",
-        "523": "Aberrant Slayer",
-        "524": "Fearless Stand",
-        "525": "Piety in All Things",
-        "526": "Vengeance",
-        "527": "Zealot of the Blood Good",
-        "528": "Goliath Toppler",
-        "529": "The Fall of Man",
-        "530": "Augmented Abilities",
-        "531": "Elemental Samples",
-        "532": "A Helping Hand",
-        "533": "The Perfect Poison"
+    "467": {
+      "": "Explorer",
+      "text": "Reveal a room tile by opening a door on your turn during the scenario."
     },
-    "custom": {
-        "gh": {
-            "ancient-artillery": {
-                "1": "All adjacent enemies suffer %game.damage:2%."
-            },
-            "archer": {
-                "1": "Create a %game.damage:3% trap in an adjacent empty hex closest to an enemy."
-            },
-            "deep-terror": {
-                "1": "in a hex adjacent to the target"
-            },
-            "elder-drake": {
-                "1": "Fly to next perch of boulders"
-            },
-            "flame-demon": {
-                "1": "All adjacent enemies suffer %game.damage:2%.",
-                "2": "Create a %game.damage:4% trap in an adjacent empty hex closest to an enemy."
-            },
-            "giant-viper": {
-                "1": "Add +2 %game.action.attack% if the target is adjacent to any of the %data.monster.giant-viper%'s allies.",
-                "2": "All attacks targeting %data.monster.giant-viper% this round gain Disadvantage."
-            },
-            "harrower-infester": {
-                "1": "Perform \"%game.action.heal% 2, %game.specialTarget.self%\" for each target damaged"
-            },
-            "hound": {
-                "1": "Add +2 %game.action.attack% if the target is adjacent to any of the %data.monster.hound%'s allies."
-            },
-            "mindthief": {
-                "1": "X is half the rat's current hit point value (rounded up).",
-                "augment": "Augment %game.characterIconColoredBg.mindthief%",
-                "augments": "Augments %game.characterIconColoredBg.mindthief%"
-            },
-            "night-demon": {
-                "1": "All adjacent enemies and allies suffer %game.damage:1%."
-            },
-            "ooze": {
-                "1": "with H equal to the summoning %data.monster.ooze%'s current hit point value (limited by a normal %data.monster.ooze%'s specified maximum hit point value)"
-            },
-            "savvas-lavaflow": {
-                "1": "All allies and enemies adjacent to the target suffer %game.damage:2%",
-                "2": "All enemies suffer %game.damage:2%."
-            },
-            "bandit-commander": {
-                "1": "Move to next door and reveal room"
-            },
-            "captain-of-the-guard": {
-                "1": "All allies add +1 %game.action.attack% to all attacks this round"
-            },
-            "merciless-overseer": {
-                "1": "All Scouts act again",
-                "2": "V = Number of Scouts present"
-            },
-            "prime-demon": {
-                "1": "Throne moves"
-            },
-            "winged-horror": {
-                "1": "Hatch eggs",
-                "2": "%game.action.summon% [C] eggs"
-            },
-            "dark-rider": {
-                "1": "X = Hexes moved"
-            },
-            "the-betrayer": {
-                "1": "Mind Control"
-            },
-            "flowChartGroup": {
-                "intro": "Intro",
-                "sealed": "Sealed",
-                "the-merchant": "The Merchant",
-                "demon-and-rift": "Demon and Rift",
-                "sewers": "Sewers",
-                "voice": "Voice",
-                "dragons": "Dragons",
-                "through-jungles": "Thorugh Jungles",
-                "atop-mountains": "Atop Mountains",
-                "rebellion-rises": "Rebellion Rises",
-                "under-oceans": "Under Oceans",
-                "personal-quests": "Personal Quests",
-                "random-scenarios": "Random Scenarios",
-                "city-events": "City Events",
-                "road-events": "Road Events"
-            }
-        }
+    "468": {
+      "": "Hoarder",
+      "text": "Loot five or more money tokens during the scenario."
+    },
+    "469": {
+      "": "Indigent",
+      "text": "Loot no money tokens or treasure overlay tiles during the scenario."
+    },
+    "470": {
+      "": "Pacifist",
+      "text": "Kill three or fewer monsters during the scenario."
+    },
+    "471": {
+      "": "Sadist",
+      "text": "Kill five or more monsters during the scenario."
+    },
+    "472": {
+      "": "Hunter",
+      "text": "Kill one or more elite monsters during the scenario."
+    },
+    "473": {
+      "": "Professional",
+      "text": "Use your equipped items a number of times equal to or greater than your level plus 2 during the scenario."
+    },
+    "474": {
+      "": "Aggressor",
+      "text": "Have one or more monsters present on the map at the beginning of every round during the scenario."
+    },
+    "475": {
+      "": "Dynamo",
+      "text": "Kill a monster during the scenario by causing at least 4 more points of damage to it than is necessary."
+    },
+    "476": {
+      "": "Purist",
+      "text": "Use no items during the scenario."
+    },
+    "477": {
+      "": "Opener",
+      "text": "Be the first to kill a monster during the scenario."
+    },
+    "478": {
+      "": "Diehard",
+      "text": "Never allow your current hit point value to drop below half your maximum hit point value (rounded up) during the scenario."
+    },
+    "479": {
+      "": "Executioner",
+      "text": "Kill an undamaged monster with a single attack during the scenario."
+    },
+    "480": {
+      "": "Straggler",
+      "text": "Take only long rests during the scenario."
+    },
+    "481": {
+      "": "Scrambler",
+      "text": "Take only short rests during the scenario."
     }
+  },
+  "character": {
+    "brute": "Brute",
+    "cragheart": "Cragheart",
+    "mindthief": "Mindthief",
+    "scoundrel": "Scoundrel",
+    "spellweaver": "Spellweaver",
+    "tinkerer": "Tinkerer"
+  },
+  "custom": {
+    "gh": {
+      "ancient-artillery": {
+        "1": "All adjacent enemies suffer %game.damage:2%."
+      },
+      "archer": {
+        "1": "Create a %game.damage:3% trap in an adjacent empty hex closest to an enemy."
+      },
+      "bandit-commander": {
+        "1": "Move to next door and reveal room"
+      },
+      "captain-of-the-guard": {
+        "1": "All allies add +1 %game.action.attack% to all attacks this round"
+      },
+      "dark-rider": {
+        "1": "X = Hexes moved"
+      },
+      "deep-terror": {
+        "1": "in a hex adjacent to the target"
+      },
+      "elder-drake": {
+        "1": "Fly to next perch of boulders"
+      },
+      "flame-demon": {
+        "1": "All adjacent enemies suffer %game.damage:2%.",
+        "2": "Create a %game.damage:4% trap in an adjacent empty hex closest to an enemy."
+      },
+      "flowChartGroup": {
+        "atop-mountains": "Atop Mountains",
+        "city-events": "City Events",
+        "demon-and-rift": "Demon and Rift",
+        "dragons": "Dragons",
+        "intro": "Intro",
+        "personal-quests": "Personal Quests",
+        "random-scenarios": "Random Scenarios",
+        "rebellion-rises": "Rebellion Rises",
+        "road-events": "Road Events",
+        "sealed": "Sealed",
+        "sewers": "Sewers",
+        "the-merchant": "The Merchant",
+        "through-jungles": "Thorugh Jungles",
+        "under-oceans": "Under Oceans",
+        "voice": "Voice"
+      },
+      "giant-viper": {
+        "1": "Add +2 %game.action.attack% if the target is adjacent to any of the %data.monster.giant-viper%'s allies.",
+        "2": "All attacks targeting %data.monster.giant-viper% this round gain Disadvantage."
+      },
+      "harrower-infester": {
+        "1": "Perform \"%game.action.heal% 2, %game.specialTarget.self%\" for each target damaged"
+      },
+      "hound": {
+        "1": "Add +2 %game.action.attack% if the target is adjacent to any of the %data.monster.hound%'s allies."
+      },
+      "merciless-overseer": {
+        "1": "All Scouts act again",
+        "2": "V = Number of Scouts present"
+      },
+      "mindthief": {
+        "1": "X is half the rat's current hit point value (rounded up).",
+        "augment": "Augment %game.characterIconColoredBg.mindthief%",
+        "augments": "Augments %game.characterIconColoredBg.mindthief%"
+      },
+      "night-demon": {
+        "1": "All adjacent enemies and allies suffer %game.damage:1%."
+      },
+      "ooze": {
+        "1": "with H equal to the summoning %data.monster.ooze%'s current hit point value (limited by a normal %data.monster.ooze%'s specified maximum hit point value)"
+      },
+      "prime-demon": {
+        "1": "Throne moves"
+      },
+      "savvas-lavaflow": {
+        "1": "All allies and enemies adjacent to the target suffer %game.damage:2%",
+        "2": "All enemies suffer %game.damage:2%."
+      },
+      "the-betrayer": {
+        "1": "Mind Control"
+      },
+      "winged-horror": {
+        "1": "Hatch eggs",
+        "2": "%game.action.summon% [C] eggs"
+      }
+    }
+  },
+  "deck": {
+    "archer": "Archer",
+    "boss": "Boss",
+    "guard": "Guard",
+    "imp": "Imp",
+    "scout": "Scout",
+    "shaman": "Shaman"
+  },
+  "edition": {
+    "gh": "Gloomhaven"
+  },
+  "globalAchievements": {
+    "Ancient Technology": "Ancient Technology",
+    "Annihilation of Order": "Annihilation of Order",
+    "Artifact: Cleansed": "Artifact: Cleansed",
+    "Artifact: Lost": "Artifact: Lost",
+    "Artifact: Recovered": "Artifact: Recovered",
+    "City Rule: Demonic": "City Rule: Demonic",
+    "City Rule: Economic": "City Rule: Economic",
+    "City Rule: Militaristic": "City Rule: Militaristic",
+    "End of Corruption": "End of Corruption",
+    "End of Gloom": "End of Gloom",
+    "End of the Invasion": "End of the Invasion",
+    "The Dead Invade": "The Dead Invade",
+    "The Drake Aided": "The Drake Aided",
+    "The Drake Slain": "The Drake Slain",
+    "The Edge of Darkness": "The Edge of Darkness",
+    "The Merchant Flees": "The Merchant Flees",
+    "The Power of Enhancement": "The Power of Enhancement",
+    "The Rift Neutralized": "The Rift Neutralized",
+    "The Voice Freed": "The Voice Freed",
+    "The Voice Silenced": "The Voice Silenced",
+    "Water-Breathing": "Water-Breathing"
+  },
+  "monster": {
+    "ancient-artillery": "Ancient Artillery",
+    "arcane-golem": "Arcane Golem",
+    "bandit-archer": "Bandit Archer",
+    "bandit-commander": "Bandit Commander",
+    "bandit-guard": "Bandit Guard",
+    "black-imp": "Black Imp",
+    "bloated-regent": "Bloated Regent",
+    "captain-of-the-guard": "Captain of the Guard",
+    "cave-bear": "Cave Bear",
+    "city-archer": "City Archer",
+    "city-guard": "City Guard",
+    "cultist": "Cultist",
+    "dark-rider": "Dark Rider",
+    "deep-terror": "Deep Terror",
+    "earth-demon": "Earth Demon",
+    "elder-drake": "Elder Drake",
+    "flame-demon": "Flame Demon",
+    "forest-imp": "Forest Imp",
+    "frost-demon": "Frost Demon",
+    "giant-ooze": "Giant Ooze",
+    "giant-viper": "Giant Viper",
+    "harrower-infester": "Harrower Infester",
+    "hound": "Hound",
+    "hungry-soul": "Hungry Soul",
+    "infiltrator": "Infiltrator",
+    "inox-archer": "Inox Archer",
+    "inox-bodyguard": "Inox Bodyguard",
+    "inox-guard": "Inox Guard",
+    "inox-shaman": "Inox Shaman",
+    "jekserah": "Jekserah",
+    "living-bones": "Living Bones",
+    "living-corpse": "Living Corpse",
+    "living-spirit": "Living Spirit",
+    "lurker": "Lurker",
+    "lurker-king": "Lurker King",
+    "merciless-overseer": "Merciless Overseer",
+    "night-demon": "Night Demon",
+    "ooze": "Ooze",
+    "prime-demon": "Prime Demon",
+    "prime-lieutenant": "Prime Lieutenant",
+    "rending-drake": "Rending Drake",
+    "savvas-icestorm": "Savvas Icestorm",
+    "savvas-lavaflow": "Savvas Lavaflow",
+    "siege-cannon": "Siege Cannon",
+    "spitting-drake": "Spitting Drake",
+    "stone-golem": "Stone Golem",
+    "sun-demon": "Sun Demon",
+    "the-betrayer": "The Betrayer",
+    "the-colorless": "The Colorless",
+    "the-gloom": "The Gloom",
+    "the-harvester": "The Harvester",
+    "the-sightless-eye": "The Sightless Eye",
+    "vermling-scout": "Vermling Scout",
+    "vermling-shaman": "Vermling Shaman",
+    "wind-demon": "Wind Demon",
+    "winged-horror": "Winged Horror"
+  },
+  "objective": {
+    "Altar": "Altar",
+    "Bone Pile": "Bone Pile",
+    "Captive Orchid": "Captive Orchid",
+    "Door": "Door",
+    "Fish": "Fish",
+    "Grave": "Grave",
+    "Hail": "Hail",
+    "Orchid": "Orchid",
+    "Redthorn": "Redthorn",
+    "Rock Column": "Rock Column",
+    "The Crystal": "The Crystal",
+    "Totem": "Totem",
+    "Tree": "Tree",
+    "Villager": "Villager",
+    "Vocal Cord": "Vocal Cord",
+    "Water Pump": "Water Pump",
+    "zephyr": "Zephyr"
+  },
+  "partyAchievements": {
+    "A Demon's Errand": "A Demon's Errand",
+    "A Map to Treasure": "A Map to Treasure",
+    "Across the Divide": "Across the Divide",
+    "An Invitation": "An Invitation",
+    "Bad Business": "Bad Business",
+    "Dark Bounty": "Dark Bounty",
+    "Debt Collection": "Debt Collection",
+    "First Steps": "First Steps",
+    "Fish's Aid": "Fish's Aid",
+    "Following Clues": "Following Clues",
+    "Grave Job": "Grave Job",
+    "High Sea Escort": "High Sea Escort",
+    "Jekserah's Plans": "Jekserah's Plans",
+    "Redthorn's Aid": "Redthorn's Aid",
+    "Sin-Ra": "Sin-Ra",
+    "Stonebreaker's Censer": "Stonebreaker's Censer",
+    "Sun-Blessed": "Sun-Blessed",
+    "The Drake's Command": "The Drake's Command",
+    "The Drake's Treasure": "The Drake's Treasure",
+    "The Poison's Source": "The Poison's Source",
+    "The Scepter and the Voice": "The Scepter and the Voice",
+    "The Voice's Command": "The Voice's Command",
+    "The Voice's Treasure": "The Voice's Treasure",
+    "Through the Nest": "Through the Nest",
+    "Through the Ruins": "Through the Ruins",
+    "Through the Trench": "Through the Trench",
+    "Tremors": "Tremors",
+    "Water Staff": "Water Staff"
+  },
+  "personalQuest": {
+    "gh": {
+      "510": {
+        "": "Seeker of Xorn",
+        "1": "\"Crypt\" Scenarios",
+        "2": "Follow \"Noxious Cellar\" (Scenario 52) to a conclusion"
+      },
+      "511": {
+        "": "Merchant Class",
+        "1": "%game.items.slots.head% items",
+        "2": "%game.items.slots.body% items",
+        "3": "%game.items.slots.legs% items",
+        "4": "%game.items.slots.onehand% or %game.items.slots.twohand% items",
+        "5": "%game.items.slots.small% items"
+      },
+      "512": {
+        "": "Greed Is Gold"
+      },
+      "513": {
+        "": "Finding the Cure",
+        "1": "Forest Imps killed",
+        "2": "Follow \"Forgotten Grove\" (Scenario 59) to a conclusion"
+      },
+      "514": {
+        "": "A Study of Anatomy",
+        "1": "Exhausted Party Members"
+      },
+      "515": {
+        "": "Law Bringer",
+        "1": "Bandits or Cultists killed"
+      },
+      "516": {
+        "": "Pounds of Flesh",
+        "1": "Vermlings killed"
+      },
+      "517": {
+        "": "Trophy Hunt",
+        "1": "Different types of monsters killed"
+      },
+      "518": {
+        "": "Eternal Wanderer",
+        "1": "Different scenarios completed"
+      },
+      "519": {
+        "": "Battle Legend",
+        "1": "Earned %game.checkmark% from completed battle goals"
+      },
+      "520": {
+        "": "Implement of Light",
+        "1": "Living Bones, Living Corpses, or Living Spirits killed with Skullbane Axe"
+      },
+      "521": {
+        "": "Take Back the Trees",
+        "1": "Completed scenarios in Dagger Forest",
+        "2": "Follow \"Foggy Thicket\" (Scenario 55) to a conclusion"
+      },
+      "522": {
+        "": "The Thin Places",
+        "1": "Completed side scenarios (scenario number > 51)"
+      },
+      "523": {
+        "": "Aberrant Slayer",
+        "1": "Flame Demon killed",
+        "2": "Frost Demon killed",
+        "3": "Wind Demon killed",
+        "4": "Earth Demon killed",
+        "5": "Night Demon killed",
+        "6": "Sun Demon killed"
+      },
+      "524": {
+        "": "Fearless Stand",
+        "1": "Elite monsters killed"
+      },
+      "525": {
+        "": "Piety in All Things",
+        "1": "Gold donated to the Sanctuary of the Great Oak"
+      },
+      "526": {
+        "": "Vengeance",
+        "1": "Completed scenarios in Gloomhaven",
+        "2": "Follow \"Investigation\" (Scenario 57) to a conclusion"
+      },
+      "527": {
+        "": "Zealot of the Blood Good"
+      },
+      "528": {
+        "": "Goliath Toppler",
+        "1": "Completed boss sceanrios"
+      },
+      "529": {
+        "": "The Fall of Man",
+        "1": "Completed scenarios in Lingering Swarm",
+        "2": "Follow \"Fading Lighthouse\" (Scenario 61) to a conclusion"
+      },
+      "530": {
+        "": "Augmented Abilities",
+        "1": "Enhancements"
+      },
+      "531": {
+        "": "Elemental Samples",
+        "1": "Completed scenario in Gloomhaven",
+        "2": "Completed scenario in Dagger Forest",
+        "3": "Completed scenario in Lingering Swamp",
+        "4": "Completed scenario in Watcher Mountains",
+        "5": "Completed scenario in Copperneck Mountains",
+        "6": "Completed scenario in Misty Sea"
+      },
+      "532": {
+        "": "A Helping Hand",
+        "1": "Personal quests achieved"
+      },
+      "533": {
+        "": "The Perfect Poison",
+        "1": "Oozes killed",
+        "2": "Lurkers killed",
+        "3": "Spitting Drakes killed"
+      }
+    }
+  },
+  "scenario": {
+    "group": {
+      "randomDungeon": "%scenario.random%",
+      "randomMonsterCard": "Random Monster Cards"
+    },
+    "rewards": {
+      "gh": {
+        "54": "Immediately retire the Seeker of Xorn. City and Road events instead of normal retirement events for the class",
+        "56": "\"Take Back the Trees\" quest complete",
+        "58": "\"Vengeance\" quest complete",
+        "60": "\"Finding the Cure\" quest complete",
+        "62": "\"The Fall of Man\" quest complete"
+      }
+    },
+    "rules": {
+      "gh": {
+        "19": {
+          "1": "towards the altar %game.mapMarker.b%"
+        },
+        "22": {
+          "1": "For each altar that isn't destroyed, regardless of whether it has been revealed, the maximum hit point and attack values of all demons is increased by 1 and their movement and range values are increased by 0.5 (rounded up). Melee attacks do not increase in range."
+        },
+        "36": {
+          "1": "The Prime Demon starts the scenario with twice the number of hit points indicated on its stat card."
+        },
+        "38": {
+          "1": "towards the shaman on the D tile"
+        },
+        "42": {
+          "1": "All monsters add +1 %game.action.attack% to all their attacks",
+          "2": "All monsters gain Advantage on all their attacks",
+          "3": "All monsters heal 1 hit point at the start of each of their turns",
+          "4": "All characters and character summons suffer 1 damage at the start of each of their turns.",
+          "5": "All characters and character summons gain Disadvantage on all their attacks.",
+          "6": "All characters and character summons deduct -1 Attack from all their attacks."
+        },
+        "54": {
+          "1": "All Cave Bears add %game.condition.poison% to all their attacks."
+        },
+        "67": {
+          "1": "The elite Stone Golem is one level higher than the scenario level, up to a maximum of 7, and it has HxC hit points, where H is an elite Stone Golem's regular hit point value. This is the Arcane Golem. It cannot enter or pass through door %game.mapMarker.2%."
+        },
+        "71": {
+          "1": "Move left",
+          "2": "Move up",
+          "3": "Move right",
+          "4": "Move down"
+        },
+        "73": {
+          "1": "Roll boulders down."
+        },
+        "74": {
+          "1": "Add water tile."
+        },
+        "78": {
+          "1": "The two Cultists %game.mapMarker.b%, as well as the victim %game.mapMarker.a%, are immune to forced movement, %game.condition.immobilize%, and %game.condition.stun%, and can also open doors.",
+          "2": "Immune to forced movement",
+          "3": "Can open doors"
+        },
+        "79": {
+          "1": "Move to starting location, if moved off, then perform"
+        },
+        "86": {
+          "1": "towards the end of the docks %game.mapMarker.b%"
+        },
+        "89": {
+          "1": "All Cultists summon elite Giant Vipers instead of normal Living Bones."
+        }
+      }
+    },
+    "title": {
+      "gh": {
+        "1": "Black Barrow",
+        "10": "Plane of Elemental Power",
+        "11": "Gloomhaven Square A",
+        "12": "Gloomhaven Square B",
+        "13": "Temple of the Seer",
+        "14": "Frozen Hollow",
+        "15": "Shrine of Strength",
+        "16": "Mountain Pass",
+        "17": "Lost Island",
+        "18": "Abandoned Sewers",
+        "19": "Forgotten Crypt",
+        "2": "Barrow Lair",
+        "20": "Necromancer's Sanctum",
+        "21": "Infernal Throne",
+        "22": "Temple of the Elements",
+        "23": "Deep Ruins",
+        "24": "Echo Chamber",
+        "25": "Icecrag Ascent",
+        "26": "Ancient Cistern",
+        "27": "Ruinous Rift",
+        "28": "Outer Ritual Chamber",
+        "29": "Sanctuary of Gloom",
+        "3": "Inox Encampment",
+        "30": "Shrine of the Depths",
+        "31": "Plane of the Night",
+        "32": "Decrepit Wood",
+        "33": "Savvas Armory",
+        "34": "Scorched Summit",
+        "35": "Gloomhaven Battlements A",
+        "36": "Gloomhaven Battlements B",
+        "37": "Doom Trench",
+        "38": "Slave Pens",
+        "39": "Treacherous Divide",
+        "4": "Crypt of the Damned",
+        "40": "Ancient Defense Network",
+        "41": "Timeworn Tomb",
+        "42": "Realm of the Voice",
+        "43": "Drake Nest",
+        "44": "Tribal Assault",
+        "45": "Rebel Swamp",
+        "46": "Nightmare Peak",
+        "47": "Lair of the Unseeing Eye",
+        "48": "Shadow Weald",
+        "49": "Rebel's Stand",
+        "5": "Ruinous Crypt",
+        "50": "Ghost Fortress",
+        "51": "The Void",
+        "52": "Noxious Cellar",
+        "53": "Crypt Basement",
+        "54": "Palace of Ice",
+        "55": "Foggy Thicket",
+        "56": "Bandit's Wood",
+        "57": "Investigation",
+        "58": "Bloody Shack",
+        "59": "Forgotten Grove",
+        "6": "Decaying Crypt",
+        "60": "Alchemy Lab",
+        "61": "Fading Lighthouse",
+        "62": "Pit of Souls",
+        "63": "Magma Pit",
+        "64": "Underwater Lagoon",
+        "65": "Sulfur Mine",
+        "66": "Clockwork Cove",
+        "67": "Arcane Library",
+        "68": "Toxic Moor",
+        "69": "Well of the Unfortunate",
+        "7": "Vibrant Grotto",
+        "70": "Chained Isle",
+        "71": "Windswept Highlands",
+        "72": "Oozing Grove",
+        "73": "Rockslide Ridge",
+        "74": "Merchant Ship",
+        "75": "Overgrown Graveyard",
+        "76": "Harrower Hive",
+        "77": "Vault of Secrets",
+        "78": "Sacrifice Pit",
+        "79": "Lost Temple",
+        "8": "Gloomhaven Warehouse",
+        "80": "Vigil Keep",
+        "81": "Temple of the Eclipse",
+        "82": "Burning Mountain",
+        "83": "Shadows Within",
+        "84": "Crystalline Cave",
+        "85": "Sun Temple",
+        "86": "Harried Village",
+        "87": "Corrupted Cove",
+        "88": "Plane of Water",
+        "89": "Syndicate Hideout",
+        "9": "Diamond Mine",
+        "90": "Demonic Rift",
+        "91": "Wild Melee",
+        "92": "Back Alley Brawl",
+        "93": "Sunken Vessel",
+        "94": "Vermling Nest",
+        "95": "Payment Due",
+        "randomDungeon-rnd": "Random Dungeon"
+      }
+    }
+  },
+  "section": {
+    "title": {
+      "gh": {
+        "82-A": "%scenario.conclusion% A",
+        "82-B": "%scenario.conclusion% B",
+        "randomMonsterCard-554": "Mangy",
+        "randomMonsterCard-555": "Drowned",
+        "randomMonsterCard-556": "Hopeless",
+        "randomMonsterCard-557": "Defiled",
+        "randomMonsterCard-558": "Wild",
+        "randomMonsterCard-559": "Fortified",
+        "randomMonsterCard-560": "Cutthroat",
+        "randomMonsterCard-561": "Rotting",
+        "randomMonsterCard-562": "Foggy",
+        "randomMonsterCard-563": "Crushing",
+        "randomMonsterCard-564": "Tribal",
+        "randomMonsterCard-565": "Horrific",
+        "randomMonsterCard-566": "Archaic",
+        "randomMonsterCard-567": "Scaled",
+        "randomMonsterCard-568": "Venomous",
+        "randomMonsterCard-569": "Unstable",
+        "randomMonsterCard-570": "Corrupted",
+        "randomMonsterCard-571": "Infected",
+        "randomMonsterCard-572": "Putrid",
+        "randomMonsterCard-573": "Frigid"
+      }
+    }
+  }
 }

@@ -13,6 +13,7 @@ import { PartySheetDialogComponent } from "../party-sheet-dialog";
 import { Subscription } from "rxjs";
 
 @Component({
+	standalone: false,
     selector: 'ghs-world-map',
     templateUrl: './world-map.html',
     styleUrls: ['./world-map.scss',],
@@ -244,7 +245,7 @@ export class WorldMapComponent implements AfterViewInit {
                     if (buildingData.coordinates && buildingData.coordinates.length) {
                         const overlayData = buildingData.coordinates[level || 0];
                         if (overlayData) {
-                            const imageName = overlayData.image || buildingData.edition + '-' + (buildingData.id ? buildingData.id + '-' : '') + buildingData.name + (buildingData.upgrades.length || buildingData.manualUpgrades ? '-' + (level != undefined ? level : '0') : '');
+                            const imageName = overlayData.image || buildingData.edition + '-' + (buildingData.id ? buildingData.id + '-' : '') + buildingData.name + (buildingData.upgrades.length ? '-' + (level != undefined ? level : '0') : '');
                             const overlayBuilding: ImageOverlay = this.placeOverlay('./assets/images/world-map/' + buildingData.edition + '/buildings/' + imageName + '.png', overlayData, height, -1);
                             overlayBuilding.addTo(this.map);
                             const element = overlayBuilding.getElement();
@@ -327,7 +328,7 @@ export class WorldMapComponent implements AfterViewInit {
 
     @HostListener('document:keydown', ['$event'])
     keyboardShortcuts(event: KeyboardEvent) {
-        if (!this.campaignSheet) {
+        if (settingsManager.settings.keyboardShortcuts && !this.campaignSheet) {
             if (!event.ctrlKey && !event.shiftKey && event.key.toLowerCase() === 'p' && settingsManager.settings.partySheet) {
                 this.openCampaignSheet();
                 event.stopPropagation();

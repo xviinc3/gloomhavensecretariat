@@ -31,7 +31,7 @@ export class StateManager {
   connectionTries: number = 0;
   gameOffsetWarning: boolean = true;
   standeeDialogCanceled: boolean = false;
-  keyboardSelecting: boolean = false;
+  keyboardSelecting: 's' | 'w' | false = false;
   keyboardSelect: number = -1;
 
   undoPermission: boolean = false;
@@ -56,7 +56,7 @@ export class StateManager {
       const gameModel = await storageManager.readGameModel();
       gameModel.server = false;
       this.game.fromModel(gameModel);
-    } catch {
+    } catch (e) {
       if (!tool) {
         storageManager.writeGameModel(this.game.toModel());
       }
@@ -109,7 +109,7 @@ export class StateManager {
       this.redos = await storageManager.readAll<GameModel>('redo');
       this.undoInfos = await storageManager.readAll<string[]>('undo-infos');
       this.updatePermissions();
-    } catch {
+    } catch (e) {
       this.updatePermissions();
     }
   }
@@ -340,7 +340,15 @@ export class StateManager {
           gameManager.stateManager.updatePermissions();
           gameManager.stateManager.serverError = "";
           break;
+        case "ping":
+          console.debug("Received ping answer...");
+          break;
         case "error":
+          // migration
+          if (message.message == "No enum constant de.champonthis.ghs.server.socket.model.MessageType.PING") {
+            console.debug("Received ping answer...");
+            break;
+          }
           console.warn("[GHS] Error: ", message);
           if (message.message.startsWith("Permission(s) missing") || message.message.startsWith("invalid revision")) {
             if (gameManager.stateManager.lastAction == "redo" || gameManager.stateManager.lastAction == "update") {
@@ -357,6 +365,8 @@ export class StateManager {
           window.document.body.classList.remove('working');
           window.document.body.classList.remove('server-sync');
           break;
+        default:
+          gameManager.uiChange.emit();
       }
     } catch (e) {
       gameManager.stateManager.errorLog.push(ev.data);
@@ -395,6 +405,7 @@ export class StateManager {
       }
 
       gameManager.stateManager.updatePermissions();
+      gameManager.uiChange.emit();
     }
   }
 
@@ -435,6 +446,21 @@ export class StateManager {
       }
       if (settingsManager.settings.logServerMessages) console.debug('WS sending request-settings');
       this.ws.send(JSON.stringify(message));
+    }
+  }
+
+  sendPing() {
+    if (settingsManager.settings.serverUrl && settingsManager.settings.serverPort && settingsManager.settings.serverCode) {
+      if (this.ws && this.ws.readyState == WebSocket.OPEN) {
+        let message = {
+          "code": settingsManager.settings.serverCode,
+          "type": "ping"
+        }
+        if (settingsManager.settings.logServerMessages) console.debug('WS sending ping');
+        this.ws.send(JSON.stringify(message));
+      } else {
+        this.connect();
+      }
     }
   }
 
@@ -500,9 +526,9 @@ export class StateManager {
     })
   }
 
-  before(...info: string[]) {
+  before(...info: (string | number | boolean)[]) {
     window.document.body.classList.add('working');
-    this.addToUndo(info || []);
+    this.addToUndo(info && info.map((value) => '' + value) || []);
   }
 
   async after(timeout: number = 1, autoBackup: boolean = false, revisionChange: number = 1, type: string = "game", revision: number = 0, undolength: number = 1) {
@@ -612,7 +638,7 @@ export class StateManager {
           downloadButton.click();
           document.body.removeChild(downloadButton);
         }
-      } catch {
+      } catch (e) {
         console.warn("Could not create autobackup");
       }
       window.document.body.classList.remove('working');

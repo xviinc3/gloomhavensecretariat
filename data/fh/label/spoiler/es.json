@@ -1,0 +1,604 @@
+{
+  "campaignSticker": {
+    "42-temple": "Templo"
+  },
+  "character": {
+    "fist": {
+      "": "Puño helado",
+      "gift-of-the-mountain": {
+        "": "Don de la montaña",
+        "hint": "Al final de cada uno de tus turnos, realiza: %game.action.heal% 2, Personal"
+      },
+      "one-with-the-mountain": {
+        "": "Uno con la montaña",
+        "hint": "Siempre que no tengas %game.condition.regenerate%, obtén %game.condition.regenerate%."
+      }
+    },
+    "meteor": "Piroclasto",
+    "snowflake": {
+      "": "Danzanieves",
+      "muddle-monster": {
+        "": "Perícia 9",
+        "hint": "%data.custom.fh.snowflake.4%"
+      }
+    },
+    "trap": "Trampero"
+  },
+  "custom": {
+    "fh": {
+      "fist": {
+        "1": "Crea 1 pieza de terreno helado de 1 hexágono en un hexágono sin accesorios adyacente",
+        "2": "y, siempre que entres en terreno helado con una capacidad de Movimiento, puedes ignorar el efecto para sumar %game.action.move% +1",
+        "3": "Siempre que te cures con un descanso largo, puedes %game.elementHalf.consume:ice|earth% para añadir %game.action.heal%+2",
+        "4": "Una vez por escenario, cuando vayas a sufrir %game.damage%, puedes prevenir ese %game.damage%,",
+        "5": "%game.card.recover% al menos 1 carta de tu pila de descartes cada ronda",
+        "6": "En el mismo turno, entra en al menos 10 hexágonos diferentes con una capacidad de Movimiento y luego haz que un enemigo sufra al menos %game.damage:10% con una capacidad de Ataque"
+      },
+      "meteor": {
+        "1": "Crea una pieza de terreno peligroso de 1 hexágono en un hexágono sin accesorios adyacente al objetivo",
+        "2": "Siempre que realices un descanso largo, puedes destruir un obstáculo adyacente para obtener %game.condition.ward%",
+        "3": "Siempre que realices un descanso corto, puedes %game.element.consume.fire% para realizar %game.condition.wound%, %game.action.target:1% enemigo que ocupe o esté adyacente a terreno peligroso",
+        "4": "A ti y a todos los aliados no os afecta el terreno peligroso que tú creas",
+        "5": "Crea o destruye al menos 1 pieza de obstáculo o terreno peligroso en cada ronda",
+        "6": "Mueve a enemigos por 6 hexágonos diferentes de terreno peligroso creados por ti en un mismo turno"
+      },
+      "snowflake": {
+        "1": "Si esta acción obliga al objetivo a moverse, este sufre %game.damage:1%",
+        "2": "Siempre que realices un descanso largo, puedes %game.elementHalf:ice|air%",
+        "3": "Siempre que realices un descanso corto, puedes %game.element.consume.ice% para realizar %game.condition.regenerate%, %game.action.range:3% y %game.element.consume.air% para realizar %game.condition.ward%, %game.action.range:3%",
+        "4": "Al comienzo de cada escenario, todos los enemigos sufren %game.condition.muddle%; cada vez que se revele una nueva sala, todos los enemigos de la nueva sala sufren %game.condition.muddle%",
+        "5": "Haz que al menos un aliado o enemigo se mueva en cada ronda",
+        "6": "Asegúrate de que el primer aliado que sufra %game.damage% en cada ronda tenga al menos un estado que tú hayas aplicado justo antes de sufrir el %game.damage%"
+      },
+      "trap": {
+        "1": "Crea 1 trampa %game.damage:2% en un hexágono adyacente vacío al final del turno.",
+        "10": "Mueve a enemigos por 7 o más trampas con una misma capacidad",
+        "2": "Crea 1 trampa %game.action.heal% 2 en un hexágono vacío adyacente al objetivo",
+        "3": "Crea 1 trampa %game.damage:1% en 1 hexágono vacío adyacente al objetivo",
+        "4": "Añade %game.damage:2% o %game.action.heal% 2 a una trampa a %game.action.range:2% o menos de ti",
+        "5": "Añade %game.action.push% 2 o %game.action.pull% 2",
+        "6": "Cada vez que realices un descanso largo, puedes crear 1 trampa %game.damage:1% en un hexágono vacío adyacente",
+        "7": "Siempre que entres en un hexágono con una trampa, puedes elegir no activarla",
+        "8": "Al comienzo de cada escenario, puedes crear 1 trampa %game.damage:2% en un hexágono vacío adyacente",
+        "9": "Ten 1 trampa %game.action.heal% en el tablero con un valor de al menos 20 (%game.damage:20% en la edición española)"
+      }
+    }
+  },
+  "items": {
+    "fh-1": {
+      "": "Catalejo",
+      "1": "Durante tu capacidad de Ataque, obtén Ventaja en 1 ataque."
+    },
+    "fh-10": {
+      "": "Escudo tosco",
+      "1": "Cuando un enemigo vaya a aplicarte un estado negativo, evita sufrir ese estado"
+    },
+    "fh-102": {
+      "": "Poción elemental mayor",
+      "1": "Durante tu turno, %game.element.wild% %game.element.wild%"
+    },
+    "fh-11": {
+      "": "Amuleto sencillo",
+      "1": "Al inicio del escenario, retira 1 carta de Modificador de ataque %game.attackmodifier.minus1% de tu mazo de Modificadores de ataque."
+    },
+    "fh-115": {
+      "": "Poción de inducción",
+      "1": "Durante tu turno, ignora un símbolo de consumo elemental en una acción de hayas jugado y obtén su efecto."
+    },
+    "fh-12": {
+      "": "Cota de malla tosca",
+      "1": "Cuando sufras %game.damage% por un ataque, obtén %game.action.shield:2% para dicho ataque."
+    },
+    "fh-120": {
+      "": "Amuleto de vida",
+      "1": "Durante tu turno, realiza:"
+    },
+    "fh-121": {
+      "": "Diadema de los elementos",
+      "1": "Durante tu turno, realiza:"
+    },
+    "fh-122": {
+      "": "Túnica de centinela",
+      "1": "Cuando una de tus invocaciones sufre %game.damage% por un ataque, dicha invocación obtiene %game.action.shield:2% para dicho ataque."
+    },
+    "fh-123": {
+      "": "Armadura de cuero",
+      "1": "Cuando te ataquen, ates de robar una carta de Modificador de ataque, el atacante sufre Desventaja en el ataque."
+    },
+    "fh-124": {
+      "": "Zapatos alados",
+      "1": "Durante tu turno, añade %game.action.jump%a todas tus capacidades de Movimiento."
+    },
+    "fh-125": {
+      "": "Zapatos de velocidad",
+      "1": "Al determinar la iniciativa, después de que todas las cartas de Capacidad hayan sido reveladas, aumenta o disminuye tu iniciativa en 10."
+    },
+    "fh-126": {
+      "": "Red contrapesada",
+      "1": "Durante tu capacidad de Ataque a distancia, añade %game.condition.immobilize% a 1 ataque."
+    },
+    "fh-127": {
+      "": "Daga envenenada",
+      "1": "Durante tu capacidad de Ataque cuerpo a cuerpo, añade %game.condition.poison% a 1 ataque."
+    },
+    "fh-128": {
+      "": "Escudo gótico",
+      "1": "Cuando sufras %game.damage% por un ataque, obtén %game.action.shield:1%para dicho ataque."
+    },
+    "fh-129": {
+      "": "Lentes ojo de águila",
+      "1": "Durante tu capacidad de Ataque, obtén Ventaja en todos los ataques."
+    },
+    "fh-13": {
+      "": "Zapatillas de baile",
+      "1": "Después de sufrir %game.damage% por un ataque, realiza:"
+    },
+    "fh-130": {
+      "": "Yelmo de hierro",
+      "1": "Cuando te ataquen, trata cualquier carta de Modificador de ataque %game.attackmodifier.double% que robe el enemigo como %game.attackmodifier.plus0% en su lugar."
+    },
+    "fh-131": {
+      "": "Cota de malla",
+      "1": "Para las 3 próximas fuentes de %game.damage% de ataques que te tomen como objetivo, obtén %game.action.shield:1% para dichos ataques."
+    },
+    "fh-132": {
+      "": "Capa de bolsillos",
+      "1": "Al inicio del escenario, lleva 1 objeto %game.items.slots.small% adicional."
+    },
+    "fh-133": {
+      "": "Perneras de ligereza",
+      "1": "Cuando un aliado adyacente vaya a ser el objetivo de un ataque, en su lugar te toma como objetivo a ti, independientemente del alcance y de la línea de visión."
+    },
+    "fh-134": {
+      "": "Zapatos cómodos",
+      "1": "Cuando uses la acción inferior básica de una carta de Capacidad, realiza %game.action.move% 3 en lugar de %game.action.move% 2."
+    },
+    "fh-135": {
+      "": "Arco rompearmaduras",
+      "1": "Durante tu turno, añade %game.action.pierce% a todos tus ataques a distancia."
+    },
+    "fh-136": {
+      "": "Hacha de batalla",
+      "1": "Durante tu capacidad de Ataque cuerpo a cuerpo con un solo objetivo, cambia el objetivo de la capacidad a:"
+    },
+    "fh-137": {
+      "": "Pavés",
+      "1": "Cuando sufras %game.damage% por un ataque, obtén %game.action.shield:2% para dicho ataque."
+    },
+    "fh-14": {
+      "": "Espada pesada",
+      "1": "Durante tu capacidad de Ataque cuerpo a cuerpo, añade %game.action.attack% +1 a 1 ataque."
+    },
+    "fh-15": {
+      "": "Escudo reforzado",
+      "1": "Cuando un enemigo vaya a aplicarte un estado negativo, evita sufrir ese estado."
+    },
+    "fh-16": {
+      "": "Casco inspirador",
+      "1": "Durante tu turno, otorga a todos los aliados adyacentes: %game.action.move% 2"
+    },
+    "fh-167": {
+      "": "Brazalete de atracción",
+      "1": "Al inicio del turno de un enemigo, antes de que centre su atención, realiza:"
+    },
+    "fh-17": {
+      "": "Armadura de cuero curtido",
+      "1": "Para los 2 próximos ataques que te tomen como objetivo, el atacante sufre Desventaja."
+    },
+    "fh-18": {
+      "": "Botas humildes",
+      "1": "Durante tu turno, añade %game.action.move% +1 a todas sus capacidades de Movimiento."
+    },
+    "fh-180": {
+      "": "Botas de avaricia",
+      "1": "Siempre que saquees 2 o más fichas de Botín a la vez, realiza: %game.condition.bless% Personal."
+    },
+    "fh-183": {
+      "": "Jarra de nieblas",
+      "1": "Durante tu turno, todas las figuras sufren Desventaja y %game.action.range%-1 en todos sus ataques a distancia de esta ronda. "
+    },
+    "fh-188": {
+      "": "Cristal congelate",
+      "1": "Durante tu turno, crea 1 pieza de 1 hexágono de terreno peligroso, terreno helado o agua en un hexágono sin accesorios adyacente."
+    },
+    "fh-19": {
+      "": "Martillo tintineate",
+      "1": "Durante tu capacidad de Ataque, añade %game.condition.muddle% a todos tus ataques."
+    },
+    "fh-195": {
+      "": "Tricornio",
+      "1": "Durante tu turno, añade %game.action.range% +1 y %game.action.pierce% a 1 de tus ataques a distancia."
+    },
+    "fh-2": {
+      "": "Casco tosco",
+      "1": "Cuando te ataquen, trata cualquier carta de Modificador de ataque %game.attackmodifier.double% que robe el enemigo como %game.attackmodifier.plus1% en su lugar."
+    },
+    "fh-20": {
+      "": "Arco bien tensado",
+      "1": "Durante tu turno, añade %game.action.range% +1 a todos tus ataques a distancia."
+    },
+    "fh-21": {
+      "": "Almófar",
+      "1": "Mientras estés adyacente a 3 o más enemigos, obtén %game.action.shield:1%."
+    },
+    "fh-22": {
+      "": "Cota de malla pesada",
+      "1": "Cuando sufras %game.damage% por un ataque, obtén %game.action.shield:3% para dicho ataque."
+    },
+    "fh-225": {
+      "": "Figura algox",
+      "1": "Durante tu capacidad de Ataque cuerpo a cuerpo, %game.element.consume.earth% para añadir %game.action.attack% +1 a 1 ataque, y luego dale la vuelta a esta carta.",
+      "2": "Durante tu capacidad de Ataque, %game.element.consume.air% para añadir %game.action.push% 2 a 1 ataque, y luego dale la vuelta a esta carta."
+    },
+    "fh-23": {
+      "": "Grebas robustas",
+      "1": "Al inicio de tu turno, añade %game.action.move% -2 a todas tus capacidades de Movimiento para obtener %game.action.shield% durante esta ronda. "
+    },
+    "fh-231": {
+      "": "Cuchillo de desollar",
+      "1": "Cuando obtengas una ficha de Botín, obtén 3 Pieles en lugar de robar una carta de Botín."
+    },
+    "fh-233": {
+      "": "Cuervo muerto",
+      "1": "Durante la capacidad de Ataque a distancia de un aliado, aplica %game.condition.muddle% y %game.condition.curse% a 1 ataque."
+    },
+    "fh-236": {
+      "": "Espejo agrietado",
+      "1": "Durante tu turno, pierde 1 carta de tu mano para %game.card.recover% una carta de tu pila de perdida de un nivel igual o inferior."
+    },
+    "fh-24": {
+      "": "Filo corrupto",
+      "1": "Durante tu capacidad de Ataque cuerpo a cuerpo, añade %game.condition.wound%, %game.condition.poison%, y %game.condition.muddle% a 1 ataque."
+    },
+    "fh-245": {
+      "": "Moneda antigua"
+    },
+    "fh-25": {
+      "": "Centro sosegante",
+      "1": "Durante tu turno, realiza: %game.condition.regenerate% %game.action.target% 1 aliado, %game.action.range:2%"
+    },
+    "fh-26": {
+      "": "Anteojos de visión",
+      "1": "Durante tu capacidad de Ataque, trata todas las cartas de Modificador negativas y %game.attackmodifier.null% como %game.attackmodifier.plus0% en su lugar."
+    },
+    "fh-27": {
+      "": "Capa de salvaguarda",
+      "1": "Inmediatamente después de que un enemigo termine su capacidad de Movimiento adyacente a ti, realiza: %game.action.push% %game.action.target% el enemigo"
+    },
+    "fh-28": {
+      "": "Botas robustas",
+      "1": "Durante tu turno, añade %game.action.move% +1 a todas tus capacidades de Movimiento e ignora el terreno impracticable."
+    },
+    "fh-29": {
+      "": "Hacha de verdugo",
+      "1": "Después de tu ataque cuerpo a cuerpo, un enemigo adyacente al objetivo sufre %game.damage% 2."
+    },
+    "fh-3": {
+      "": "Capa de viaje",
+      "1": "Al inicio del escenario, aumenta tu valor máximo de puntos de vida en 1."
+    },
+    "fh-30": {
+      "": "Guantelete de parada",
+      "1": "Inmediatamente después de que un enemigo termine su capacidad de Movimiento adyacente a ti, realiza: %game.action.attack% 3 %game.action.target% el enemigo"
+    },
+    "fh-31": {
+      "": "Amuleto contra la muerte",
+      "1": "Cuando vayas a sufrir %game.damage% de cualquier fuente, prevén el %game.damage%."
+    },
+    "fh-32": {
+      "": "Armadura de conchas",
+      "1": "Durante tu turno, realiza: %game.condition.ward% Personal"
+    },
+    "fh-33": {
+      "": "Botas volátiles",
+      "1": "Hasta una vez por turno, durante tu capacidad de Movimiento, añade %game.action.move% +1 y luego dale la vuelta a esta carta al final de tu turno.",
+      "2": "Hasta una vez por turno, durante tu capacidad de Movimiento, sufre %game.damage:1% y luego dale la vuelta a esta carta al final de tu turno."
+    },
+    "fh-34": {
+      "": "Bomba de metralla",
+      "1": "Después de tu ataque a distancia, todos los enemigos adyacentes al objetivo sufren %game.damage% 2."
+    },
+    "fh-35": {
+      "": "Escudo de lágrima",
+      "1": "Cuando sufras %game.damage% por un ataque, obtén %game.action.shield:1% para dicho ataque y prevén cualquier estado negativo del ataque."
+    },
+    "fh-36": {
+      "": "Casco de penacho",
+      "1": "Cuando te ataquen con un ataque con Desventaja, trata todas las cartas de Modificador de ataque %game.attackmodifier.plus0% y %game.attackmodifier.plus1% como %game.attackmodifier.minus1%."
+    },
+    "fh-37": {
+      "": "Capa fantasmal",
+      "1": "Durante tu turno, sufre %game.damage% 3 para realizar: $invisible$ Personal"
+    },
+    "fh-38": {
+      "": "Zapatos de duelista",
+      "1": "Durante tu turno, realiza: %game.action.move% 2 Este movimiento debe terminar adyacente a un enemigo."
+    },
+    "fh-39": {
+      "": "Hacha abisal",
+      "1": "Durante tu capacidad de Ataque, añade %game.action.attack% +3 y %game.action.pierce% 1 a un ataque que tenga como objetivo a un Cadáver helado, un Espectro de hielo o una Perdición viviente."
+    },
+    "fh-4": {
+      "": "Armadura de piel tosca",
+      "1": "Para los 2 próximos ataques que te tomen como objetivo, el atacante sufre Desventaja."
+    },
+    "fh-40": {
+      "": "Arco clavacorazones",
+      "1": "Durante tu turno, añade %game.action.attack% +1 y %game.action.range% +2 a 1 de tus ataques a distancia."
+    },
+    "fh-41": {
+      "": "Amuleto intrincado",
+      "1": "Al inicio del escenario, retira 1 carta de Modificador de ataque %game.attackmodifier.plus0% y 1 %game.attackmodifier.minus1% de tu mazo de Modificadores de ataque."
+    },
+    "fh-42": {
+      "": "Armadura ornamentada",
+      "1": "Para las 2 próximas fuentes de %game.damage% de ataques que te tomen como objetivo, obtén %game.action.shield:2% para dichos ataques."
+    },
+    "fh-43": {
+      "": "Botas de patear",
+      "1": "Durante tu capacidad de Ataque cuerpo a cuerpo, añade %game.action.push%2 a 1 ataque."
+    },
+    "fh-44": {
+      "": "Espada de absolución",
+      "1": "Cuando vayas a sufrir %game.condition.poison% o %game.condition.curse%, obtén %game.condition.bless% en su lugar."
+    },
+    "fh-45": {
+      "": "Cetro maestro",
+      "1": "Durante tu turno, realiza:"
+    },
+    "fh-46": {
+      "": "Gafas de doble lente",
+      "1": "Durate tu capacidad de Ataque, obtén Ventaja en todos los ataque y trata todas las cartas de Modificador de ataque %game.attackmodifier.plus0% y %game.attackmodifier.minus1% como %game.attackmodifier.plus1% en su lugar."
+    },
+    "fh-47": {
+      "": "Túnica de condena",
+      "1": "Para las 2 próximas fuentes de %game.damage% de ataques que te tomen como objetivo, sufre %game.damage% 3 para aplicar %game.condition.brittle% al atacante."
+    },
+    "fh-48": {
+      "": "Zapatos vivientes",
+      "1": "Después de la capacidad de Curación de cualquier aliado que te tome como objetivo, realiza:"
+    },
+    "fh-49": {
+      "": "Daga cruel",
+      "1": "Durante tu capacidad de Ataque cuerpo a cuerpo añade %game.action.attack%+1 y %game.condition.wound% a 1 ataque."
+    },
+    "fh-5": {
+      "": "Botas toscas",
+      "1": "Durante tu capacidad de Movimiento, añade +1 %game.action.move%"
+    },
+    "fh-50": {
+      "": "Escudo de reprocidad",
+      "1": "Cuando sufras %game.damage% por un ataque, obtén %game.action.shield:1% para dicho ataque y luego dale la vuelta a esta carta.",
+      "2": "Durante tu capacidad de Ataque cuerpo a cuerpo, añade %game.action.pierce% 1 a 1 ataque y luego dale la vuelta a esta carta."
+    },
+    "fh-51": {
+      "": "Collar de púas",
+      "1": "Durante tu turno, realiza: %game.condition.wound% Personal"
+    },
+    "fh-52": {
+      "": "Anteojos láser",
+      "1": "Durante tu turno, %game.element.consume.fire% para hacer que hasta 2 enemigos a %game.action.range:4% o menos sufran %game.damage% 1."
+    },
+    "fh-53": {
+      "": "Botas de clavos",
+      "1": "Después de moverte 4 o más hexágonos durante tu turno, obtén %game.action,retaliate% 1 durante esta ronda."
+    },
+    "fh-54": {
+      "": "Zapatillas de descanso",
+      "1": "Durante tu descanso corto, en lugar de perder al azar 1 carta de tu pila de descartes, roba al azar 3 cartas de tu pila de descartes y elige 1 para perderla."
+    },
+    "fh-55": {
+      "": "Guantelete mordedor",
+      "1": "Cuando te ataque un enemigo adyacente, obtén %game.action,retaliate% 2 para dicho ataque."
+    },
+    "fh-56": {
+      "": "Imán de rapiñador",
+      "1": "Durante tu turno, %game.element.consume.earth% para saquear una ficha de Botín adyacente."
+    },
+    "fh-57": {
+      "": "Pala",
+      "1": "Durante tu turno, destruye una pieza adyacente de obstáculo, terreno peligroso, terreno impracticable, terreno helado o trampa."
+    },
+    "fh-58": {
+      "": "Espada resbaladiza",
+      "1": "Durante tu capacidad de Ataque cuerpo a cuerpo, añade %game.action.attack% +2 a 1 ataque. Después de la capacidad, sufre %game.condition.disarm%."
+    },
+    "fh-59": {
+      "": "Amuleto de soltura",
+      "1": "Al inicio del escenario, obtén solo durante este escenario 1 pericia de 1 sola marca de tu hoja de personajes que aún no hayas obtenido."
+    },
+    "fh-6": {
+      "": "Botines flexibles",
+      "1": "Durante tu saqueo del final del turno, saquea 1 hexágono adyacente en lugar del hexágono que ocupas."
+    },
+    "fh-60": {
+      "": "Capa de muchos bolsillos",
+      "1": "Al inicio del escenario, lleva hasta 2 objetos %game.items.slots.small% adicionales."
+    },
+    "fh-61": {
+      "": "Coraza de púas",
+      "1": "Inmediatamente después de que te ataque un enemigo adyacente, ese enemigo sufre %game.damage% X, donde X es tu valor de %game.action.shield% para ese ataque."
+    },
+    "fh-62": {
+      "": "Botas eternas",
+      "1": "Durante tu capacidad de Movimiento añade %game.action.move% +1 y obtén %game.condition.regenerate%"
+    },
+    "fh-69": {
+      "": "Capa emplumada",
+      "1": "Cuando sufras %game.damage% por un ataque, %game.element.consume.air% para obtener %game.action.shield:3% para dicho ataque."
+    },
+    "fh-7": {
+      "": "Arco tosco",
+      "1": "Durante tu turno, añade %game.action.range% +1 a 1 de tus ataques a distancia."
+    },
+    "fh-71": {
+      "": "Botas de hueso",
+      "1": "Después de tu capacidad con la que mates a un enemigo, realiza:"
+    },
+    "fh-72": {
+      "": "Báculo de roble",
+      "1": "Durante tu turno, %game.element.consume.light% para realizar:"
+    },
+    "fh-76": {
+      "": "Cuerno de mando",
+      "1": "Durante el turno de una de tus invocaciones, decide cómo realiza sus capacidades."
+    },
+    "fh-8": {
+      "": "Lanza tosca",
+      "1": "Durante tu turno, 1 de tus capacidades de Ataque cuerpo a cuerpo con un solo objetivo puede tener como objetivo a un enemigo situado a 2 hexágonos de distancia."
+    },
+    "fh-83": {
+      "": "Poción curativa",
+      "1": "Durantu tu turno, realiza:<br>%game.action.heal% 3 Personal"
+    },
+    "fh-85": {
+      "": "Poción de poder",
+      "1": "Durante tu turno, añade %game.action.attack% +1 a todos tus ataques."
+    },
+    "fh-86": {
+      "": "Poción elemental",
+      "1": "Durante tu turno, %game.element.wild%"
+    },
+    "fh-87": {
+      "": "Poción de remedio",
+      "1": "Durante tu turno, retira 1 estado negativo que sufras.<br>Puedes usarla incluso si sufres %game.condition.impair% o %game.condition.stun%."
+    },
+    "fh-88": {
+      "": "Poción de piroescudo",
+      "1": "Durante tu turno, realiza: %game.action,retaliate% 1 %game.action.range:3% "
+    },
+    "fh-89": {
+      "": "Poción de piel pétrea",
+      "1": "Durante tu turno, realiza %game.condition.ward% Personal"
+    },
+    "fh-9": {
+      "": "Cetro protector",
+      "1": "Durante tu turno, otorga a 1 aliado a 2 %game.action.range:2% o menos:"
+    },
+    "fh-90": {
+      "": "Poción de músculo",
+      "1": "Durante tu turno, realiza: %game.condition.strengthen% Personal"
+    },
+    "fh-91": {
+      "": "Agua bendita",
+      "1": "Durante tu turno, realiza: %game.condition.bless% Personal"
+    },
+    "fh-93": {
+      "": "Poción de observación",
+      "1": "Cuando reveles una carta de Modificador de ataque %game.attackmodifier.null% de tu mazo de Modificadores de ataque, trátala en su lugar como %game.attackmodifier.plus0%."
+    },
+    "fh-94": {
+      "": "Poción de frenesí",
+      "1": "Durante tu turno, realiza:"
+    },
+    "fh-95": {
+      "": "Frasco de veneno",
+      "1": "Durante tu turno, realiza: %game.condition.poison% %game.action.range:1%"
+    },
+    "fh-96": {
+      "": "Frasco de llama",
+      "1": "Durante tu turno, realiza: %game.condition.wound% %game.action.range:1%"
+    },
+    "fh-97": {
+      "": "Frasco explosivo",
+      "1": "Durante tu turno, 1 enemigo a %game.action.range:2% o menos sufre %game.damage% 2."
+    },
+    "fh-98": {
+      "": "Mejunje insalubre",
+      "1": "Durante tu turno, realiza: %game.condition.wound%, %game.condition.poison% Personal"
+    }
+  },
+  "pets": {
+    "fh-05": {
+      "1": "En orden de iniciativa, todos los personajes de forma inmediata realizan:"
+    }
+  },
+  "summon": {
+    "banner-of-courage": "Bandera de coraje",
+    "banner-of-doom": "Bandera de condena",
+    "banner-of-hope": "Bandera de esperanza",
+    "banner-of-strength": "Bandera de fuerza",
+    "banner-of-valor": "Bandera de valor",
+    "bone-horde": "Horda de huesos",
+    "defense-grid": "Matriz defensiva",
+    "longbowman": "Arquero",
+    "polar-cat": "Gato polar",
+    "raging-corpse": "Cadáver enfurecido",
+    "reinforcements": "Refuerzo",
+    "shadow-beast": "Bestia de sombras",
+    "shadow-horror": "Horror de sombras",
+    "shaggy-lure": "Señuelo desgreñado",
+    "shambling-skeleton": "Esqueleto tambaleante",
+    "skeleton-sorcerer": "Hechicero esqueleto",
+    "snow-fox": "Zorro de las nieves",
+    "stitched-atrocity": "Atrocidad cosida",
+    "torch-bearer": "Portador de antorcha",
+    "trained-falcon": "Halcón adiestrado",
+    "white-owl": "Búho blanco",
+    "wraith": "Espectro"
+  },
+  "treasures": {
+    "fh": {
+      "51": "Lee %data.section:78.1%",
+      "54": "¿El cofre del tesoro? No había ningún cofre del tesoro allí Tal vez deberías ir más despacio con la bebida.",
+      "57": "¿Qué es esto? Un cofre vacío con una trampilla de plomo en la parte inferior. Anotas la ubicación para poder volver con la ayuda de Gem más tarde.",
+      "62": "Ganas el diseño del cubo mecánico %game.itemFh.82% cuando encuentres la otra mitad de este plano."
+    }
+  },
+  "trials": {
+    "fh": {
+      "348": {
+        "": "Debilidad",
+        "text": "Al inicio de cada escenario, devuelve tu mazo de Modificadores de ataque a su estado inicial, como si no hubieras conseguido pericias, y, a continuación, retira todos los modificadores positivos (incluido %game.attackmodifier.double%).<br>Superas esta prueba cuando completes un escenario<br> Devuelve tu mazo a su estado correcto cuando lo superes"
+      },
+      "349": {
+        "": "Estrategia",
+        "text": "Al inicio de cada escenario, no descartes ningún Objetivo de batalla. Si sacas dos excluyentes, descarta uno y saca otro para reemplazarlo.<br>Habrás superado esta prueba cuando completes un escenario habiendo conseguido todos los Objetivos de batalla robados."
+      },
+      "350": {
+        "": "Manipulación",
+        "text": "Convence al grupo para que tome elecciones de las cartas de Evento según el siguiente plan:<br>%game.eventCheckbox:A% %game.eventCheckbox:B% %game.eventCheckbox:B% %game.eventCheckbox:A%<br>Cuando el grupo haga una elección que coincida con la casilla sin marcar situada más a la Izquierda, márcala.<br>Superas esta prueba cuando todas las casillas están marcadas."
+      },
+      "351": {
+        "": "Pobreza",
+        "text": "Durante cada escenario, siempre que un aliado saquee una ficha de Botín, sufre%game.damage:N/3% (redondeado hacia arriba).<br>Superas esta prueba cuando completes un escenario."
+      },
+      "352": {
+        "": "Censura",
+        "text": "Durante cada escenario, no puedes decir las palabras \"atacar\", \"coger\" o \"dañar\" ni sus variantes (como los sustantivos \"ataque\" o \"daño). Siempre que lo hagas, sufres %game.damage:N/2% (redondeado hacia arriba).<br>Superas esta prueba cuando completes un escenario."
+      },
+      "353": {
+        "": "Orden",
+        "text": "Durante cada escenario, todas tus capacidades de Ataque deben tener como objetivo la figura con el número más bajo del tablero.<br>Superas esta prueba cuando completes un escenario."
+      },
+      "354": {
+        "": "Predicción",
+        "text": "Al inicio de cada escenario, predice el número de rondas que harán falta para completar el escenario colando esa mismo número de fichas de Daño delante de ti.<br>Habrás superado esta prueba cuando completes un escenario en el número de rondas predicho o 1 menos."
+      },
+      "355": {
+        "": "Inquisición",
+        "text": "Durante cualquier escenario, adivina públicamente el Objetivo de batalla de otro personaje (el nombre o el efecto) antes de que se revele. No puedes intentarlo más de una vez por personaje y escenario.<br>Has superado esta prueba cuando adivines correctamente un Objetivo de batalla."
+      },
+      "356": {
+        "": "Pruebas",
+        "text": "Durante cada escenario, roba 1 Objetivo de batalla adicional al final de cada ronda en la que hayas sufrido daño. En lo tocante a las condiciones de cada Objetivo de batalla recién robado, haz como si el escenario acabara de empezar. Solo obtienes marcas por 1 Objetivo de batalla completado en cada escenario.<br>Habrás superado esta prueba cuando completes un escenario habiendo conseguido al menos la mitad de los Objetivos de batalla robados."
+      },
+      "357": {
+        "": "Engaño",
+        "text": "Completa un escenario durante el cual tu personaje quede agotado.<br>Superas esta prueba cuando, antes de comenzar el siguiente escenario, convenzas a otro jugador de que tu prueba es imposible de superar y de que te debe permitir revelarla."
+      },
+      "358": {
+        "": "Expresión",
+        "text": "Al principio de cada escenario, selecciona un sustantivo. Si tu sustantivo seleccionado no es pronunciado en voz alta por otro jugador durante cada ronda, sufre %game.damage:N/2% (redondeado hacia arriba) al final de la ronda. El sustantivo seleccionado no puede ser \"carta\", \"ataque\", \"daño\", \"puerta\", \"monstruo\", \"hexágono\" o \"iniciativa\".<br>Superas esta prueba cuando completes un escenario."
+      },
+      "359": {
+        "": "Paciencia",
+        "text": "Superas esta prueba cuando el mazo de pruebas se agote y seas el último personaje con una prueba sin superar."
+      },
+      "360": {
+        "": "Victoria",
+        "text": "Al inicio de cada escenario, en lugar de que los personajes roben Objetivos de batalla de forma habitual, roba P+1 Objetivos de batalla de dos marcas y asigna 1 de ellos a cada personaje.<br>Habrás superado esta prueba cuando completes un escenario y todos los personajes hayan conseguido sus Objetivos de batalla."
+      }
+    }
+  }
+}

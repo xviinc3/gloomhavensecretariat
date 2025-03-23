@@ -17,8 +17,11 @@ import { EntitiesMenuDialogComponent } from '../entities-menu/entities-menu-dial
 import { EntityMenuDialogComponent } from '../entity-menu/entity-menu-dialog';
 import { Monster } from 'src/app/game/model/Monster';
 import { InteractiveAction } from 'src/app/game/businesslogic/ActionsManager';
+import { Character } from 'src/app/game/model/Character';
+import { Action, ActionType } from 'src/app/game/model/data/Action';
 
 @Component({
+	standalone: false,
   selector: 'ghs-objective-container',
   templateUrl: './objective-container.html',
   styleUrls: ['./objective-container.scss']
@@ -42,6 +45,7 @@ export class ObjectiveContainerComponent implements OnInit, OnDestroy {
   initiative: number = -1;
   health: number = 0;
   marker: string = "";
+  compact: boolean = false;
 
   nonDead: number = 0;
 
@@ -110,6 +114,7 @@ export class ObjectiveContainerComponent implements OnInit, OnDestroy {
         }
       }
     }
+    this.compact = settingsManager.settings.characterCompact && settingsManager.settings.theme != 'modern';
   }
 
   toggleFigure(event: any): void {
@@ -180,7 +185,7 @@ export class ObjectiveContainerComponent implements OnInit, OnDestroy {
 
   dragHpEnd(value: number) {
     if (this.health != 0 && this.entity) {
-      gameManager.stateManager.before("changeObjectiveEntityHP", gameManager.objectiveManager.objectiveName(this.objective), ghsValueSign(this.health), '' + this.entity.number);
+      gameManager.stateManager.before("changeObjectiveEntityHP", gameManager.objectiveManager.objectiveName(this.objective), ghsValueSign(this.health), this.entity.number);
       gameManager.entityManager.changeHealth(this.entity, this.objective, this.health);
       if (this.entity.health <= 0 && this.entity.maxHealth > 0) {
         gameManager.objectiveManager.removeObjective(this.objective)
@@ -202,6 +207,10 @@ export class ObjectiveContainerComponent implements OnInit, OnDestroy {
       },
       positionStrategy: this.overlay.position().flexibleConnectedTo(this.objectiveName).withPositions(ghsDefaultDialogPositions())
     });
+  }
+
+  toggleDamageHP() {
+    settingsManager.toggle('damageHP');
   }
 
   openEntitiesMenu(event: any) {
@@ -234,7 +243,7 @@ export class ObjectiveContainerComponent implements OnInit, OnDestroy {
       }
     }
 
-    gameManager.stateManager.before('addObjective.entity', '' + (number + 1), name);
+    gameManager.stateManager.before('addObjective.entity', (number + 1), name);
     gameManager.objectiveManager.addObjectiveEntity(this.objective, number);
     gameManager.stateManager.after();
   }
@@ -242,7 +251,18 @@ export class ObjectiveContainerComponent implements OnInit, OnDestroy {
   removeCondition(entityCondition: EntityCondition) {
     if (this.entity) {
       gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.entity, this.objective, "removeCondition"), entityCondition.name);
-      gameManager.entityManager.removeCondition(this.entity, entityCondition, entityCondition.permanent);
+      gameManager.entityManager.removeCondition(this.entity, this.objective, entityCondition, entityCondition.permanent);
+      gameManager.stateManager.after();
+    }
+  }
+
+  removeMarker(marker: string) {
+    if (this.entity) {
+      const markerChar = new Character(gameManager.getCharacterData(marker), 1);
+      const markerName = gameManager.characterManager.characterName(markerChar);
+      const characterIcon = markerChar.name;
+      gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.entity, this.objective, "removeMarker"), markerName, characterIcon);
+      this.entity.markers = this.entity.markers.filter((value) => value != marker);
       gameManager.stateManager.after();
     }
   }
@@ -250,6 +270,53 @@ export class ObjectiveContainerComponent implements OnInit, OnDestroy {
   onInteractiveActionsChange(change: InteractiveAction[]) {
     this.interactiveActionsChange.emit(change);
     this.interactiveActions = change;
+  }
+
+
+
+  removeShield() {
+    if (this.entity) {
+      gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.entity, this.objective, "removeEntityShield"));
+      this.entity.shield = undefined;
+      gameManager.stateManager.after();
+    }
+  }
+
+  removeShieldPersistent() {
+    if (this.entity) {
+      gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.entity, this.objective, "removeEntityShieldPersistent"));
+      this.entity.shieldPersistent = undefined;
+      gameManager.stateManager.after();
+    }
+  }
+
+  removeRetaliate(index: number) {
+    if (this.entity) {
+      let retaliate: Action[] = JSON.parse(JSON.stringify(this.entity.retaliate));
+      retaliate.splice(index, 1);
+      if (retaliate.length > 0) {
+        gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.entity, this.objective, "setEntityRetaliate"), retaliate.map((action) => '%game.action.retaliate% ' + EntityValueFunction(action.value) + (action.subActions && action.subActions[0] && action.subActions[0].type == ActionType.range && EntityValueFunction(action.subActions[0].value) > 1 ? ' %game.action.range% ' + EntityValueFunction(action.subActions[0].value) + '' : '')).join(', '));
+
+      } else {
+        gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.entity, this.objective, "removeEntityRetaliate"));
+      }
+      this.entity.retaliate = retaliate;
+      gameManager.stateManager.after();
+    }
+  }
+
+  removeRetaliatePersistent(index: number) {
+    if (this.entity) {
+      let retaliatePersistent: Action[] = JSON.parse(JSON.stringify(this.entity.retaliatePersistent));
+      retaliatePersistent.splice(index, 1);
+      if (retaliatePersistent.length > 0) {
+        gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.entity, this.objective, "setEntityRetaliatePersistent"), retaliatePersistent.map((action) => '%game.action.retaliate% ' + EntityValueFunction(action.value) + (action.subActions && action.subActions[0] && action.subActions[0].type == ActionType.range && EntityValueFunction(action.subActions[0].value) > 1 ? ' %game.action.range% ' + EntityValueFunction(action.subActions[0].value) + '' : '')).join(', '));
+      } else {
+        gameManager.stateManager.before(...gameManager.entityManager.undoInfos(this.entity, this.objective, "removeEntityRetaliatePersistent"));
+      }
+      this.entity.retaliatePersistent = retaliatePersistent;
+      gameManager.stateManager.after();
+    }
   }
 
 }

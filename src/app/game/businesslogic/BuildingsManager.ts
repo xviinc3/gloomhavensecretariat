@@ -1,13 +1,29 @@
+import { GardenModel } from "../model/Building";
 import { Game } from "../model/Game";
 import { BuildingData, BuildingRewards } from "../model/data/BuildingData";
 import { ScenarioData } from "../model/data/ScenarioData";
 import { gameManager } from "./GameManager";
+import { settingsManager } from "./SettingsManager";
 
 export class BuildingsManager {
   game: Game;
 
+  petsAvailable: boolean = false;
+  petsEnabled: boolean = false;
+  gardenAvailable: boolean = false;
+  gardenEnabled: boolean = false;
+  distillAvailable: boolean = false;
+
   constructor(game: Game) {
     this.game = game;
+  }
+
+  update() {
+    this.petsAvailable = gameManager.fhRules() && gameManager.game.party.buildings.find((value) => value.name == 'stables' && value.level) != undefined;
+    this.petsEnabled = this.petsAvailable && settingsManager.settings.fhPets;
+    this.gardenAvailable = gameManager.fhRules() && gameManager.game.party.buildings.find((value) => value.name == 'garden' && value.level) != undefined;
+    this.gardenEnabled = this.gardenAvailable && settingsManager.settings.fhGarden;
+    this.distillAvailable = (settingsManager.settings.characterItems || settingsManager.settings.characterSheet) && gameManager.fhRules() && gameManager.game.party.buildings.find((value) => value.name == 'alchemist' && value.level > 1 && value.state != 'wrecked') != undefined;
   }
 
   applyRewards(rewards: BuildingRewards) {
@@ -72,5 +88,25 @@ export class BuildingsManager {
 
   availableBuilding(buildingData: BuildingData): boolean {
     return buildingData.prosperityUnlock && buildingData.costs.prosperity <= gameManager.prosperityLevel() && !gameManager.game.party.buildings.find((model) => buildingData.name == model.name && model.level) && (!buildingData.requires || gameManager.game.party.buildings.find((model) => model.name == buildingData.requires && model.level) != undefined);
+  }
+
+  nextWeek() {
+    if (this.gardenEnabled) {
+      const gardenBuilding = this.game.party.buildings.find((value) => value.name == 'garden' && value.level);
+      this.game.party.garden = this.game.party.garden || new GardenModel();
+      if (gardenBuilding) {
+        if (gardenBuilding.level < 3) {
+          this.game.party.garden.flipped = !this.game.party.garden.flipped;
+        } else {
+          this.game.party.garden.flipped = false;
+        }
+
+        if (this.game.party.garden.automated && (gardenBuilding.level > 2 || this.game.party.garden.flipped)) {
+          this.game.party.garden.plots.forEach((herb) => {
+            this.game.party.loot[herb] = (this.game.party.loot[herb] || 0) + 1;
+          })
+        }
+      }
+    }
   }
 }

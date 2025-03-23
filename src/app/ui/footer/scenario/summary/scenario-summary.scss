@@ -4,10 +4,10 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
   font-family: var(--ghs-font-title);
   color: var(--ghs-color-white);
   font-size: calc(var(--ghs-unit) * 4* var(--ghs-text-factor));
+  margin-bottom: calc(var(--ghs-unit) * 1.5 * var(--ghs-dialog-factor));
 
   .title {
     position: relative;
@@ -46,9 +46,6 @@
     font-family: var(--ghs-font-normal);
     font-size: calc(var(--ghs-unit) * 3 * var(--ghs-text-factor));
   }
-
-  margin-bottom: calc(var(--ghs-unit) * 1.5 * var(--ghs-dialog-factor));
-
 }
 
 .main {
@@ -132,6 +129,10 @@
       padding: calc(var(--ghs-unit) * 0.5 * var(--ghs-dialog-factor)) calc(var(--ghs-unit) * 2 * var(--ghs-dialog-factor));
       border-bottom: calc(var(--ghs-unit) * 0.2 * var(--ghs-dialog-factor)) solid var(--ghs-color-white);
       border-right: calc(var(--ghs-unit) * 0.2 * var(--ghs-dialog-factor)) solid var(--ghs-color-darkgray);
+
+      &.stats-header {
+        border: none;
+      }
     }
 
     .head-col {
@@ -149,6 +150,13 @@
         span {
           opacity: 0.6;
         }
+      }
+
+      &.stats-toggle {
+        cursor: pointer;
+        border: none;
+        grid-column: span 2;
+        justify-content: flex-start;
       }
     }
 
@@ -188,7 +196,45 @@
         }
       }
 
+      .battlegoal-list {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        max-width: calc(var(--ghs-unit) * 38 * var(--ghs-dialog-factor));
+        max-height: calc(var(--ghs-unit) * 34 * var(--ghs-dialog-factor));
+        padding: 0 calc(var(--ghs-unit) * 1);
+        overflow: auto;
+      }
+
       .checkmarks {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+    }
+
+
+
+    .trials {
+      display: flex;
+      align-items: center;
+
+      .trial {
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        width: calc(var(--ghs-unit) * 3 * var(--ghs-dialog-factor));
+
+        img {
+          width: 100%;
+          height: auto;
+        }
+
+        margin: 0 calc(var(--ghs-unit) * 0.5 * var(--ghs-dialog-factor));
+      }
+
+      .checkmark {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -223,6 +269,20 @@
       width: calc(var(--ghs-unit) * 12 * var(--ghs-dialog-factor));
     }
 
+    .scenario-stats {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      &>span {
+        margin: calc(var(--ghs-unit) * 0.5 * var(--ghs-dialog-factor));
+      }
+
+      img {
+        height: calc(var(--ghs-unit) * 2 * var(--ghs-dialog-factor));
+        width: auto;
+      }
+    }
   }
 
   &.fh {
@@ -354,10 +414,39 @@
         }
 
         &.challenges {
-          flex-direction: row;
+          flex-direction: column;
           justify-content: center;
           align-items: center;
           margin-bottom: calc(var(--ghs-unit) * 1 * var(--ghs-dialog-factor));
+
+          .menu {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+          }
+
+          .cards {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+
+            .card {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              flex-direction: column;
+              margin: 0 calc(var(--ghs-unit) * 1 * var(--ghs-dialog-factor));
+
+              ghs-challenge-card {
+                cursor: pointer;
+                display: block;
+                width: calc(var(--ghs-unit) * 12 * var(--ghs-dialog-factor));
+                color: initial;
+              }
+            }
+          }
         }
 
         &.week-sections .week-section {
@@ -417,7 +506,7 @@
 
   a {
     cursor: pointer;
-    min-width: 33%;
+    margin: 0 calc(var(--ghs-unit) * 2.5 * var(--ghs-dialog-factor));
     display: flex;
     justify-content: center;
 
@@ -443,6 +532,7 @@
       font-family: var(--ghs-font-text);
       font-size: calc(var(--ghs-unit) * 2.5 * var(--ghs-dialog-factor));
       color: var(--ghs-color-white);
+      white-space: nowrap;
     }
   }
 

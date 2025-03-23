@@ -4,9 +4,10 @@ import { SettingsManager, settingsManager } from "src/app/game/businesslogic/Set
 import { Character } from "src/app/game/model/Character";
 import { GameState } from "src/app/game/model/Game";
 import { AdditionalIdentifier } from "src/app/game/model/data/Identifier";
-import { ItemData, ItemFlags } from "src/app/game/model/data/ItemData";
+import { ItemData, ItemFlags, ItemSlot } from "src/app/game/model/data/ItemData";
 
 @Component({
+    standalone: false,
     selector: 'ghs-character-item',
     templateUrl: './item-character.html',
     styleUrls: ['./item-character.scss']
@@ -17,6 +18,7 @@ export class CharacterItemComponent {
     @Input() item!: ItemData;
     @Input() flipped: boolean = true;
     @Input() setup: boolean = false;
+    @Input() dialog: boolean = false;
 
     gameManager: GameManager = gameManager;
     settingsManager: SettingsManager = settingsManager;
@@ -27,14 +29,26 @@ export class CharacterItemComponent {
         return this.character.progress.equippedItems.find((identifier) => identifier.name == '' + this.item.id && identifier.edition == this.item.edition);
     }
 
+    bbBlocked(): boolean {
+        return gameManager.bbRules() && !this.equipped() && this.character.progress.equippedItems.find((identifier) => typeof this.item.id === 'number' && (+identifier.name) == (this.item.id % 2 == 0 ? this.item.id - 1 : this.item.id + 1) && identifier.edition == this.item.edition) != undefined;
+    }
+
     isLootRandomItem() {
         return this.character.progress.equippedItems.find((identifier) => identifier.name == '' + this.item.id && identifier.edition == this.item.edition && identifier.marker == "loot-random-item");
     }
 
     toggleEquippedItem(force: boolean = false) {
-        if ((this.setup || force) && this.character.progress.items.find((identifier) => identifier.name == '' + this.item.id && identifier.edition == this.item.edition) != undefined) {
-            gameManager.stateManager.before(this.equipped() ? 'unequipItem' : 'equipItem', gameManager.characterManager.characterName(this.character), '' + this.item.id, this.item.edition)
-            gameManager.itemManager.toggleEquippedItem(this.item, this.character, force)
+        const owned = this.character.progress.items.find((identifier) => identifier.name == '' + this.item.id && identifier.edition == this.item.edition) != undefined;
+        if ((this.setup || force) && (owned || !this.bbBlocked() || force)) {
+            gameManager.stateManager.before(this.equipped() ? 'unequipItem' : 'equipItem', gameManager.characterManager.characterName(this.character), this.item.id, this.item.edition)
+            gameManager.itemManager.toggleEquippedItem(this.item, this.character, force);
+            if (gameManager.bbRules()) {
+                if (!this.equipped() && owned) {
+                    gameManager.itemManager.removeItem(this.item, this.character);
+                } else if (this.equipped() && !owned) {
+                    gameManager.itemManager.addItem(this.item, this.character);
+                }
+            }
             gameManager.stateManager.after();
 
             if (settingsManager.settings.animations) {
@@ -52,13 +66,21 @@ export class CharacterItemComponent {
     }
 
     toggleFlag(force: boolean, flag: string) {
+        if (!force && gameManager.challengesManager.apply && gameManager.challengesManager.isActive(1502, 'fh') && this.item.slot == ItemSlot.small) {
+            return;
+        }
+
         if (!this.setup && gameManager.game.state == GameState.next || force) {
             const equipped = this.equipped();
-            if (equipped) {
+            if (equipped && (gameManager.itemManager.itemUsable(this.item) || force)) {
                 equipped.tags = equipped.tags || [];
-                gameManager.stateManager.before((equipped.tags.indexOf(flag) == -1 ? 'characterItemApply.' : 'characterItemUnapply.') + flag, gameManager.characterManager.characterName(this.character), '' + this.item.id, this.item.edition, this.item.name)
+                gameManager.stateManager.before((equipped.tags.indexOf(flag) == -1 ? 'characterItemApply.' : 'characterItemUnapply.') + flag, gameManager.characterManager.characterName(this.character), this.item.id, this.item.edition, this.item.name)
                 if (equipped.tags.indexOf(flag) == -1) {
-                    equipped.tags.push(flag);
+                    if (!force && gameManager.challengesManager.apply && gameManager.challengesManager.isActive(1507, 'fh') && flag == ItemFlags.spent) {
+                        equipped.tags.push(ItemFlags.consumed);
+                    } else {
+                        equipped.tags.push(flag);
+                    }
                 } else {
                     equipped.tags = equipped.tags.filter((tag) => tag != flag);
                     if (flag == ItemFlags.spent) {
@@ -67,7 +89,7 @@ export class CharacterItemComponent {
                 }
 
                 if ((flag == ItemFlags.consumed || flag == ItemFlags.spent) && equipped.tags.indexOf(flag) != -1 && settingsManager.settings.characterItemsApply) {
-                    gameManager.itemManager.applyItemEffects(this.character, this.item);
+                    gameManager.itemManager.applyItemEffects(this.character, this.item, true);
                 }
                 gameManager.stateManager.after();
 
@@ -84,7 +106,7 @@ export class CharacterItemComponent {
             if (equipped) {
                 equipped.tags = equipped.tags || [];
                 const count = this.countFlag(flag);
-                gameManager.stateManager.before((count <= index ? 'characterItemApply.' : 'characterItemUnapply.') + flag, gameManager.characterManager.characterName(this.character), '' + this.item.id, this.item.edition, this.item.name);
+                gameManager.stateManager.before((count <= index ? 'characterItemApply.' : 'characterItemUnapply.') + flag, gameManager.characterManager.characterName(this.character), this.item.id, this.item.edition, this.item.name);
                 if (count <= index) {
                     for (let i = count; i <= index; i++) {
                         equipped.tags.push(flag);

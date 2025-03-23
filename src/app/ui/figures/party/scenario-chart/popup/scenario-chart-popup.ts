@@ -10,6 +10,7 @@ import { ScenarioConclusionComponent } from "src/app/ui/footer/scenario/scenario
 import { ghsDialogClosingHelper } from "src/app/ui/helper/Static";
 
 @Component({
+	standalone: false,
     selector: 'ghs-scneario-chart-popup',
     templateUrl: 'scenario-chart-popup.html',
     styleUrls: ['./scenario-chart-popup.scss']
@@ -59,6 +60,8 @@ export class ScenarioChartPopupDialog {
         });
 
         this.showTreasures = this.treasures.length > 0 && this.treasures.length == this.lootedTreasures.length || this.showSetup;
+
+        this.predecessors = [];
 
         let predecessor = gameManager.scenarioManager.scenarioData(this.scenario.edition).find((other) => other.group == this.scenario.group && other.unlocks && other.unlocks.indexOf(this.scenario.index) != -1 && (!gameManager.game.party.campaignMode || gameManager.scenarioManager.isSuccess(other)));
 
@@ -121,7 +124,7 @@ export class ScenarioChartPopupDialog {
 
     addSuccess() {
         const conclusions = gameManager.sectionData(this.scenario.edition).filter((sectionData) =>
-            sectionData.edition == this.scenario.edition && sectionData.parent == this.scenario.index && sectionData.group == this.scenario.group && sectionData.conclusion);
+            sectionData.edition == this.scenario.edition && sectionData.parent == this.scenario.index && sectionData.group == this.scenario.group && sectionData.conclusion && gameManager.scenarioManager.getRequirements(sectionData).length == 0);
         if (conclusions.length == 0) {
             this.addSuccessIntern();
         } else {

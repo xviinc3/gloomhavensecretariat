@@ -56,8 +56,7 @@
             "player3": "normal",
             "player4": "elite"
           },
-          "marker": "f",
-          "count": 2
+          "marker": "f"
         }
       ]
     },
@@ -72,8 +71,7 @@
             "player3": "elite",
             "player4": "elite"
           },
-          "marker": "f",
-          "count": 2
+          "marker": "f"
         }
       ]
     }
@@ -89,7 +87,7 @@
       "ref": "10-B",
       "initial": true,
       "treasures": [
-        "22"
+        22
       ],
       "monster": [
         {

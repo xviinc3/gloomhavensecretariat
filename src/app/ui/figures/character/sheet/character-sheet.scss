@@ -14,7 +14,7 @@
     background-position: top center;
     background-repeat: no-repeat;
     background-size: contain;
-    padding-left: calc(var(--ghs-unit) * 1.2 * var(--ghs-dialog-factor));
+    padding-left: calc(var(--ghs-unit) * 0.8 * var(--ghs-dialog-factor));
 
     .compact-separator {
       display: none;
@@ -28,11 +28,11 @@
         flex-direction: column;
 
         &.column-left {
-          width: calc(var(--ghs-unit) * 32 * var(--ghs-dialog-factor));
+          width: calc(var(--ghs-unit) * 33 * var(--ghs-dialog-factor));
         }
 
         &.column-right {
-          margin-left: calc(var(--ghs-unit) * 3 * var(--ghs-dialog-factor));
+          margin-left: calc(var(--ghs-unit) * 2.5 * var(--ghs-dialog-factor));
           width: calc(var(--ghs-unit) * 25 * var(--ghs-dialog-factor));
         }
 
@@ -83,7 +83,6 @@
         .character-title {
           display: table;
           align-self: center;
-          cursor: pointer;
         }
 
         .absent {
@@ -362,17 +361,23 @@
       .requirements {
         display: flex;
         flex-direction: column;
-        margin-top: calc(var(--ghs-unit) * 1.5 * var(--ghs-dialog-factor));
+        margin-top: calc(var(--ghs-unit) * 1 * var(--ghs-dialog-factor));
 
         .requirement {
           display: flex;
           flex-wrap: wrap;
           justify-content: space-between;
           align-items: center;
+          margin-top: calc(var(--ghs-unit) * 0.5 * var(--ghs-dialog-factor));
 
           &.disabled {
             pointer-events: none;
             opacity: 0.7;
+          }
+
+          .requirement-name {
+            font-size: calc(var(--ghs-unit) * 2 * var(--ghs-dialog-factor));
+            line-height: calc(var(--ghs-unit) * 2 * var(--ghs-dialog-factor));
           }
 
           .counter {
@@ -404,6 +409,54 @@
         margin-bottom: calc(var(--ghs-unit) * 1.5 * var(--ghs-dialog-factor));
         border-top: calc(var(--ghs-unit) * 0.2 * var(--ghs-dialog-factor)) solid var(--ghs-color-black);
       }
+
+      .retire-button {
+        cursor: pointer;
+        font-family: var(--ghs-font-normal);
+        font-size: calc(var(--ghs-unit) * 2.5 * var(--ghs-dialog-factor));
+        display: flex;
+        align-items: center;
+
+        &:hover {
+          opacity: 0.7;
+        }
+
+        &.disabled {
+          cursor: initial;
+          color: var(--ghs-color-gray);
+
+          .ghs-svg {
+            filter: var(--ghs-filter-gray);
+          }
+        }
+      }
+    }
+
+    .trial {
+      flex-direction: column;
+
+      .trial-card {
+        display: flex;
+        align-items: center;
+
+        .card-id {
+          text-align: right;
+          margin-right: calc(var(--ghs-unit) * 0.5 * var(--ghs-dialog-factor));
+          width: calc(var(--ghs-unit) * 4 * var(--ghs-dialog-factor) * var(--ghs-text-factor));
+          min-width: calc(var(--ghs-unit) * 4 * var(--ghs-dialog-factor) * var(--ghs-text-factor));
+        }
+
+        .open {
+          cursor: pointer;
+
+          img {
+            width: calc(var(--ghs-unit) * 2 * var(--ghs-dialog-factor));
+            height: auto;
+          }
+        }
+
+      }
+
     }
 
     .notes {
@@ -421,7 +474,22 @@
         justify-content: space-between;
       }
 
+      .name {
+        display: flex;
+        justify-content: initial;
+        align-items: center;
+
+        a {
+          cursor: pointer;
+
+          &:hover {
+            opacity: 0.7;
+          }
+        }
+      }
+
       .personal-quest,
+      .trial,
       .extra-perks,
       .retirements,
       .player-number,
@@ -458,7 +526,8 @@
           }
         }
 
-        &.personal-quest {
+        &.personal-quest,
+        &.trial {
           align-items: flex-start;
         }
       }
@@ -766,6 +835,7 @@
       margin-top: calc(var(--ghs-unit) * 1.5 * var(--ghs-dialog-factor));
       display: flex;
       flex-direction: column;
+      overflow: auto;
 
       .mastery {
         display: flex;
@@ -996,7 +1066,7 @@
     font-size: calc(var(--ghs-unit) * 2 * var(--ghs-dialog-factor));
   }
 
-  .gh-cards {
+  .ability-cards {
     position: absolute;
     top: calc(var(--ghs-unit) * 1 * var(--ghs-dialog-factor));
     left: calc(var(--ghs-unit) * 30.5 * var(--ghs-dialog-factor));

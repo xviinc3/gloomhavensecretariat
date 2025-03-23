@@ -1,15 +1,16 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Character } from "../model/Character";
 import { EntityValueFunction } from "../model/Entity";
 import { Game } from "../model/Game";
 import { Summon, SummonColor } from "../model/Summon";
+import { AttackModifier, AttackModifierType } from '../model/data/AttackModifier';
 import { Condition, ConditionName, ConditionType } from "../model/data/Condition";
 import { Element, ElementState } from "../model/data/Element";
 import { AdditionalIdentifier, CountIdentifier, Identifier } from "../model/data/Identifier";
 import { ItemData, ItemEffect, ItemEffectType, ItemFlags, ItemSlot } from "../model/data/ItemData";
-import { LootClass, LootType, getLootClass } from "../model/data/Loot";
+import { LootClass, LootType, getLootClass, herbResourceLootTypes } from "../model/data/Loot";
 import { gameManager } from "./GameManager";
 import { settingsManager } from "./SettingsManager";
-import { v4 as uuidv4 } from 'uuid';
 
 export class ItemManager {
 
@@ -24,15 +25,15 @@ export class ItemManager {
     }
 
     getItems(edition: string | undefined, all: boolean = false): ItemData[] {
-        return gameManager.itemData().filter((itemData) => all && itemData.edition == edition || this.isItemAvailable(itemData, edition));
+        return gameManager.itemData().filter((itemData) => all && (!edition || itemData.edition == edition) || this.isItemAvailable(itemData, edition));
     }
 
     isItemAvailable(itemData: ItemData, edition: string | undefined, withUnlocks: boolean = true): boolean {
-        if (!this.game.party.campaignMode || !edition) {
-            return true;
+        if (!this.game.party.campaignMode) {
+            return !edition || itemData.edition == edition || gameManager.editionExtensions(edition).indexOf(itemData.edition) != -1;
         }
 
-        if (itemData.edition == edition || gameManager.editionExtensions(edition).indexOf(itemData.edition) != -1) {
+        if (edition && (itemData.edition == edition || gameManager.editionExtensions(edition).indexOf(itemData.edition) != -1)) {
             if (withUnlocks && this.game.party.unlockedItems.find((identifier) => identifier.name == '' + itemData.id && identifier.edition == itemData.edition)) {
                 return true;
             }
@@ -54,15 +55,15 @@ export class ItemManager {
             if (itemData.edition == 'gh') {
                 const tradingPost = this.game.party.buildings && this.game.party.buildings.find((buildingModel) => buildingModel.name == "trading-post" && buildingModel.state != 'wrecked');
                 if (tradingPost) {
-                    if (tradingPost.level >= 2 && [21, 37, 53, 93, 94, 106, 115].indexOf(itemData.id) != -1) {
+                    if (typeof itemData.id === 'number' && tradingPost.level >= 2 && [21, 37, 53, 93, 94, 106, 115].indexOf(itemData.id) != -1) {
                         return true;
-                    } else if (tradingPost.level >= 3 && [46, 83, 84, 85, 86, 87, 88, 102, 110, 111, 120, 121, 122, 123, 126, 128].indexOf(itemData.id) != -1) {
+                    } else if (typeof itemData.id === 'number' && tradingPost.level >= 3 && [46, 83, 84, 85, 86, 87, 88, 102, 110, 111, 120, 121, 122, 123, 126, 128].indexOf(itemData.id) != -1) {
                         return true;
-                    } else if (tradingPost.level >= 4 && [17, 35, 47, 51, 62, 74, 77, 78, 79, 80, 81, 82, 117, 118, 119, 127, 129, 131].indexOf(itemData.id) != -1) {
+                    } else if (typeof itemData.id === 'number' && tradingPost.level >= 4 && [17, 35, 47, 51, 62, 74, 77, 78, 79, 80, 81, 82, 117, 118, 119, 127, 129, 131].indexOf(itemData.id) != -1) {
                         return true;
                     }
                 }
-                return [10, 25, 72, 105, 109, 116].indexOf(itemData.id) != -1;
+                return typeof itemData.id === 'number' && [10, 25, 72, 105, 109, 116].indexOf(itemData.id) != -1;
             } else if (itemData.edition == 'fc') {
                 let fcItems = [];
                 if (this.game.party.scenarios.find((model) => model.edition == 'fh' && model.index == "82" && !model.group)) {
@@ -78,12 +79,15 @@ export class ItemManager {
         return false;
     }
 
-    getItem(id: number, edition: string, all: boolean): ItemData | undefined {
+    getItem(id: number | string, edition: string, all: boolean): ItemData | undefined {
+        if (!isNaN(+id)) {
+            id = +id;
+        }
         return gameManager.itemData().find((itemData) => (itemData && itemData.id == id && itemData.edition == edition && (all || this.isItemAvailable(itemData, edition))));
     }
 
     maxItemIndex(edition: string): number {
-        return Math.max(...this.getItems(edition, true).map((itemData) => itemData.id));
+        return Math.max(...this.getItems(edition, true).filter((itemData) => typeof itemData.id === 'number').map((itemData) => +itemData.id));
     }
 
     pricerModifier(): number {
@@ -106,7 +110,7 @@ export class ItemManager {
     }
 
     canAdd(item: ItemData, character: Character): boolean {
-        return item.count && this.countAvailable(item) > 0 && !character.progress.items.find((identifier) => item && identifier.name == '' + item.id && identifier.edition == item.edition) || false;
+        return item.count && this.countAvailable(item) > 0 && !character.progress.items.find((identifier) => item && identifier.name == '' + item.id && identifier.edition == item.edition) && (!item.solo || item.edition == character.edition && item.solo == character.name) || false;
     }
 
     canBuy(item: ItemData, character: Character, cost: number = 0): boolean {
@@ -162,6 +166,18 @@ export class ItemManager {
         return canCraft && isCraftItem;
     }
 
+    canDistill(item: ItemData) {
+        if (gameManager.buildingsManager.distillAvailable) {
+            if (item.resourcesAny && item.resourcesAny.length) {
+                return item.resourcesAny.every((resource) => resource.herb_resources);
+            } else if (item.resources && item.resources) {
+                const resources: LootType[] = Object.keys(item.resources).map((value) => value as LootType);
+                return resources.every((resource) => herbResourceLootTypes.indexOf(resource) != -1);
+            }
+        }
+        return false;
+    }
+
     craftingDisabled(): boolean {
         return gameManager.fhRules() && gameManager.game.party.campaignMode && gameManager.game.party.buildings.find((buildingModel) => buildingModel.name == 'craftsman' && buildingModel.level > 0 && buildingModel.state == "wrecked") != undefined;
     }
@@ -170,11 +186,23 @@ export class ItemManager {
         return gameManager.fhRules() && gameManager.game.party.campaignMode && gameManager.game.party.buildings.find((buildingModel) => buildingModel.name == 'alchemist' && buildingModel.level > 0 && buildingModel.state == "wrecked") != undefined;
     }
 
+    itemUsable(itemData: ItemData) {
+        if (itemData.requiredBuilding == 'alchemist' && this.brewingDisabled()) {
+            return false;
+        }
+        return true;
+    }
+
     itemSellValue(itemData: ItemData): number {
         if (itemData.cost) {
             return Math.floor(itemData.cost / 2);
         } else {
             let gold = 0;
+
+            if (itemData.resourcesAny) {
+                gold += itemData.resourcesAny.length;
+            }
+
             if (itemData.resources) {
                 Object.keys(itemData.resources).forEach(key => {
                     const lootType = key as LootType;
@@ -312,8 +340,8 @@ export class ItemManager {
         return character.progress.equippedItems.find((identifier) => identifier.name == '' + item.id && identifier.edition == item.edition) != undefined;
     }
 
-    toggleEquippedItem(item: ItemData, character: Character, force: boolean) {
-        let equippedItems: ItemData[] = character.progress.equippedItems.map((identifier) => this.getItem(+identifier.name, identifier.edition, true)).filter((itemData) => itemData).map((itemData) => itemData as ItemData);
+    toggleEquippedItem(item: ItemData, character: Character, force: boolean = false) {
+        let equippedItems: ItemData[] = character.progress.equippedItems.map((identifier) => this.getItem(identifier.name, identifier.edition, true)).filter((itemData) => itemData).map((itemData) => itemData as ItemData);
         const equipIndex = equippedItems.indexOf(item);
         if (force && equipIndex == -1) {
             equippedItems.push(item);
@@ -340,6 +368,10 @@ export class ItemManager {
                 }
                 if (equippedItems.find((itemData) => itemData.id == 132 && itemData.edition == 'fh')) {
                     allowed += 1;
+                }
+
+                if (gameManager.trialsManager.favorsEnabled && gameManager.trialsManager.apply) {
+                    allowed += gameManager.trialsManager.activeFavor('fh', 'capacity');
                 }
 
                 if (equippedItems.filter((itemData) => itemData.slot == item.slot).length >= allowed) {
@@ -372,6 +404,7 @@ export class ItemManager {
                     equippedItems = equippedItems.filter((equipped) => equipped.slot != ItemSlot.onehand);
                 }
             } else {
+                equippedItems.filter((equipped) => equipped.slot == item.slot).forEach((equipped) => this.toggleEquippedItem(equipped, character));
                 equippedItems = equippedItems.filter((equipped) => equipped.slot != item.slot);
             }
 
@@ -393,21 +426,18 @@ export class ItemManager {
             }
             character.health = character.maxHealth;
         }
-
-        if (equipIndex == -1 && !item.spent && !item.consumed) {
-            this.applyItemEffects(character, item);
-        }
     }
 
     drawRandomItem(edition: string, blueprint: boolean = false, from: number = -1, to: number = -1): ItemData | undefined {
-        let availableItems = this.getItems(edition, true).filter((itemData) =>
+        let availableItems = this.getItems(undefined, true).filter((itemData) =>
             (!blueprint && itemData.random ||
                 (blueprint && itemData.blueprint &&
                     (!itemData.requiredBuilding ||
                         gameManager.game.party.buildings.find((buildingModel) => buildingModel.name == itemData.requiredBuilding && buildingModel.level >= itemData.requiredBuildingLevel)))) &&
-            (from == -1 || itemData.id >= from) &&
-            (to == -1 || itemData.id <= to) &&
-            !gameManager.game.party.unlockedItems.find((identifier) => identifier.name == '' + itemData.id && identifier.edition == itemData.edition));
+            (from == -1 || typeof itemData.id === 'number' && itemData.id >= from) &&
+            (to == -1 || typeof itemData.id === 'number' && itemData.id <= to) &&
+            !gameManager.game.party.unlockedItems.find((identifier) => identifier.name == '' + itemData.id && identifier.edition == itemData.edition) &&
+            (itemData.edition == edition || gameManager.editionExtensions(edition).indexOf(itemData.edition) != -1));
         let item: ItemData | undefined = undefined;
         if (availableItems.length > 0) {
             item = availableItems[Math.floor(Math.random() * availableItems.length)];
@@ -415,17 +445,36 @@ export class ItemManager {
         return item;
     }
 
-    applyItemEffects(character: Character, item: ItemData) {
+    applyEquippedItemEffects(character: Character) {
+        character.immunities = [];
+        character.progress.equippedItems.forEach((identifier) => {
+            const item = gameManager.itemManager.getItem(identifier.name, identifier.edition, true);
+            if (item) {
+                gameManager.itemManager.applyItemEffects(character, item);
+            }
+        })
+    }
+
+    applyItemEffects(character: Character, item: ItemData, equip: boolean = false) {
         if (item.effects) {
             item.effects.forEach((itemEffect) => {
-                this.applyItemEffect(character, itemEffect);
+                if (!item.spent && !item.consumed || equip || itemEffect.always) {
+                    this.applyItemEffect(character, itemEffect);
+                }
             })
         }
 
-        if (item.summon) {
+        if (equip && item.summon) {
             let summon = new Summon(uuidv4(), item.summon.name, item.summon.cardId, character.level, 1, SummonColor.blue, item.summon);
             summon.init = false;
             gameManager.characterManager.addSummon(character, summon);
+        }
+
+        if (settingsManager.settings.characterItemsApply) {
+            if (item.edition == 'fh' && item.id == 258 && character.health < character.maxHealth / 2) {
+                character.health += 7;
+                gameManager.attackModifierManager.addModifier(character.attackModifierDeck, new AttackModifier(AttackModifierType.curse));
+            }
         }
     }
 
@@ -434,7 +483,7 @@ export class ItemManager {
             case ItemEffectType.heal:
                 const heal = EntityValueFunction(effect.value);
                 character.health += heal;
-                gameManager.entityManager.addCondition(character, new Condition(ConditionName.heal, heal), character.active || false, character.off || false);
+                gameManager.entityManager.addCondition(character, character, new Condition(ConditionName.heal, heal));
                 gameManager.entityManager.applyCondition(character, character, ConditionName.heal, true);
                 break;
             case ItemEffectType.damage:
@@ -444,7 +493,22 @@ export class ItemManager {
             case ItemEffectType.condition:
                 const condition: ConditionName = ("" + effect.value).split(':')[0] as ConditionName;
                 let value: number = ("" + effect.value).split(':').length > 1 ? +("" + effect.value).split(':')[1] : 1;
-                gameManager.entityManager.addCondition(character, new Condition(condition, value), character.active || false, character.off || false);
+
+                if (condition == ConditionName.bless) {
+                    for (let i = 0; i < value; i++) {
+                        if (gameManager.attackModifierManager.countUpcomingBlesses() < 10) {
+                            gameManager.attackModifierManager.addModifier(character.attackModifierDeck, new AttackModifier(AttackModifierType.bless));
+                        }
+                    }
+                } else if (condition == ConditionName.curse) {
+                    for (let i = 0; i < value; i++) {
+                        if (gameManager.attackModifierManager.countUpcomingCurses(false) < 10) {
+                            gameManager.attackModifierManager.addModifier(character.attackModifierDeck, new AttackModifier(AttackModifierType.curse));
+                        }
+                    }
+                } else {
+                    gameManager.entityManager.addCondition(character, character, new Condition(condition, value));
+                }
                 break;
             case ItemEffectType.immune:
                 const immunity: ConditionName = ("" + effect.value) as ConditionName;
@@ -462,6 +526,14 @@ export class ItemManager {
                     })
                 }
                 break;
+            case ItemEffectType.initiative:
+                character.initiative += EntityValueFunction(effect.value);
+                if (character.initiative < 1) {
+                    character.initiative = 1;
+                } else if (character.initiative > 99) {
+                    character.initiative = 99;
+                }
+                break;
             case ItemEffectType.refreshSpent:
                 character.progress.equippedItems.forEach((identifier) => {
                     if (identifier.tags && identifier.tags.indexOf(ItemFlags.spent) != -1) {
@@ -473,6 +545,20 @@ export class ItemManager {
                 const negativeConditions: ConditionName[] = gameManager.conditionsForTypes(ConditionType.negative, ConditionType.character).map((condition) => condition.name);
                 character.entityConditions = character.entityConditions.filter((entityCondition) => negativeConditions.indexOf(entityCondition.name) == -1);
                 break;
+        }
+    }
+
+    sortItems(a: ItemData, b: ItemData): number {
+        if (typeof a.id === 'number' && typeof b.id === 'number') {
+            return a.id - b.id;
+        } else if (typeof a.id === 'number') {
+            return -1;
+        } else if (typeof b.id === 'number') {
+            return 1;
+        } else if (a.id < b.id) {
+            return -1;
+        } else {
+            return 1;
         }
     }
 

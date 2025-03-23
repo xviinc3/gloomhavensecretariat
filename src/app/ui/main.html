@@ -15,7 +15,7 @@
           <span [ghs-label]="'server.connect'"></span>
           <span class="tries" *ngIf="gameManager.stateManager.connectionTries > 0">
             <span [ghs-label]="'server.connectionTries'"
-              [ghs-label-args]="['' + gameManager.stateManager.connectionTries]"></span>
+              [ghs-label-args]="[gameManager.stateManager.connectionTries]"></span>
           </span>
           <span class="tries-hint" *ngIf="gameManager.stateManager.connectionTries > 4">
             <span [ghs-label]="'server.connectionTries.hint'"></span>
@@ -60,6 +60,21 @@
             [ghs-label]="'data.edition.' + gameManager.game.edition" [ghs-label-attribute]="'title'">
         </a>
       </div>
+      <div *ngIf="gameManager.game.edition == 'fh'" class="fh-second-edition">
+        <div class="hint-container">
+          <label>
+            <input tabclick type="checkbox" [checked]="settingsManager.settings['fhSecondEdition']"
+              (change)="settingsManager.toggle('fhSecondEdition')">
+            <span [ghs-label]="'settings.fhSecondEdition' "></span>
+          </label>
+          <img src="./assets/images/hint.svg" class="hint-trigger ghs-svg">
+          <span class="hint">
+            <div class="text">
+              <span [ghs-label]="'settings.fhSecondEdition.hint'"></span>
+            </div>
+          </span>
+        </div>
+      </div>
     </div>
 
     <div class="container-row bordered">
@@ -90,7 +105,7 @@
     </ng-container>
   </div>
   <div *ngIf="!fullviewChar && !welcome" class="figures" cdkDropListGroup
-    [ngClass]="{'loot-deck' : footer.lootDeck || settingsManager.settings.alwaysLootDeck && gameManager.game.lootDeck.active , 'ally-deck' :  footer.hasAllyAttackModifierDeck, 'drag-disabled': !settingsManager.settings.dragFigures, 'backup-hint-spacer' : showBackupHint}"
+    [ngClass]="{'loot-deck' : footer.lootDeckEnabeld, 'ally-deck' :  footer.hasAllyAttackModifierDeck, 'drag-disabled': !settingsManager.settings.dragFigures, 'backup-hint-spacer' : showBackupHint}"
     (scroll)="onFigureScroll($event)">
     <div class="figure" *ngFor="let figure of figures; let i = index;" [figure-autoscroll]="figure"
       [block]="i == this.lastScroll || i == this.lastScrollColumn ? 'end' : 'center'" [cdkDropListData]="i" cdkDropList
@@ -130,7 +145,7 @@
       <h2 [ghs-label]="'datamanagement.backup.auto.uploadUrl.error'"></h2>
       <p *ngIf="gameManager.stateManager.backupError > 0"
         [ghs-label]="'datamanagement.backup.auto.uploadUrl.error.status'"
-        [ghs-label-args]="['' + gameManager.stateManager.backupError]"></p>
+        [ghs-label-args]="[gameManager.stateManager.backupError]"></p>
       <p *ngIf="gameManager.stateManager.backupError == -1"
         [ghs-label]="'datamanagement.backup.auto.uploadUrl.error.unknown'"></p>
     </div>

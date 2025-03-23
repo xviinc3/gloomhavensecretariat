@@ -1,10 +1,12 @@
+import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { Component, Inject, OnInit } from '@angular/core';
-import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import { gameManager, GameManager } from 'src/app/game/businesslogic/GameManager';
-import { ItemData } from 'src/app/game/model/data/ItemData';
+import { settingsManager } from 'src/app/game/businesslogic/SettingsManager';
 import { Character } from 'src/app/game/model/Character';
+import { ItemData } from 'src/app/game/model/data/ItemData';
 
 @Component({
+	standalone: false,
   selector: 'ghs-item-dialog',
   templateUrl: './item-dialog.html',
   styleUrls: ['./item-dialog.scss'],
@@ -32,6 +34,6 @@ export class ItemDialogComponent implements OnInit {
     this.opened = false;
     setTimeout(() => {
       this.dialogRef.close();
-    }, 1000);
+    }, settingsManager.settings.animations ? 1000 : 0);
   }
 }

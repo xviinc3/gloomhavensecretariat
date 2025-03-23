@@ -2,6 +2,7 @@ import { gameManager } from "../businesslogic/GameManager";
 import { settingsManager } from "../businesslogic/SettingsManager";
 import { Character, GameCharacterModel } from "./Character";
 import { AttackModifierDeck, defaultAttackModifierCards, GameAttackModifierDeckModel } from "./data/AttackModifier";
+import { ChallengeDeck, GameChallengeDeckModel } from "./data/Challenges";
 import { ConditionName } from "./data/Condition";
 import { defaultElementBoard, ElementModel, } from "./data/Element";
 import { Identifier } from "./data/Identifier";
@@ -29,7 +30,7 @@ export class Game {
   sections: Scenario[] = [];
   scenarioRules: { identifier: ScenarioRuleIdentifier, rule: ScenarioRule }[] = [];
   appliedScenarioRules: ScenarioRuleIdentifier[] = [];
-  disgardedScenarioRules: ScenarioRuleIdentifier[] = [];
+  discardedScenarioRules: ScenarioRuleIdentifier[] = [];
   level: number = 1;
   levelCalculation: boolean = true;
   levelAdjustment: number = 0;
@@ -55,6 +56,10 @@ export class Game {
   server: boolean = false;
   finish: ScenarioFinish | undefined;
   gameClock: GameClockTimestamp[] = [];
+  challengeDeck: ChallengeDeck = new ChallengeDeck();
+  favors: Identifier[] = [];
+  favorPoints: number[] = [];
+  keepFavors: boolean = false;
 
   constructor() {
     this.elementBoard = JSON.parse(JSON.stringify(defaultElementBoard));
@@ -63,7 +68,7 @@ export class Game {
   }
 
   toModel(): GameModel {
-    return new GameModel(this.revision, this.revisionOffset, this.edition, this.conditions, this.battleGoalEditions, this.filteredBattleGoals, this.figures.map((figure) => figure.edition + '-' + figure.name), this.entitiesCounter, this.figures.filter((figure) => figure instanceof Character).map((figure) => ((figure as Character).toModel())), this.figures.filter((figure) => figure instanceof Monster).map((figure) => ((figure as Monster).toModel())), this.figures.filter((figure) => figure instanceof ObjectiveContainer).map((figure) => ((figure as ObjectiveContainer).toModel())), this.state, this.scenario && gameManager.scenarioManager.toModel(this.scenario, this.scenario.revealedRooms, this.scenario.additionalSections, this.scenario.custom, this.scenario.custom ? this.scenario.name : "") || undefined, this.sections.map((section) => gameManager.scenarioManager.toModel(section, section.revealedRooms, section.additionalSections)), this.scenarioRules.map((value) => value.identifier), this.appliedScenarioRules, this.disgardedScenarioRules, this.level, this.levelCalculation, this.levelAdjustment, this.bonusAdjustment, this.ge5Player, this.playerCount, this.round, this.roundResets, this.roundResetsHidden, this.playSeconds, this.totalSeconds, this.monsterAttackModifierDeck.toModel(), this.allyAttackModifierDeck.toModel(), this.elementBoard, this.solo, this.party, this.parties, this.lootDeck, this.lootDeckEnhancements, this.lootDeckFixed, this.lootDeckSections, this.unlockedCharacters, this.server, this.finish, this.gameClock);
+    return new GameModel(this.revision, this.revisionOffset, this.edition, this.conditions, this.battleGoalEditions, this.filteredBattleGoals, this.figures.map((figure) => figure.edition + '-' + (figure instanceof ObjectiveContainer ? figure.uuid : figure.name)), this.entitiesCounter, this.figures.filter((figure) => figure instanceof Character).map((figure) => ((figure as Character).toModel())), this.figures.filter((figure) => figure instanceof Monster).map((figure) => ((figure as Monster).toModel())), this.figures.filter((figure) => figure instanceof ObjectiveContainer).map((figure) => ((figure as ObjectiveContainer).toModel())), this.state, this.scenario && gameManager.scenarioManager.toModel(this.scenario, this.scenario.revealedRooms, this.scenario.additionalSections, this.scenario.custom, this.scenario.custom ? this.scenario.name : "") || undefined, this.sections.map((section) => gameManager.scenarioManager.toModel(section, section.revealedRooms, section.additionalSections)), this.scenarioRules.map((value) => value.identifier), this.appliedScenarioRules, this.discardedScenarioRules, this.level, this.levelCalculation, this.levelAdjustment, this.bonusAdjustment, this.ge5Player, this.playerCount, this.round, this.roundResets, this.roundResetsHidden, this.playSeconds, this.totalSeconds, this.monsterAttackModifierDeck.toModel(), this.allyAttackModifierDeck.toModel(), this.elementBoard, this.solo, this.party, this.parties, this.lootDeck, this.lootDeckEnhancements, this.lootDeckFixed, this.lootDeckSections, this.unlockedCharacters, this.server, this.finish, this.gameClock, this.challengeDeck.toModel(), this.favors, this.favorPoints, this.keepFavors);
   }
 
   fromModel(model: GameModel, server: boolean = false) {
@@ -111,9 +116,7 @@ export class Game {
       });
     }
 
-    this.figures.sort((a, b) => {
-      return model.figures.indexOf(a.edition + '-' + a.name) - model.figures.indexOf(b.edition + '-' + b.name);
-    });
+    this.figures.sort((a, b) => model.figures.indexOf(a.edition + '-' + (a instanceof ObjectiveContainer ? a.uuid : a.name)) - model.figures.indexOf(b.edition + '-' + (b instanceof ObjectiveContainer ? b.uuid : b.name)));
 
     this.state = model.state;
 
@@ -156,7 +159,7 @@ export class Game {
     }
 
     this.appliedScenarioRules = model.appliedScenarioRules || [];
-    this.disgardedScenarioRules = model.disgardedScenarioRules || [];
+    this.discardedScenarioRules = model.discardedScenarioRules || model.disgardedScenarioRules || [];
 
     this.levelCalculation = model.levelCalculation;
     this.levelAdjustment = model.levelAdjustment;
@@ -222,7 +225,16 @@ export class Game {
     }
 
     if (this.party.campaignStickers) {
-      this.party.campaignStickers = this.party.campaignStickers.filter((item) => item);
+      this.party.campaignStickers = this.party.campaignStickers.filter((item) => item).map((value) => {
+        let sticker = value;
+        Object.keys(settingsManager.label.data.campaignSticker).forEach((key) => {
+          if (settingsManager.label.data.campaignSticker[key] == sticker) {
+            sticker = key;
+            return;
+          }
+        })
+        return sticker;
+      })
     }
 
     // migrate randomScenarios to randomScenariosFh
@@ -244,6 +256,7 @@ export class Game {
 
     this.party.players = this.party.players || [];
     this.party.casualScenarios = this.party.casualScenarios || [];
+    this.party.pets = this.party.pets || [];
 
     this.parties = [this.party];
     if (model.parties) {
@@ -279,6 +292,10 @@ export class Game {
     this.lootDeckFixed = model.lootDeckFixed || [];
     this.lootDeckSections = model.lootDeckSections || [];
 
+    this.favors = model.favors || [];
+    this.favorPoints = model.favorPoints || [];
+    this.keepFavors = model.keepFavors || false;
+
     // migration 
     this.lootDeckEnhancements.forEach((loot) => {
       if (loot.value) {
@@ -306,6 +323,10 @@ export class Game {
     lootCardIdMigration(this.lootDeckEnhancements);
 
     this.unlockedCharacters = model.unlockedCharacters || [];
+    this.challengeDeck = this.challengeDeck || new ChallengeDeck();
+    if (model.challengeDeck) {
+      this.challengeDeck.fromModel(model.challengeDeck);
+    }
 
     // migration
     if (settingsManager.settings.spoilers) {
@@ -364,7 +385,7 @@ export class GameModel {
   sections: GameScenarioModel[];
   scenarioRules: ScenarioRuleIdentifier[];
   appliedScenarioRules: ScenarioRuleIdentifier[];
-  disgardedScenarioRules: ScenarioRuleIdentifier[];
+  discardedScenarioRules: ScenarioRuleIdentifier[];
   level: number;
   levelCalculation: boolean;
   levelAdjustment: number;
@@ -390,6 +411,12 @@ export class GameModel {
   server: boolean;
   finish: ScenarioFinish | undefined;
   gameClock: GameClockTimestamp[];
+  challengeDeck: GameChallengeDeckModel;
+  favors: Identifier[];
+  favorPoints: number[];
+  keepFavors: boolean;
+  // migration
+  disgardedScenarioRules: ScenarioRuleIdentifier[];
 
   constructor(
     revision: number = 0,
@@ -408,7 +435,7 @@ export class GameModel {
     sections: GameScenarioModel[] = [],
     scenarioRules: ScenarioRuleIdentifier[] = [],
     appliedScenarioRules: ScenarioRuleIdentifier[] = [],
-    disgardedScenarioRules: ScenarioRuleIdentifier[] = [],
+    discardedScenarioRules: ScenarioRuleIdentifier[] = [],
     level: number = 0,
     levelCalculation: boolean = true,
     levelAdjustment: number = 0,
@@ -433,7 +460,11 @@ export class GameModel {
     unlockedCharacters: string[] = [],
     server: boolean = false,
     finish: ScenarioFinish | undefined = undefined,
-    gameClock: GameClockTimestamp[] = []) {
+    gameClock: GameClockTimestamp[] = [],
+    challengeDeck: GameChallengeDeckModel = new GameChallengeDeckModel(),
+    favors: Identifier[] = [],
+    favorPoints: number[] = [],
+    keepFavors: boolean = false) {
     this.revision = revision;
     this.revisionOffset = revisionOffset;
     this.edition = edition;
@@ -450,7 +481,7 @@ export class GameModel {
     this.sections = sections;
     this.scenarioRules = JSON.parse(JSON.stringify(scenarioRules));
     this.appliedScenarioRules = JSON.parse(JSON.stringify(appliedScenarioRules));
-    this.disgardedScenarioRules = JSON.parse(JSON.stringify(disgardedScenarioRules));
+    this.discardedScenarioRules = JSON.parse(JSON.stringify(discardedScenarioRules));
     this.level = level;
     this.levelCalculation = levelCalculation;
     this.levelAdjustment = levelAdjustment;
@@ -480,6 +511,12 @@ export class GameModel {
     this.server = server;
     this.finish = finish ? JSON.parse(JSON.stringify(finish)) : undefined;
     this.gameClock = gameClock;
+    this.challengeDeck = challengeDeck;
+    this.favors = JSON.parse(JSON.stringify(favors));
+    this.favorPoints = JSON.parse(JSON.stringify(favorPoints));
+    this.keepFavors = keepFavors;
+    // migration
+    this.disgardedScenarioRules = JSON.parse(JSON.stringify(discardedScenarioRules));
   }
 
 }

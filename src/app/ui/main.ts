@@ -16,9 +16,11 @@ import { MonsterNumberPickerDialog } from './figures/monster/dialogs/numberpicke
 import { FooterComponent } from './footer/footer';
 import { SubMenu } from './header/menu/menu';
 import { ghsDialogClosingHelper } from './helper/Static';
+import { ConfirmDialogComponent } from './helper/confirm/confirm';
 import { PointerInputService } from './helper/pointer-input';
 
 @Component({
+  standalone: false,
   selector: 'ghs-main',
   templateUrl: './main.html',
   styleUrls: ['./main.scss'],
@@ -54,6 +56,11 @@ export class MainComponent implements OnInit {
 
   standeeDialog: DialogRef<unknown, MonsterNumberPickerDialog> | undefined;
   standeeDialogSubscription: Subscription | undefined;
+
+  serverPing: number = 0;
+  serverPingInterval: any;
+
+  initiativeSetDialog: DialogRef<unknown, ConfirmDialogComponent> | "discard" | false = false;
 
   @ViewChild('footer') footer!: FooterComponent;
 
@@ -92,6 +99,50 @@ export class MainComponent implements OnInit {
               }
             }
             this.showBackupHint = settingsManager.settings.backupHint && !this.loading && !gameManager.game.scenario && (gameManager.game.party.scenarios.length > 0 || gameManager.game.party.casualScenarios.length > 0 || gameManager.game.parties.some((party) => party.casualScenarios.length > 0));
+
+            if (settingsManager.settings.initiativeRequired && settingsManager.settings.initiativeRoundConfirm && gameManager.game.state == GameState.draw && gameManager.game.scenario) {
+              if (gameManager.game.figures.every((figure) => !(figure instanceof Character) || gameManager.entityManager.isAlive(figure) && !figure.absent && figure.getInitiative() > 0)) {
+                if (!this.initiativeSetDialog) {
+                  this.initiativeSetDialog = this.dialog.open(ConfirmDialogComponent, {
+                    panelClass: ['dialog'],
+                    data: {
+                      label: 'round.hint.initiativeRoundConfirm'
+                    }
+                  });
+
+                  this.initiativeSetDialog.closed.subscribe({
+                    next: (result) => {
+                      this.initiativeSetDialog = "discard";
+                      if (result) {
+                        this.initiativeSetDialog = false;
+                        this.footer.next();
+                      }
+                    }
+                  })
+                }
+              } else {
+                if (this.initiativeSetDialog instanceof DialogRef) {
+                  this.initiativeSetDialog.close();
+                }
+                this.initiativeSetDialog = false;
+              }
+            } else if (gameManager.game.state == GameState.next) {
+              this.initiativeSetDialog = false;
+            }
+          }
+        }
+
+        if (this.serverPing != settingsManager.settings.serverPing) {
+          if (this.serverPingInterval) {
+            clearInterval(this.serverPingInterval);
+            this.serverPingInterval = null;
+          }
+
+          this.serverPing = settingsManager.settings.serverPing;
+          if (this.serverPing > 0) {
+            this.serverPingInterval = setInterval(() => {
+              gameManager.stateManager.sendPing();
+            }, 1000 * this.serverPing);
           }
         }
       }
@@ -171,7 +222,7 @@ export class MainComponent implements OnInit {
           }
 
           dialogRef.keydownEvents.subscribe(event => {
-            if (!event.ctrlKey && !event.shiftKey && !event.altKey && event.key === "Escape") {
+            if (settingsManager.settings.keyboardShortcuts && !event.ctrlKey && !event.shiftKey && !event.altKey && event.key === "Escape") {
               ghsDialogClosingHelper(dialogRef);
             }
           });
@@ -189,7 +240,7 @@ export class MainComponent implements OnInit {
     document.body.classList.add('no-select');
     try {
       await storageManager.init();
-    } catch {
+    } catch (e) {
       // continue
     }
     await settingsManager.init(!environment.production);
@@ -217,7 +268,7 @@ export class MainComponent implements OnInit {
     if (this.swUpdate.isEnabled) {
       document.body.addEventListener("click", (event) => {
         if (settingsManager.settings.fullscreen && this.swUpdate.isEnabled) {
-          document.body.requestFullscreen();
+          document.body.requestFullscreen && document.body.requestFullscreen();
         }
       });
     }
@@ -245,7 +296,11 @@ export class MainComponent implements OnInit {
     });
 
     if (settingsManager.settings.wakeLock && "wakeLock" in navigator) {
-      gameManager.stateManager.wakeLock = await navigator.wakeLock.request("screen");
+      try {
+        gameManager.stateManager.wakeLock = await navigator.wakeLock.request("screen");
+      } catch (e) {
+        console.error(e);
+      }
 
       document.addEventListener("visibilitychange", async () => {
         if (gameManager.stateManager.wakeLock !== null && document.visibilityState === "visible") {
@@ -311,11 +366,11 @@ export class MainComponent implements OnInit {
   startCampaign(edition: string) {
     gameManager.stateManager.before("startCampaign", 'data.edition.' + edition);
     gameManager.game.edition = edition;
-    if (settingsManager.settings.automaticTheme) {
-      if (edition == 'fh') {
-        settingsManager.set('fhStyle', true);
+    if (settingsManager.settings.automaticTheme && settingsManager.settings.theme != 'modern') {
+      if (edition == 'fh' || edition == 'bb') {
+        settingsManager.set('theme', edition);
       } else {
-        settingsManager.set('fhStyle', false);
+        settingsManager.set('theme', 'default');
       }
     }
     gameManager.game.party.campaignMode = true;
@@ -421,7 +476,7 @@ export class MainComponent implements OnInit {
   }
 
   lastActive(): number {
-    let lastActive = -1;
+    let lastActive = 0;
     this.figures.forEach((figure, index) => {
       if (index > lastActive && gameManager.gameplayFigure(figure)) {
         lastActive = index;
@@ -585,7 +640,7 @@ export class MainComponent implements OnInit {
       document.body.appendChild(downloadButton);
       downloadButton.click();
       document.body.removeChild(downloadButton);
-    } catch {
+    } catch (e) {
       console.warn("Could not read datadump");
     }
   }

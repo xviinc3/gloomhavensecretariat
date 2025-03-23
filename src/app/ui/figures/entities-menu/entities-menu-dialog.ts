@@ -1,5 +1,5 @@
 import { DialogRef, DIALOG_DATA } from "@angular/cdk/dialog";
-import { Component, Inject } from "@angular/core";
+import { Component, HostListener, Inject } from "@angular/core";
 import { GameManager, gameManager } from "src/app/game/businesslogic/GameManager";
 import { SettingsManager, settingsManager } from "src/app/game/businesslogic/SettingsManager";
 import { ConditionName, ConditionType, EntityCondition, EntityConditionState } from "src/app/game/model/data/Condition";
@@ -13,8 +13,10 @@ import { Summon, SummonState } from "src/app/game/model/Summon";
 import { Character } from "src/app/game/model/Character";
 import { ObjectiveEntity } from "src/app/game/model/ObjectiveEntity";
 import { ObjectiveContainer } from "src/app/game/model/ObjectiveContainer";
+import { MonsterData } from "src/app/game/model/data/MonsterData";
 
 @Component({
+	standalone: false,
   selector: 'ghs-entities-menu-dialog',
   templateUrl: 'entities-menu-dialog.html',
   styleUrls: ['./entities-menu-dialog.scss']
@@ -64,6 +66,33 @@ export class EntitiesMenuDialogComponent {
     this.entities = [];
     this.allEntities.forEach((entity) => this.entities.push(entity));
     this.update();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  keyboardShortcuts(event: KeyboardEvent) {
+    if (settingsManager.settings.keyboardShortcuts && !event.altKey && !event.metaKey && (!window.document.activeElement || window.document.activeElement.tagName != 'INPUT' && window.document.activeElement.tagName != 'SELECT' && window.document.activeElement.tagName != 'TEXTAREA')) {
+      if (!event.ctrlKey && !event.shiftKey && event.key === 'ArrowRight') {
+        this.changeHealth(1);
+        event.preventDefault();
+        event.stopPropagation();
+      } else if (!event.ctrlKey && !event.shiftKey && event.key === 'ArrowLeft') {
+        this.changeHealth(-1);
+        event.preventDefault();
+        event.stopPropagation();
+      } else if (!event.ctrlKey && !event.shiftKey && event.key === 'ArrowUp') {
+        this.changeMaxHealth(1);
+        event.preventDefault();
+        event.stopPropagation();
+      } else if (!event.ctrlKey && !event.shiftKey && event.key === 'ArrowDown') {
+        this.changeMaxHealth(-1);
+        event.preventDefault();
+        event.stopPropagation();
+      } else if (!event.ctrlKey && !event.shiftKey && (event.key.toLowerCase() === 'k' || event.key.toLowerCase() === 'd')) {
+        this.toggleDead();
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }
   }
 
   update() {
@@ -181,13 +210,13 @@ export class EntitiesMenuDialogComponent {
       this.entities.forEach((entity) => {
         entityCondition.expired = entityCondition.state == EntityConditionState.new;
         if (entityCondition.state == EntityConditionState.removed) {
-          gameManager.entityManager.removeCondition(entity, entityCondition, entityCondition.permanent);
+          gameManager.entityManager.removeCondition(entity, this.monster || this.character || this.objective || new Monster(new MonsterData()), entityCondition, entityCondition.permanent);
         } else if (this.monster && !gameManager.entityManager.isImmune(entity, this.monster, entityCondition.name)) {
-          gameManager.entityManager.addCondition(entity, entityCondition, this.monster.active, this.monster.off, entityCondition.permanent);
+          gameManager.entityManager.addCondition(entity, this.monster || this.character || this.objective || new Monster(new MonsterData()), entityCondition, entityCondition.permanent);
         } else if (this.character) {
-          gameManager.entityManager.addCondition(entity, entityCondition, entity.active, this.character.off, entityCondition.permanent);
+          gameManager.entityManager.addCondition(entity, this.monster || this.character || this.objective || new Monster(new MonsterData()), entityCondition, entityCondition.permanent);
         } else if (this.objective) {
-          gameManager.entityManager.addCondition(entity, entityCondition, entity.active, this.objective.off, entityCondition.permanent);
+          gameManager.entityManager.addCondition(entity, this.monster || this.character || this.objective || new Monster(new MonsterData()), entityCondition, entityCondition.permanent);
         }
       })
       gameManager.stateManager.after();

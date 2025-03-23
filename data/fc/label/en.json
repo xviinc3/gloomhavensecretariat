@@ -1,9 +1,130 @@
 {
+  "ability": {
+    "Anguish and Saluation": "Anguish and Saluation",
+    "Anticipate Intricacies": "Anticipate Intricacies",
+    "Bad Omen": "Bad Omen",
+    "Blistering Heat": "Blistering Heat",
+    "Call of the Ilether": "Call of the Ilether",
+    "Careful Attunement": "Careful Attunement",
+    "Clairvoyance": "Clairvoyance",
+    "Cleansing Rite": "Cleansing Rite",
+    "Corruptiing Presence": "Corruptiing Presence",
+    "Curatite Flux": "Curatite Flux",
+    "Cursed Ground": "Cursed Ground",
+    "Deep Contemplation": "Deep Contemplation",
+    "Dimensional Divide": "Dimensional Divide",
+    "Dimensional Transfer": "Dimensional Transfer",
+    "Duality Shards": "Duality Shards",
+    "Endless Legions": "Endless Legions",
+    "Enfeebling Hex": "Enfeebling Hex",
+    "Envision the Course": "Envision the Course",
+    "Ethereal Uortex": "Ethereal Uortex",
+    "Flame Lance": "Flame Lance",
+    "Gift of the Void": "Gift of the Void",
+    "Hand of Destiny": "Hand of Destiny",
+    "Harsh Entrapment": "Harsh Entrapment",
+    "Heed My Call": "Heed My Call",
+    "Inspiration from Beyond": "Inspiration from Beyond",
+    "Legandary - Shadows": "Legandary - Shadows",
+    "Legendary - Domination": "Legendary - Domination",
+    "Legendary - Void": "Legendary - Void",
+    "Legengary - Gloom": "Legengary - Gloom",
+    "Lure Them In": "Lure Them In",
+    "Marked for Death": "Marked for Death",
+    "Nightmare Spheres": "Nightmare Spheres",
+    "Otherworldly Journey": "Otherworldly Journey",
+    "Peer into Battle": "Peer into Battle",
+    "Planar Fissure": "Planar Fissure",
+    "Plaque Their Dreams": "Plaque Their Dreams",
+    "Preordain the Path": "Preordain the Path",
+    "Protective Hura": "Protective Hura",
+    "Pulse of Malice": "Pulse of Malice",
+    "Ray of Light": "Ray of Light",
+    "Reoitalizing Fount": "Reoitalizing Fount",
+    "Seal Their Fate": "Seal Their Fate",
+    "Searing Vapors": "Searing Vapors",
+    "Toxic Blast": "Toxic Blast",
+    "Unfathomable Fortitude": "Unfathomable Fortitude",
+    "Void Snare": "Void Snare",
+    "What's Yours is Mine": "What's Yours is Mine",
+    "You Date to Defy Me": "You Date to Defy Me"
+  },
   "character": {
     "diviner": "Diviner"
   },
+  "custom": {
+    "fc": {
+      "ashblade": {
+        "1": "Focus on the enemy with the highest initiative.",
+        "2": "%game.action.teleport% to the closest unoccupied hex adjacent to the focus."
+      },
+      "flowChartGroup": {
+        "citizens": "Citizens of Gloomhaven",
+        "corruption": "Corruption",
+        "diviner": "Diviner",
+        "orchid-society": "Orchid society",
+        "tainted-crypt": "Tainted crypt",
+        "the-rift": "The rift device"
+      },
+      "manifestation-of-corruption": {
+        "1": "Play top two cards, using the first card as initiative. Perform the bottom action of the first card, then the top action of the second card",
+        "10": "Summon two %data.monster.black-imp%s: both normal for two characters; one normal, one elite for three characters; both elite for four characters.",
+        "11": "Summon one additional elite %data.monster.black-imp%",
+        "12": "Target all enemies within %game.action.range%4",
+        "13": "All adjacent enemies suffer %game.damage:3%.",
+        "14": "On the next three sources of damage from attacks targeting you, gain %game.action.shield% 3.",
+        "15": "Create one %game.condition.disarm% and %game.condition.poison% trap in each adjacent empty hex.",
+        "16": "%game.action.teleport% to the hex occupied by the farthest enemy within %game.action.range%+1 and simultaneously %game.action.teleport% that enemy to the hex you occupy.",
+        "17": "Summon one normal %data.monster.valrath-savage% adjacent to each enemy character within %game.action.range%5.",
+        "18": "All attackers targeting you gain %game.condition.curse%.",
+        "19": "All attackers targeting you gain Disadvantage for the attack.",
+        "2": "Perform this action immediately when revealed, not in normal initiative order.",
+        "20": "%game.action.attack%-1 on a new enemy within %game.action.range%4 of the first target, then %game.action.attack%-2 on a third enemy within %game.action.range%3 of the second target.",
+        "21": "Summon one %game.monster.aesther-scout%: normal for two or three characters, elite for four characters.",
+        "22": "On the next three sources of damage to you, suffer no damage instead.",
+        "3": "The character with the highest initiative is forced to act as if their enemies were allies and their allies were enemies this round. On their turn, they will perform \"%game.action.move%2\" and then the top action of their leading initiative card. Afterwards, they discard both played cards, regardless of wherever the cards would normally be lost.",
+        "4": "All attackers targeting you gain %game.condition.curse% this round.",
+        "5": "Summon one %data.monster.flame-demon%: normal for two or three characters, elite for four characters.<br>Summon one %data.monster.night-demon%: normal for two characters, elite for three or four characters.",
+        "7": "Summon one additional %data.monster.night-demon%",
+        "8": "Summon one additional %data.monster.flame-demon%",
+        "9": "Summon one %data.monster.valrath-tracker%: normal for two characters, elite for three or four characters."
+      },
+      "sraka-the-wise": {
+        "1": "Double all Heal values. Heals target The Steel Lion if able",
+        "2": "If you apply %game.condition.curse% or %game.condition.bless%, apply a second %game.condition.curse% or %game.condition.bless%"
+      },
+      "the-steel-lion": {
+        "1": "Attacks targeting adjacent allies, target you instead",
+        "2": "The first [C] times you suffer 6 or more damage, suffer no damage instead"
+      },
+      "tracker": {
+        "1": "Create one %game.condition.disarm% trap in any adjacent empty hex closest to an enemy.",
+        "2": "Focus on the enemy with the lowest current hit point value."
+      },
+      "uyart-ikkuma": {
+        "1": "It may consume %game.element.consume.fire% / %game.element.consume.earth% as if the element is currently strong when a %data.monster.flame-demon% / %data.monster.earth-demon% is present on the map"
+      },
+      "valrath-savage": {
+        "1": "All adjacent allies add +1 %game.action.attack% to all attacks",
+        "2": "All adjacent allies add +2 %game.action.attack% to all attacks"
+      }
+    }
+  },
+  "deck": {
+    "ashblade": "Ashblade",
+    "savage": "Savage",
+    "tracker": "Tracker"
+  },
   "edition": {
     "fc": "Forgotten Circles"
+  },
+  "globalAchievements": {
+    "A Peril Averted": "A Peril Averted",
+    "Knowledge is Power": "Knowledge is Power",
+    "Mechanical Splendor": "Mechanical Splendor",
+    "Pieces of an Artifact": "Pieces of an Artifact",
+    "Severed Ties": "Severed Ties",
+    "Through the Portal": "Through the Portal"
   },
   "monster": {
     "aesther-ashblade": "Aesther Ashblade",
@@ -27,18 +148,39 @@
     "warden": "Warden",
     "wolf-viper-abomination": "Wolf-Viper Abomination"
   },
-  "deck": {
-    "ashblade": "Ashblade",
-    "savage": "Savage",
-    "tracker": "Tracker"
+  "objective": {
+    "Altar": "Altar",
+    "Altar of Blizzards": "Altar of Blizzards",
+    "Altar of Rot": "Altar of Rot",
+    "Altar of Wildfire": "Altar of Wildfire",
+    "Civilian": "Civilian",
+    "Hail": "Hail",
+    "Naaret": "Naaret",
+    "Orchid Caravan": "Orchid Caravan",
+    "Seal": "Seal",
+    "Ship": "Ship"
   },
-  "ability": {},
+  "partyAchievements": {
+    "A Strongbox": "A Strongbox",
+    "Angels of Death": "Angels of Death",
+    "Beauty in Freedom": "Beauty in Freedom",
+    "Custodians": "Custodians",
+    "Diamara's Aid": "Diamara's Aid",
+    "Dimensional Equilibrium": "Dimensional Equilibrium",
+    "Guard Detail": "Guard Detail",
+    "Hunted Prey": "Hunted Prey",
+    "Hunting the Hunter": "Hunting the Hunter",
+    "Opportunists": "Opportunists",
+    "Xangroth's Aid": "Xangroth's Aid"
+  },
   "scenario": {
+    "rewards": {
+      "fc": {
+        "challenge1": "All characters may add one new card of their class to their active card pool. The card selected must have a level equal or less then the character's level minus 2."
+      }
+    },
     "rules": {
       "fc": {
-        "98": {
-          "1": "Place 1 damage token to both ships %game.mapMarker.a% and %game.mapMarker.b%."
-        },
         "101": {
           "1": "if adjacent Spitting Drake is alive and without %game.condition.stun%."
         },
@@ -72,23 +214,66 @@
           "2": "Remove two damage tokens from each altar %game.mapMarker.a% and %game.mapMarker.b%. The Manifestation of Corruption heals [C/2{$math.floor}] hit points for each damage token removed.",
           "3": "at %game.mapMarker.c% if alter %game.mapMarker.a% has no damage token on it",
           "4": "at %game.mapMarker.d% if altar %game.mapMarker.b% has no damage tokens."
+        },
+        "98": {
+          "1": "Whenever the Ancient Artillery would perform an Attack action, place 1 damage token next to ship %game.mapMarker.a% instead. If that ship has 2 or more damage tokens next to it, place 1 damage token next to ship %game.mapMarker.b% instead.",
+          "2": "Place 1 damage token next to ship %game.mapMarker.a%/%game.mapMarker.b%."
+        },
+        "99": {
+          "1": "Whenever a Cultist would summon a Living Bones, it summons one Black Imp instead. Normal Cultists summon normal Black Imps, and elite Cultists summon elite Black Imps."
         }
+      }
+    },
+    "title": {
+      "fc": {
+        "100": "Shifting Gears",
+        "101": "Shrouded Crypt",
+        "102": "Bazaar of Knowledge",
+        "103": "Where It Is Needed",
+        "104": "A Gaping Wound",
+        "105": "Monstrosities of a Cult",
+        "106": "Intricate Work",
+        "107": "Mechanical Genius",
+        "108": "Prologue to the End",
+        "109": "Epilogue of a War",
+        "110": "A Circular Solution",
+        "111": "The Shackles Loosen",
+        "112": "The Bottom of It",
+        "113": "The Lost Thread",
+        "114": "Ink Not Yet Dry",
+        "115": "Future Uncertain",
+        "96": "Unexpected Visitors",
+        "97": "Lore Untold",
+        "98": "Past In Flames",
+        "99": "Aftershocks",
+        "Challenge-1": "Tower to the Stars"
       }
     }
   },
   "section": {
     "rules": {
       "fc": {
-        "5": {
-          "1": "Flip over the numbered tokens on doors %game.mapMarker.3%, %game.mapMarker.5%, %game.mapMarker.8% and %game.mapMarker.11%",
-          "2": "Move the six iron walls to positions: %game.mapMarker.p%, %game.mapMarker.t%, %game.mapMarker.s%, %game.mapMarker.a1%, %game.mapMarker.a5% and %game.mapMarker.a6%"
-        },
-        "6": "All Hounds are Wolf-Viper Abominations. They have H+3 hit points, where H is a Hound's regular hit point value.<br><br>Instead of using all the Hound ability cards, use only those with initiative values of 06, 72, and both 19s. Shuffle these together with the Giant Viper ability cards with initiative values of 23, both 43s, and the one 58 with \"Move+1, Jump\". All references to Hounds or Giant Vipers apply to Wolf-Viper Abominations.",
         "10": {
           "1": "Flip over the numbered tokens on doors %game.mapMarker.3%, %game.mapMarker.8%, %game.mapMarker.9% and %game.mapMarker.10%",
           "2": "Move the six iron walls to positions: %game.mapMarker.q%, %game.mapMarker.n%, %game.mapMarker.r%, %game.mapMarker.t%, %game.mapMarker.a4% and %game.mapMarker.a6%"
         },
+        "114": "towards cabinet %game.mapMarker.b%",
+        "123": {
+          "1": "adjacent and to the right of any door %game.mapMarker.4%"
+        },
+        "128": {
+          "1": "%game.action.teleport% %data.monster.the-husk% to %game.mapMarker.c% and remove wall section %game.mapMarker.d%"
+        },
         "13": "The Savvas Lavaflow is the Avatar of Ashtar.",
+        "132": {
+          "1": "Immediately resolve it!",
+          "2": "After ability is resolved:"
+        },
+        "133": {
+          "1": "The Ancient Artillery has %game.action.shield% 2 and is immune to all forced movement.",
+          "2": "Immune to all forced movement"
+        },
+        "17": "Unaffected by difficult terrain",
         "19": {
           "1": "Flip over the numbered tokens on doors %game.mapMarker.1%, %game.mapMarker.6%, %game.mapMarker.7% and %game.mapMarker.10%",
           "2": "Move the six iron walls to positions: %game.mapMarker.q%, %game.mapMarker.p%, %game.mapMarker.t%, %game.mapMarker.a1%, %game.mapMarker.a2% and %game.mapMarker.a6%"
@@ -103,10 +288,15 @@
           "1": "Flip over the numbered tokens on doors %game.mapMarker.4%, %game.mapMarker.6%, %game.mapMarker.8% and %game.mapMarker.9%",
           "2": "Move the six iron walls to positions: %game.mapMarker.m%, %game.mapMarker.s%, %game.mapMarker.p%, %game.mapMarker.a2%, %game.mapMarker.a4% and %game.mapMarker.a6%"
         },
+        "5": {
+          "1": "Flip over the numbered tokens on doors %game.mapMarker.3%, %game.mapMarker.5%, %game.mapMarker.8% and %game.mapMarker.11%",
+          "2": "Move the six iron walls to positions: %game.mapMarker.p%, %game.mapMarker.t%, %game.mapMarker.s%, %game.mapMarker.a1%, %game.mapMarker.a5% and %game.mapMarker.a6%"
+        },
         "56": {
           "1": "Flip over the numbered tokens on doors %game.mapMarker.1%, %game.mapMarker.2%, %game.mapMarker.5% and %game.mapMarker.7%",
           "2": "Move the six iron walls to positions: %game.mapMarker.m%, %game.mapMarker.q%, %game.mapMarker.s%, %game.mapMarker.a2%, %game.mapMarker.a4% and %game.mapMarker.a5%"
         },
+        "6": "All Hounds are Wolf-Viper Abominations. They have H+3 hit points, where H is a Hound's regular hit point value.<br><br>Instead of using all the Hound ability cards, use only those with initiative values of 06, 72, and both 19s. Shuffle these together with the Giant Viper ability cards with initiative values of 23, both 43s, and the one 58 with \"Move+1, Jump\". All references to Hounds or Giant Vipers apply to Wolf-Viper Abominations.",
         "64": {
           "1": "Both barrels move two hexes along the water tiles towards water tile %game.mapMarker.9%"
         },
@@ -115,100 +305,90 @@
         },
         "72": {
           "1": "adjacent and to the right of any door %game.mapMarker.3%"
-        },
-        "123": {
-          "1": "adjacent and to the right of any door %game.mapMarker.4%"
-        },
-        "128": {
-          "1": "%game.action.teleport% %data.monster.the-husk% to %game.mapMarker.c% and remove wall section %game.mapMarker.d%"
-        },
-        "132": {
-          "1": "Immediately resolve it!",
-          "2": "After ability is resolved:"
-        },
-        "133": {
-          "1": "The Ancient Artillery has %game.action.shield% 2 and is immune to all forced movement.",
-          "2": "Immune to all forced movement"
         }
       }
-    }
-  },
-  "partyAchievements": {
-    "A Strongbox": "A Strongbox",
-    "Angels of Death": "Angels of Death",
-    "Beauty in Freedom": "Beauty in Freedom",
-    "Custodians": "Custodians",
-    "Diamara's Aid": "Diamara's Aid",
-    "Dimensional Equilibrium": "Dimensional Equilibrium",
-    "Guard Detail": "Guard Detail",
-    "Hunted Prey": "Hunted Prey",
-    "Hunting the Hunter": "Hunting the Hunter",
-    "Opportunists": "Opportunists",
-    "Xangroth's Aid": "Xangroth's Aid"
-  },
-  "globalAchievements": {
-    "A Peril Averted": "A Peril Averted",
-    "Knowledge is Power": "Knowledge is Power",
-    "Mechanical Splendor": "Mechanical Splendor",
-    "Pieces of an Artifact": "Pieces of an Artifact",
-    "Severed Ties": "Severed Ties",
-    "Through the Portal": "Through the Portal"
-  },
-  "custom": {
-    "fc": {
-      "ashblade": {
-        "1": "Focus on the enemy with the highest initiative.",
-        "2": "%game.action.teleport% to the closest unoccupied hex adjacent to the focus."
-      },
-      "manifestation-of-corruption": {
-        "1": "Play top two cards, using the first card as initiative. Perform the bottom action of the first card, then the top action of the second card",
-        "2": "Perform this action immediately when revealed, not in normal initiative order.",
-        "3": "The character with the highest initiative is forced to act as if their enemies were allies and their allies were enemies this round. On their turn, they will perform \"%game.action.move%2\" and then the top action of their leading initiative card. Afterwards, they discard both played cards, regardless of wherever the cards would normally be lost.",
-        "4": "All attackers targeting you gain %game.condition.curse% this round.",
-        "5": "Summon one %data.monster.flame-demon%: normal for two or three characters, elite for four characters.<br>Summon one %data.monster.night-demon%: normal for two characters, elite for three or four characters.",
-        "7": "Summon one additional %data.monster.night-demon%",
-        "8": "Summon one additional %data.monster.flame-demon%",
-        "9": "Summon one %data.monster.valrath-tracker%: normal for two characters, elite for three or four characters.",
-        "10": "Summon two %data.monster.black-imp%s: both normal for two characters; one normal, one elite for three characters; both elite for four characters.",
-        "11": "Summon one additional elite %data.monster.black-imp%",
-        "12": "Target all enemies within %game.action.range%4",
-        "13": "All adjacent enemies suffer %game.damage:3%.",
-        "14": "On the next three sources of damage from attacks targeting you, gain %game.action.shield% 3.",
-        "15": "Create one %game.condition.disarm% and %game.condition.poison% trap in each adjacent empty hex.",
-        "16": "%game.action.teleport% to the hex occupied by the farthest enemy within %game.action.range%+1 and simultaneously %game.action.teleport% that enemy to the hex you occupy.",
-        "17": "Summon one normal %data.monster.valrath-savage% adjacent to each enemy character within %game.action.range%5.",
-        "18": "All attackers targeting you gain %game.condition.curse%.",
-        "19": "All attackers targeting you gain Disadvantage for the attack.",
-        "20": "%game.action.attack%-1 on a new enemy within %game.action.range%4 of the first target, then %game.action.attack%-2 on a third enemy within %game.action.range%3 of the second target.",
-        "21": "Summon one %game.monster.aesther-scout%: normal for two or three characters, elite for four characters.",
-        "22": "On the next three sources of damage to you, suffer no damage instead."
-      },
-      "sraka-the-wise": {
-        "1": "Double all Heal values. Heals target The Steel Lion if able",
-        "2": "If you apply %game.condition.curse% or %game.condition.bless%, apply a second %game.condition.curse% or %game.condition.bless%"
-      },
-      "the-steel-lion": {
-        "1": "Attacks targeting adjacent allies, target you instead",
-        "2": "The first [C] times you suffer 6 or more damage, suffer no damage instead"
-      },
-      "tracker": {
-        "1": "Create one %game.condition.disarm% trap in any adjacent empty hex closest to an enemy.",
-        "2": "Focus on the enemy with the lowest current hit point value."
-      },
-      "uyart-ikkuma": {
-        "1": "It may consume %game.element.consume.fire% / %game.element.consume.earth% as if the element is currently strong when a %data.monster.flame-demon% / %data.monster.earth-demon% is present on the map"
-      },
-      "valrath-savage": {
-        "1": "All adjacent allies add +1 %game.action.attack% to all attacks",
-        "2": "All adjacent allies add +2 %game.action.attack% to all attacks"
-      },
-      "flowChartGroup": {
-        "diviner": "Diviner",
-        "orchid-society": "Orchid society",
-        "citizens": "Citizens of Gloomhaven",
-        "the-rift": "The rift device",
-        "tainted-crypt": "Tainted crypt",
-        "corruption": "Corruption"
+    },
+    "title": {
+      "fc": {
+        "1": "Volcanic Wasteland",
+        "10": "Moving Walls",
+        "100": "Sekhem Fountain",
+        "101": "Getting Both Records",
+        "106": "Strangler's Park",
+        "108": "Seal of Distortion",
+        "11": "A Tear in the Fabric",
+        "110": "A Passage Revealed",
+        "112": "Access Hall",
+        "114-A": "Intimidated ≤ 2+C inhabitants",
+        "114-B": "Intimidated > 2+C inhabitants",
+        "119": "A Multitude of Tomes",
+        "123": "Lingering Darkness",
+        "124": "From a Hostile Plane",
+        "126": "Training Maneuvers",
+        "127": "Guarded Nursery",
+        "128": "Cracked Facade",
+        "129": "Fighting Dirty",
+        "13": "Shrine of Ashtar",
+        "132": "Near the Gates",
+        "133": "A Secret Floor",
+        "134": "Clawing at Victory",
+        "14": "The Floor Moves",
+        "15": "Trash Dump",
+        "17": "Escape is Not So Easy",
+        "18": "Toxic Fumes",
+        "19": "Moving Walls",
+        "22": "A Rumbling Sound",
+        "23": "Narrow Vault",
+        "24": "Withered Grove",
+        "26": "Secret Library",
+        "28": "A Bear of a Drake",
+        "30": "Seal of Attraction",
+        "31": "Moving Walls",
+        "32": "Flaming Caravel",
+        "34": "Frozen Cave",
+        "35": "Shrine of Thelija",
+        "37": "Aiding Diamara",
+        "39": "Another Revolution",
+        "4": "Barge Ablaze",
+        "40": "Venerated Tomb",
+        "41": "A Sphere of Nightmares",
+        "42": "Collapsed Atrium",
+        "43": "Moving Walls",
+        "44": "Aiding Xangroth",
+        "46": "Quick Turn",
+        "5": "Moving Walls",
+        "50": "Slow Turn",
+        "52": "The First Portal",
+        "53": "A Steep, Rocky Path",
+        "55": "Record of Journey saved",
+        "56": "Moving Walls",
+        "59": "Record of Accounts saved",
+        "6": "Kennel of Things",
+        "60": "Seal of Repulsion",
+        "64": "Flooded Catacombs",
+        "66": "Sardonic Smile",
+        "67": "Branching Alleyway",
+        "68": "A Tale Well-Recited",
+        "71": "Quiet Rotation",
+        "72": "Clinging Fog",
+        "79": "The Second Portal",
+        "8": "A Life Taken, a Life Given",
+        "81": "Narrow Street",
+        "82": "Both Orchid records saved",
+        "85": "The Third Portal",
+        "87": "Elemental Storm",
+        "9": "Crossing a Stream",
+        "91": "A Burning Regret",
+        "92": "Nesting Grounds",
+        "93": "Lingering Darkness",
+        "94": "Seal of Reanimation",
+        "95": "The Horde's Kitchen",
+        "96": "Haunted Treasury",
+        "Challenge-103": "The Thorns of Hate",
+        "Challenge-47": "Hall of Horrors",
+        "Challenge-84": "Gateway to the Firmament",
+        "randomMonsterCard-622": "Arid",
+        "randomMonsterCard-623": "Ethereal"
       }
     }
   }

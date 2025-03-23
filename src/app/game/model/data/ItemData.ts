@@ -6,7 +6,7 @@ import { SummonData } from "./SummonData";
 
 export class ItemData implements Editional {
 
-  id: number = 0;
+  id: number | string = "";
   name: string = "";
   replace: boolean = false;
   cost: number = 0;
@@ -35,6 +35,8 @@ export class ItemData implements Editional {
   requiredBuilding: string = "";
   requiredBuildingLevel: number = 0;
   effects: ItemEffect[] = [];
+  effectsBack: ItemEffect[] = [];
+  backArtwork: boolean = false;
 }
 
 export enum ItemSlot {
@@ -54,11 +56,12 @@ export enum ItemEffectType {
   heal = "heal",
   damage = "damage",
   element = "element",
+  initiative = "initiative",
   refreshSpent = "refreshSpent",
   removeNegativeConditions = "removeNegativeConditions"
 }
 
-export type ItemEffect = { type: ItemEffectType, value: number | string };
+export type ItemEffect = { type: ItemEffectType, value: number | string, always: true | undefined };
 
 export enum ItemResourceTypes {
   arrowvine = "arrowvine",

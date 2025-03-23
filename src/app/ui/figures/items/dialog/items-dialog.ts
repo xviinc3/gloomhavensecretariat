@@ -9,8 +9,11 @@ import { CountIdentifier } from "src/app/game/model/data/Identifier";
 import { ItemData, ItemSlot } from "src/app/game/model/data/ItemData";
 import { ghsDialogClosingHelper, ghsTextSearch } from "src/app/ui/helper/Static";
 import { ItemsBrewDialog } from "../brew/brew";
+import { ItemDistillDialogComponent } from "../character/item-distill";
+import { ItemsCharacterDialogComponent } from "../character/items-character-dialog";
 
 @Component({
+    standalone: false,
     selector: 'ghs-items-dialog',
     templateUrl: './items-dialog.html',
     styleUrls: ['./items-dialog.scss']
@@ -25,7 +28,7 @@ export class ItemsDialogComponent implements OnInit, OnDestroy {
     editions: string[];
     editionItems: ItemData[] = [];
     items: ItemData[] = [];
-    itemsMeta: { edition: string, id: number, canAdd: boolean, canBuy: boolean, canCraft: boolean, owned: boolean, assigned: number, countAvailable: number }[] = [];
+    itemsMeta: { edition: string, id: number | string, canAdd: boolean, canBuy: boolean, canCraft: boolean, owned: boolean, assigned: number, countAvailable: number }[] = [];
     selected: ItemData | undefined;
     character: Character | undefined;
     filter: string = "";
@@ -109,7 +112,7 @@ export class ItemsDialogComponent implements OnInit, OnDestroy {
         if (this.character && this.edition && this.campaignMode && !this.all && !this.affordable) {
             this.character.progress.items.forEach((identifier) => {
                 if (identifier.edition == this.edition && !this.items.find((itemData) => itemData.id == +identifier.name && itemData.edition == identifier.edition)) {
-                    const item = gameManager.itemManager.getItem(+identifier.name, identifier.edition, true);
+                    const item = gameManager.itemManager.getItem(identifier.name, identifier.edition, true);
                     if (item) {
                         this.items.push(item);
                     }
@@ -117,7 +120,7 @@ export class ItemsDialogComponent implements OnInit, OnDestroy {
             })
         }
 
-        this.items = this.items.filter((itemData) => !this.filter || (ghsTextSearch(itemData.name, this.filter) || ghsTextSearch('' + (itemData.id < 100 ? '0' : '') + (itemData.id < 10 ? '0' : '') + itemData.id, this.filter)));
+        this.items = this.items.filter((itemData) => !this.filter || (ghsTextSearch(itemData.name, this.filter) || ghsTextSearch('' + (typeof itemData.id === 'number' && itemData.id < 100 ? '0' : '') + (typeof itemData.id === 'number' && itemData.id < 10 ? '0' : '') + itemData.id, this.filter)));
 
         this.itemSlotUndefined = this.items.find((itemData) => !itemData.slot) != undefined;
 
@@ -193,7 +196,7 @@ export class ItemsDialogComponent implements OnInit, OnDestroy {
                         return a.edition == this.currentEdition ? -1 : 1;
                     }
 
-                    return a.id - b.id;
+                    return gameManager.itemManager.sortItems(a, b);
                 }
             })
 
@@ -243,7 +246,7 @@ export class ItemsDialogComponent implements OnInit, OnDestroy {
         if (this.unlocks.indexOf(item) != -1 && revealed) {
             gameManager.game.party.unlockedItems = gameManager.game.party.unlockedItems || [];
             if (!this.unlocked(item)) {
-                gameManager.stateManager.before("addUnlockedItem", item.edition, '' + item.id, item.name);
+                gameManager.stateManager.before("addUnlockedItem", item.edition, item.id, item.name);
                 gameManager.game.party.unlockedItems.push(new CountIdentifier('' + item.id, item.edition));
                 gameManager.stateManager.after();
                 this.updateEditionItems();
@@ -253,7 +256,7 @@ export class ItemsDialogComponent implements OnInit, OnDestroy {
 
     removeUnlocked(itemData: ItemData) {
         if (this.unlocked(itemData)) {
-            gameManager.stateManager.before("removeUnlockedItem", itemData.edition, '' + itemData.id, itemData.name);
+            gameManager.stateManager.before("removeUnlockedItem", itemData.edition, itemData.id, itemData.name);
             gameManager.game.party.unlockedItems = gameManager.game.party.unlockedItems || [];
             gameManager.game.party.unlockedItems = gameManager.game.party.unlockedItems.filter((identifier) => identifier.name != '' + itemData.id || identifier.edition != itemData.edition);
             gameManager.stateManager.after();
@@ -313,6 +316,15 @@ export class ItemsDialogComponent implements OnInit, OnDestroy {
         }
     }
 
+    distillItem(itemData: ItemData) {
+        if (this.character) {
+            this.dialog.open(ItemDistillDialogComponent, {
+                panelClass: ['dialog'],
+                data: { character: this.character, item: itemData }
+            })
+        }
+    }
+
     toggleEquippedItem(itemData: ItemData, force: boolean = false) {
         const disabled = gameManager.game.state != GameState.draw || gameManager.game.round > 0;
         if (this.character && (!disabled || force)) {
@@ -321,6 +333,16 @@ export class ItemsDialogComponent implements OnInit, OnDestroy {
             gameManager.stateManager.before(equipIndex != -1 ? 'unequipItem' : 'equipItem', gameManager.characterManager.characterName(this.character), itemData.name, itemData.edition)
             gameManager.itemManager.toggleEquippedItem(itemData, this.character, force)
             gameManager.stateManager.after();
+        }
+    }
+
+    openItems(): void {
+        if (this.character && this.character.progress.items && this.character.progress.items.length) {
+            this.dialogRef.close();
+            this.dialog.open(ItemsCharacterDialogComponent, {
+                panelClass: ['dialog'],
+                data: this.character
+            });
         }
     }
 

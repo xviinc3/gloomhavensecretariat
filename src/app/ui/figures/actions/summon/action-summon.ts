@@ -15,6 +15,7 @@ import { MonsterSpawnData, ObjectiveSpawnData } from "src/app/game/model/data/Sc
 import { SummonData } from "src/app/game/model/data/SummonData";
 
 @Component({
+	standalone: false,
   selector: 'ghs-action-summon',
   templateUrl: './action-summon.html',
   styleUrls: ['./action-summon.scss']
@@ -25,6 +26,7 @@ export class ActionSummonComponent implements OnChanges, OnDestroy {
   @Input() monsterType: MonsterType | undefined;
   @Input() objective: ObjectiveContainer | undefined;
   @Input() action!: Action;
+  @Input() textBlack: boolean = false;
   @Input() right: boolean = false;
   @Input('spawn') isSpawn: boolean = false;
   @Input() additional: boolean = false;

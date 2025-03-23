@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Input, OnChanges, Output } from "@angular/core";
+import { ActionHex, ActionHexFromString, ActionHexToString } from "src/app/game/model/ActionHex";
 import { Action } from "src/app/game/model/data/Action";
 import { ConditionName } from "src/app/game/model/data/Condition";
-import { ActionHex } from "src/app/game/model/ActionHex";
 
 @Component({
+	standalone: false,
   selector: 'ghs-action-hex',
   templateUrl: './action-hex.html',
   styleUrls: ['./action-hex.scss']
@@ -17,6 +18,7 @@ export class ActionHexComponent implements OnChanges {
   @Output() doubleclickCallback: EventEmitter<ActionHex> = new EventEmitter<ActionHex>();
   hexes: ActionHex[] = [];
   ActionHex = ActionHex;
+  ActionHexToString = ActionHexToString;
 
   doubleClick: any = null;
 
@@ -26,7 +28,7 @@ export class ActionHexComponent implements OnChanges {
       this.value = '' + this.action.value;
     }
     this.value.split('|').forEach((hexValue) => {
-      const hex: ActionHex | null = ActionHex.fromString(hexValue);
+      const hex: ActionHex | null = ActionHexFromString(hexValue);
       if (hex != null) {
         this.hexes.push(hex);
       }

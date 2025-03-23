@@ -19,7 +19,7 @@ import { InteractiveActionsComponent } from './ui/figures/actions/interactive/in
 import { ActionSummonComponent } from './ui/figures/actions/summon/action-summon';
 import { AttackModifierComponent } from './ui/figures/attackmodifier/attackmodifier';
 import { AttackModifierDrawComponent } from './ui/figures/attackmodifier/attackmodifier-draw';
-import { AttackModifierEffectsComponent } from './ui/figures/attackmodifier/attackmodifier-effects';
+import { AttackModifierEffectComponent } from './ui/figures/attackmodifier/attackmodifier-effect';
 import { AttackModifierDeckComponent } from './ui/figures/attackmodifier/attackmodifierdeck';
 import { AttackModifierDeckDialogComponent } from './ui/figures/attackmodifier/attackmodifierdeck-dialog';
 import { AttackModifierDeckFullscreenComponent } from './ui/figures/attackmodifier/attackmodifierdeck-fullscreen';
@@ -27,6 +27,11 @@ import { PerkLabelComponent } from './ui/figures/attackmodifier/perk/label';
 import { BattleGoalComponent } from './ui/figures/battlegoal/battlegoal';
 import { CharacterBattleGoalsDialog } from './ui/figures/battlegoal/dialog/battlegoal-dialog';
 import { BattleGoalSetupDialog } from './ui/figures/battlegoal/setup/battlegoal-setup';
+import { ChallengeCardComponent } from './ui/figures/challenges/challenge-card';
+import { ChallengeDeckComponent } from './ui/figures/challenges/challenge-deck';
+import { ChallengeDeckDialogComponent } from './ui/figures/challenges/challenge-deck-dialog';
+import { ChallengeDeckFullscreenComponent } from './ui/figures/challenges/challenge-deck-fullscreen';
+import { ChallengeDialogComponent } from './ui/figures/challenges/dialog/challenge-dialog';
 import { CharacterImageComponent } from './ui/figures/character/cards/image';
 import { CharacterInitiativeComponent } from './ui/figures/character/cards/initiative';
 import { CharacterInitiativeDialogComponent } from './ui/figures/character/cards/initiative-dialog';
@@ -35,6 +40,7 @@ import { CharacterSheetDialog } from './ui/figures/character/dialogs/character-s
 import { CharacterLootCardsDialog } from './ui/figures/character/dialogs/loot-cards';
 import { CharacterSummonDialog } from './ui/figures/character/dialogs/summondialog';
 import { EventEffectsDialog } from './ui/figures/character/event-effects/event-effects';
+import { FavorsComponent } from './ui/figures/character/event-effects/favors/favors';
 import { EventRandomItemDialogComponent } from './ui/figures/character/event-effects/random-item/random-item-dialog';
 import { EventRandomScenarioDialogComponent } from './ui/figures/character/event-effects/random-scenario/random-scenario-dialog';
 import { CharacterFullViewComponent } from './ui/figures/character/fullview/fullview';
@@ -43,8 +49,6 @@ import { AbilityCardsDialogComponent } from './ui/figures/character/sheet/abilit
 import { CharacterSheetComponent } from './ui/figures/character/sheet/character-sheet';
 import { CharacterMoveResourcesDialog } from './ui/figures/character/sheet/move-resources';
 import { CharacterRetirementDialog } from './ui/figures/character/sheet/retirement-dialog';
-import { SummonSheetComponent } from './ui/figures/character/summon/sheet/summon-sheet';
-import { SummonEntityComponent } from './ui/figures/character/summon/summon';
 import { ConditionsComponent } from './ui/figures/conditions/conditions';
 import { ConditionHighlightAnimationDirective, HighlightConditionsComponent } from './ui/figures/conditions/highlight';
 import { EntitiesMenuDialogComponent } from './ui/figures/entities-menu/entities-menu-dialog';
@@ -57,6 +61,7 @@ import { EventRewardLabelComponent } from './ui/figures/event/label/reward-label
 import { HealthbarComponent } from './ui/figures/healthbar/healthbar';
 import { ItemsBrewDialog } from './ui/figures/items/brew/brew';
 import { CharacterItemComponent } from './ui/figures/items/character/item-character';
+import { ItemDistillDialogComponent } from './ui/figures/items/character/item-distill';
 import { ItemsCharacterDialogComponent } from './ui/figures/items/character/items-character-dialog';
 import { ItemDialogComponent } from './ui/figures/items/dialog/item-dialog';
 import { ItemsDialogComponent } from './ui/figures/items/dialog/items-dialog';
@@ -79,21 +84,30 @@ import { MonsterStatsComponent } from './ui/figures/monster/stats/stats';
 import { MonsterStatsDialogComponent } from './ui/figures/monster/stats/stats-dialog';
 import { ObjectiveContainerComponent } from './ui/figures/objective-container/objective-container';
 import { PartyBuildingsComponent } from './ui/figures/party/buildings/buildings';
+import { GardenComponent } from './ui/figures/party/buildings/garden/garden';
+import { PetCardComponent } from './ui/figures/party/buildings/stables/pet-card/pet-card';
+import { StablesComponent } from './ui/figures/party/buildings/stables/stables';
 import { BuildingUpgradeDialog } from './ui/figures/party/buildings/upgrade-dialog/upgrade-dialog';
 import { PartySheetDialogComponent } from './ui/figures/party/party-sheet-dialog';
 import { ScenarioRequirementsComponent, ScenarioRequirementsDialogComponent } from './ui/figures/party/requirements/requirements';
 import { PartyResourcesDialogComponent } from './ui/figures/party/resources/resources';
 import { ScenarioChartPopupDialog } from './ui/figures/party/scenario-chart/popup/scenario-chart-popup';
 import { ScenarioChartDialogComponent } from './ui/figures/party/scenario-chart/scenario-chart';
+import { StatisticsDialogComponent } from './ui/figures/party/statistics/statistics-dialog';
 import { TreasuresDialogComponent } from './ui/figures/party/treasures/treasures-dialog';
 import { PartyWeekDialogComponent } from './ui/figures/party/week-dialog/week-dialog';
 import { WorldMapComponent } from './ui/figures/party/world-map/world-map';
 import { EntityIndexKeyComponent } from './ui/figures/standee/entity-index-key/entity-index-key';
+import { SummonSheetComponent } from './ui/figures/standee/sheet/summon-sheet';
 import { StandeeComponent } from './ui/figures/standee/standee';
+import { TrialDialogComponent } from './ui/figures/trials/dialog/trial-dialog';
+import { TrialCardComponent } from './ui/figures/trials/trial-card';
 import { FooterComponent } from './ui/footer/footer';
 import { HintDialogComponent } from './ui/footer/hint-dialog/hint-dialog';
 import { LevelComponent } from './ui/footer/level/level';
 import { LevelDialogComponent } from './ui/footer/level/level-dialog';
+import { ScenarioRulesDialogComponent } from './ui/footer/scenario-rules/dialog/scenario-rules-dialog';
+import { ScenarioRuleComponent } from './ui/footer/scenario-rules/scenario-rule';
 import { ScenarioRulesComponent } from './ui/footer/scenario-rules/scenario-rules';
 import { ScenarioDialogComponent } from './ui/footer/scenario/dialog/scenario-dialog';
 import { StatsListComponent } from './ui/footer/scenario/dialog/stats-list/stats-list';
@@ -108,6 +122,7 @@ import { ElementComponent } from './ui/header/element/element';
 import { ElementIconComponent } from './ui/header/element/element-icon';
 import { GameClockDialogComponent } from './ui/header/game-clock/game-clock';
 import { HeaderComponent } from './ui/header/header';
+import { AboutMenuComponent } from './ui/header/menu/about/about';
 import { CampaignMenuComponent } from './ui/header/menu/campaign/campaign';
 import { CharacterMenuComponent } from './ui/header/menu/character/character';
 import { DatamanagementMenuComponent } from './ui/header/menu/datamanagement/datamanagement';
@@ -128,8 +143,9 @@ import { GhsCeilPipe, GhsDurationLabelPipe, GhsFloorPipe, GhsMinZeroPipe, GhsRan
 import { ValueSignDirective } from './ui/helper/ValueSign';
 import { AutocompleteDirective } from './ui/helper/autocomplete';
 import { AutoscrollDirective, FigureAutoscrollDirective } from './ui/helper/autoscroll';
+import { ConfirmDialogComponent } from './ui/helper/confirm/confirm';
 import { KeyboardShortcuts } from './ui/helper/keyboard-shortcuts';
-import { GhsLabelDirective, GhsLabelElementDirective } from './ui/helper/label';
+import { GhsLabelDirective, GhsLabelElementDirective, GhsPlaceholderDirective } from './ui/helper/label';
 import { GhsNumberInput } from './ui/helper/number-input/number-input';
 import { PointerInputDirective } from './ui/helper/pointer-input';
 import { TabClickDirective } from './ui/helper/tabclick';
@@ -155,41 +171,181 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
+        AbilityCardsDialogComponent,
+        AbilityComponent,
+        AbilityDialogComponent,
+        AbiltiesDialogComponent,
+        AboutMenuComponent,
+        ActionComponent,
+        ActionHexComponent,
+        ActionSummonComponent,
+        ActionsComponent,
+        AdditionalAMSelectDialogComponent,
         AppComponent,
-        MainComponent,
-        HeaderComponent, ElementIconComponent, ElementComponent,
-        PartySheetComponent, PartySheetDialogComponent, PartyWeekDialogComponent, PartyBuildingsComponent, WorldMapComponent, ScenarioConclusionComponent, BuildingUpgradeDialog, ScenarioRequirementsComponent, ScenarioRequirementsDialogComponent, TreasuresDialogComponent, PartyResourcesDialogComponent,
-        MainMenuComponent, CharacterMenuComponent, MonsterMenuComponent, SettingsMenuComponent, SettingMenuComponent, SettingMenuTitleComponent, DatamanagementMenuComponent, ScenarioMenuComponent, ScenarioChartDialogComponent, ScenarioChartPopupDialog, SectionMenuComponent, ServerMenuComponent, SettingsDebugMenuComponent, UndoDialogComponent, CampaignMenuComponent,
-        FooterComponent,
-        LootComponent, LootDeckComponent, LootRandomItemDialogComponent, LootDeckFullscreenComponent, LootDeckDialogComponent, LootDeckStandaloneComponent, LootApplyDialogComponent,
-        HintDialogComponent, ScenarioRulesComponent,
-        AttackModifierComponent, AttackModifierEffectsComponent, AttackModifierDeckComponent, AttackModifierDeckDialogComponent, AttackModifierDrawComponent, AttackModifierDeckFullscreenComponent, AttackModifierStandaloneComponent,
-        LevelComponent, LevelDialogComponent,
-        ScenarioComponent, ScenarioDialogComponent, ScenarioSetupComponent, SectionDialogComponent, ScenarioSummaryComponent, StatsListComponent, ScenarioTreasuresDialogComponent, TreasureLabelComponent, EventEffectsDialog, EventRandomItemDialogComponent, EventRandomScenarioDialogComponent,
-        ConditionsComponent, HighlightConditionsComponent, ConditionHighlightAnimationDirective, HealthbarComponent,
-        EntityMenuDialogComponent, EntitiesMenuDialogComponent, AdditionalAMSelectDialogComponent,
-        CharacterComponent, CharacterImageComponent, CharacterSummonDialog, CharacterInitiativeComponent, CharacterInitiativeDialogComponent, CharacterItemComponent, CharacterItemListComponent, CharacterSheetComponent, CharacterSheetDialog, AbilityCardsDialogComponent, CharacterFullViewComponent, CharacterLootCardsDialog, PerkLabelComponent, CharacterMoveResourcesDialog, CharacterRetirementDialog, ItemComponent, ItemDialogComponent, ItemsDialogComponent, ItemsCharacterDialogComponent, CharacterItemsComponent, ItemsBrewDialog, BattleGoalComponent, CharacterBattleGoalsDialog, BattleGoalSetupDialog,
-        EventCardComponent, EventConditionLabelComponent, EventRewardLabelComponent,
-        ObjectiveContainerComponent,
-        SummonEntityComponent, SummonSheetComponent,
-        StandeeComponent,
-        MonsterComponent,
-        MonsterImageComponent,
-        MonsterAbilityCardComponent, MonsterStatsComponent,
-        MonsterStatDialogComponent, MonsterStatsDialogComponent, MonsterLevelDialogComponent,
-        MonsterNumberPicker, MonsterNumberPickerDialog, MonsterImageDialogComponent,
-        AbilityComponent, AbiltiesDialogComponent, AbilityDialogComponent,
-        ActionsComponent, ActionComponent, ActionHexComponent, ActionSummonComponent, InteractiveActionsComponent,
-        FigureErrorsComponent, FigureErrorsDialogComponent, EntityIndexKeyComponent,
-        CardRevealDirective, EntityAnimationDirective, GhsLabelDirective, GhsLabelElementDirective, ValueCalcDirective, PointerInputDirective, AutocompleteDirective, AutoscrollDirective, FigureAutoscrollDirective, TextShrinkDirective, ValueSignDirective,
-        GhsValueSignPipe, GhsRangePipe, GhsScenarioSearch, GhsFloorPipe, GhsCeilPipe, GhsMinZeroPipe, GhsDurationLabelPipe,
-        AttackModifierToolComponent, EventCardsToolComponent, TreasuresToolComponent, DecksToolComponent,
+        AttackModifierComponent,
+        AttackModifierDeckComponent,
+        AttackModifierDeckDialogComponent,
+        AttackModifierDeckFullscreenComponent,
+        AttackModifierDrawComponent,
+        AttackModifierEffectComponent,
+        AttackModifierStandaloneComponent,
+        AttackModifierToolComponent,
+        AutocompleteDirective,
+        AutoscrollDirective,
+        BattleGoalComponent,
+        BattleGoalSetupDialog,
+        BuildingUpgradeDialog,
+        CampaignMenuComponent,
+        CardRevealDirective,
+        ChallengeCardComponent,
+        ChallengeDeckComponent,
+        ChallengeDeckDialogComponent,
+        ChallengeDeckFullscreenComponent,
+        ChallengeDialogComponent,
+        CharacterBattleGoalsDialog,
+        CharacterComponent,
+        CharacterEditorComponent,
+        CharacterFullViewComponent,
+        CharacterImageComponent,
+        CharacterInitiativeComponent,
+        CharacterInitiativeDialogComponent,
+        CharacterItemComponent,
+        CharacterItemListComponent,
+        CharacterItemsComponent,
+        CharacterLootCardsDialog,
+        CharacterMenuComponent,
+        CharacterMoveResourcesDialog,
+        CharacterRetirementDialog,
+        CharacterSheetComponent,
+        CharacterSheetDialog,
+        CharacterSummonDialog,
+        ConditionHighlightAnimationDirective,
+        ConditionsComponent,
+        ConfirmDialogComponent,
+        DatamanagementMenuComponent,
+        DeckEditorComponent,
+        DecksToolComponent,
         EditionEditorComponent,
-        EditorActionComponent, EditorActionDialogComponent,
-        DeckEditorComponent, CharacterEditorComponent, MonsterEditorComponent,
-        GhsTooltipComponent, GhsTooltipDirective, GameClockDialogComponent,
-        KeyboardShortcuts, TabClickDirective, GhsNumberInput,
-        FeedbackToolComponent, FeedbackDialogComponent, KeyboardShortcutsComponent],
+        EditorActionComponent,
+        EditorActionDialogComponent,
+        ElementComponent,
+        ElementIconComponent,
+        EntitiesMenuDialogComponent,
+        EntityAnimationDirective,
+        EntityIndexKeyComponent,
+        EntityMenuDialogComponent,
+        EventCardComponent,
+        EventCardsToolComponent,
+        EventConditionLabelComponent,
+        EventEffectsDialog,
+        EventRandomItemDialogComponent,
+        EventRandomScenarioDialogComponent,
+        EventRewardLabelComponent,
+        FavorsComponent,
+        FeedbackDialogComponent,
+        FeedbackToolComponent,
+        FigureAutoscrollDirective,
+        FigureErrorsComponent,
+        FigureErrorsDialogComponent,
+        FooterComponent,
+        GameClockDialogComponent,
+        GardenComponent,
+        GhsCeilPipe,
+        GhsDurationLabelPipe,
+        GhsFloorPipe,
+        GhsLabelDirective,
+        GhsLabelElementDirective,
+        GhsMinZeroPipe,
+        GhsNumberInput,
+        GhsPlaceholderDirective,
+        GhsRangePipe,
+        GhsScenarioSearch,
+        GhsTooltipComponent,
+        GhsTooltipDirective,
+        GhsValueSignPipe,
+        HeaderComponent,
+        HealthbarComponent,
+        HighlightConditionsComponent,
+        HintDialogComponent,
+        InteractiveActionsComponent,
+        ItemComponent,
+        ItemDialogComponent,
+        ItemDistillDialogComponent,
+        ItemsBrewDialog,
+        ItemsCharacterDialogComponent,
+        ItemsDialogComponent,
+        KeyboardShortcuts,
+        KeyboardShortcutsComponent,
+        LevelComponent,
+        LevelDialogComponent,
+        LootApplyDialogComponent,
+        LootComponent,
+        LootDeckComponent,
+        LootDeckDialogComponent,
+        LootDeckFullscreenComponent,
+        LootDeckStandaloneComponent,
+        LootRandomItemDialogComponent,
+        MainComponent,
+        MainMenuComponent,
+        MonsterAbilityCardComponent,
+        MonsterComponent,
+        MonsterEditorComponent,
+        MonsterImageComponent,
+        MonsterImageDialogComponent,
+        MonsterLevelDialogComponent,
+        MonsterMenuComponent,
+        MonsterNumberPicker,
+        MonsterNumberPickerDialog,
+        MonsterStatDialogComponent,
+        MonsterStatsComponent,
+        MonsterStatsDialogComponent,
+        ObjectiveContainerComponent,
+        PartyBuildingsComponent,
+        PartyResourcesDialogComponent,
+        PartySheetComponent,
+        PartySheetDialogComponent,
+        PartyWeekDialogComponent,
+        PerkLabelComponent,
+        PetCardComponent,
+        PointerInputDirective,
+        ScenarioChartDialogComponent,
+        ScenarioChartPopupDialog,
+        ScenarioComponent,
+        ScenarioConclusionComponent,
+        ScenarioDialogComponent,
+        ScenarioMenuComponent,
+        ScenarioRequirementsComponent,
+        ScenarioRequirementsDialogComponent,
+        ScenarioRuleComponent,
+        ScenarioRulesComponent,
+        ScenarioRulesDialogComponent,
+        ScenarioSetupComponent,
+        ScenarioSummaryComponent,
+        ScenarioTreasuresDialogComponent,
+        SectionDialogComponent,
+        SectionMenuComponent,
+        ServerMenuComponent,
+        SettingMenuComponent,
+        SettingMenuTitleComponent,
+        SettingsDebugMenuComponent,
+        SettingsMenuComponent,
+        StablesComponent,
+        StandeeComponent,
+        StatisticsDialogComponent,
+        StatsListComponent,
+        SummonSheetComponent,
+        TabClickDirective,
+        TextShrinkDirective,
+        TreasureLabelComponent,
+        TreasuresDialogComponent,
+        TreasuresToolComponent,
+        TrialCardComponent,
+        TrialDialogComponent,
+        UndoDialogComponent,
+        ValueCalcDirective,
+        ValueSignDirective,
+        WorldMapComponent
+      ],
       imports: [
         BrowserModule,
         AppRoutingModule,

@@ -34,7 +34,7 @@
           "subActions": [
             {
               "type": "custom",
-              "value": "towards cabinet %game.mapMarker.b%"
+              "value": "%data.section.rules.fc.114%"
             }
           ]
         }
@@ -59,8 +59,47 @@
     },
     {
       "round": "R < 3",
-      "start": true,
-      "note": "The initiative values of all monsters are considered 10 lower than the values on their ability cards."
+      "always": true,
+      "alwaysApply": true,
+      "statEffects": [
+        {
+          "identifier": {
+            "type": "monster",
+            "name": ".*"
+          },
+          "statEffect": {
+            "initiative": -10
+          },
+          "note": "The initiative values of all monsters are considered 10 lower than the values on their ability cards."
+        }
+      ]
+    },
+    {
+      "round": "R > 2",
+      "always": true,
+      "alwaysApply": true,
+      "statEffects": [
+        {
+          "identifier": {
+            "type": "monster",
+            "name": ".*"
+          },
+          "statEffect": {},
+          "note": "Reset the initiative values of all monsters back to value on their ability cards."
+        }
+      ]
+    },
+    {
+      "round": "R > 2",
+      "always": true,
+      "disableRules": [
+        {
+          "edition": "fc",
+          "scenario": "114",
+          "index": 1,
+          "section": false
+        }
+      ]
     }
   ],
   "rooms": [

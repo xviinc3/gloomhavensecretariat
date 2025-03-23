@@ -9,11 +9,11 @@
   ghs-monster-ability-card,
   ghs-monster-stats,
   ghs-monster-image {
+    transition: filter 150ms ease-in-out;
+
     &:not(ghs-monster-image) {
       filter: var(--ghs-filter-outline);
     }
-
-    transition: filter 150ms ease-in-out;
   }
 
   &.off {
@@ -29,14 +29,38 @@
     }
   }
 
-  ghs-monster-stats {
+  .stats-container {
+    position: relative;
     width: calc(var(--ghs-unit) * 40);
     height: calc(var(--ghs-unit) * 21.5);
 
     &.full-ability {
       height: calc(var(--ghs-unit) * 24);
     }
+
+    ghs-monster-stats {
+      width: 100%;
+      height: 100%;
+    }
+
+    ghs-monster-numberpicker {
+      position: absolute;
+      z-index: 2;
+
+      &.normal,
+      &.boss {
+        bottom: calc(var(--ghs-unit) * 1);
+        left: calc(var(--ghs-unit) * 1);
+      }
+
+      &.elite {
+        bottom: calc(var(--ghs-unit) * 1);
+        left: initial;
+        right: calc(var(--ghs-unit) * 1);
+      }
+    }
   }
+
 
   ghs-figure-errors {
     position: absolute;
@@ -54,23 +78,6 @@
     margin: 0 calc(var(--ghs-unit) * 0.5);
     overflow: hidden;
     border-radius: calc(var(--ghs-unit) * 1);
-  }
-
-  ghs-monster-numberpicker {
-    position: absolute;
-    z-index: 2;
-
-    &.normal,
-    &.boss {
-      bottom: calc(var(--ghs-unit) * 1.6);
-      left: calc(var(--ghs-unit) * 58.5);
-    }
-
-    &.elite {
-      bottom: calc(var(--ghs-unit) * 1.6);
-      left: initial;
-      right: calc(var(--ghs-unit) * 1.5);
-    }
   }
 
   &.full-ability {
@@ -112,28 +119,23 @@
   &.short {
     width: calc(var(--ghs-unit) * 57);
 
-    &.short-stats {
-      ghs-monster-numberpicker {
-
-        &.normal,
-        &.boss {
-          left: calc(var(--ghs-unit) * 17.5);
-        }
-      }
-    }
-
     &.short-abilities {
-      ghs-monster-numberpicker {
-        bottom: calc(var(--ghs-unit) * 0.5);
+      .stats-container {
+        position: absolute;
+        left: 0;
 
-        &.normal,
-        &.boss {
-          left: calc(var(--ghs-unit) * 0);
-        }
+        ghs-monster-numberpicker {
+          bottom: calc(var(--ghs-unit) * 0.5);
 
-        &.elite {
-          left: calc(var(--ghs-unit) * 11);
-          right: initial
+          &.normal,
+          &.boss {
+            left: calc(var(--ghs-unit) * 0);
+          }
+
+          &.elite {
+            left: calc(var(--ghs-unit) * 11);
+            right: initial
+          }
         }
       }
     }

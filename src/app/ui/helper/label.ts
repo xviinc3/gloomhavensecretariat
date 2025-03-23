@@ -1,14 +1,14 @@
 import { Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from "@angular/core";
+import { Subscription } from "rxjs";
 import { gameManager } from "src/app/game/businesslogic/GameManager";
 import { settingsManager } from "src/app/game/businesslogic/SettingsManager";
-import { ActionType } from "src/app/game/model/data/Action";
+import { ActionHex, ActionHexFromString } from "src/app/game/model/ActionHex";
 import { Character } from "src/app/game/model/Character";
-import { EntityValueFunction, EntityValueRegex, EntityValueRegexExtended } from "src/app/game/model/Entity";
-import { ActionHex } from "src/app/game/model/ActionHex";
-import { ActionTypesIcons } from "../figures/actions/action";
-import { Subscription } from "rxjs";
+import { ActionType } from "src/app/game/model/data/Action";
 import { AttackModifierValueType } from "src/app/game/model/data/AttackModifier";
 import { Condition, ConditionType } from "src/app/game/model/data/Condition";
+import { EntityValueFunction, EntityValueRegex, EntityValueRegexExtended } from "src/app/game/model/Entity";
+import { ActionTypesIcons } from "../figures/actions/action";
 
 export const ghsLabelRegex = /\%((\w+|\.|\-|\:|\,|\+|\(|\)|\||\_|\[|\]|\||\{|\}|\$|\\|\/|\%U+200B)+)\%/;
 
@@ -90,7 +90,7 @@ export const applyPlaceholder = function (value: string, placeholder: string[] =
         }
 
         value.split('|').forEach((hexValue) => {
-          const hex: ActionHex | null = ActionHex.fromString(hexValue);
+          const hex: ActionHex | null = ActionHexFromString(hexValue);
           if (hex != null) {
             replace += '<span class="hex" style="grid-column-start : ' + (hex.x * 2 + 1 + (hex.y % 2)) + ';grid-column-end:' + (hex.x * 2 + 3 + (hex.y % 2)) + ';grid-row-start:' + (hex.y + 1) + ';grid-row-end:' + (hex.y + 1) + '"><img src="./assets/images/action/hex/' + hex.type + '.svg"></span>';
           }
@@ -207,6 +207,8 @@ export const applyPlaceholder = function (value: string, placeholder: string[] =
         replace = '<span class="placeholder-checkmark"><img src="./assets/images/check.svg" class="icon ghs-svg"></span>';
       } else if (type == "itemSlot" && value) {
         replace = '<span class="placeholder-items-slot"><img src="./assets/images/items/slots/' + value + '.svg" class="icon ghs-svg"></span>';
+      } else if (type == "bbAm" && split.length == 3) {
+        replace = '<span class="placeholder-bb-am"><img src="./assets/images/bb/attackmodifier/' + split[2] + '.svg" class="icon ghs-svg"></span>';
       } else if (type == "townGuardAm" && split.length == 3 && value) {
         const valueType = split[2];
         let valueSign = "";
@@ -221,9 +223,14 @@ export const applyPlaceholder = function (value: string, placeholder: string[] =
       } else if (type == "fhIcon" && value) {
         image = '<img src="./assets/images/fh/icons/' + value + '.svg" class="icon ghs-svg">';
         replace = '<span class="placeholder-fh-icon">' + image + '</span>';
+      } else if (type == "gameIcon" && value) {
+        image = '<img src="./assets/images/' + value + '.svg" class="icon ghs-svg">';
+        replace = '<span class="placeholder-game-icon">' + image + '</span>';
       } else if (type == "trait" && value) {
         image = '<img src="./assets/images/fh/character/traits/trait.svg" class="icon ghs-svg">';
         replace = '<span class="placeholder-trait">' + image + settingsManager.getLabel('data.character.traits.' + value) + '</span>';
+      } else if (type == "eventCheckbox" && value) {
+        replace = '<span class="event-checkbox">' + value + '</span>';
       } else {
         let labelArgs = label.split(':').splice(1).map((arg) =>
           applyPlaceholder(settingsManager.getLabel(arg), placeholder, relative));
@@ -286,12 +293,13 @@ export const applyValueCalc = function (value: string, relative: boolean): strin
 }
 
 @Directive({
-  selector: ' [ghs-label]'
+  standalone: false,
+  selector: '[ghs-label]'
 })
 export class GhsLabelDirective implements OnInit, OnDestroy, OnChanges {
 
   @Input('ghs-label') value!: string | number;
-  @Input('ghs-label-args') args: string[] = [];
+  @Input('ghs-label-args') args: (string | number | boolean)[] = [];
   @Input('ghs-label-args-replace') argLabel: boolean = true;
   @Input('ghs-label-empty') empty: boolean = true;
   @Input('ghs-label-attribute') attribute: string = "";
@@ -314,19 +322,18 @@ export class GhsLabelDirective implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnInit(): void {
-    this.uiChangeSubscription =
-      gameManager.uiChange.subscribe({
-        next: () => {
-          if (this.locale != settingsManager.settings.locale || this.C != gameManager.game.figures.filter((figure) => figure instanceof Character).length || this.L != gameManager.game.level || (this.fhStyle != settingsManager.settings.fhStyle) || this.calc != settingsManager.settings.calculate) {
-            this.C = Math.max(2, gameManager.characterManager.characterCount());
-            this.L = gameManager.game.level;
-            this.locale = settingsManager.settings.locale;
-            this.calc = settingsManager.settings.calculate;
-            this.fhStyle = settingsManager.settings.fhStyle;
-            this.apply();
-          }
+    this.uiChangeSubscription = gameManager.uiChange.subscribe({
+      next: () => {
+        if (this.locale != settingsManager.settings.locale || this.C != gameManager.game.figures.filter((figure) => figure instanceof Character).length || this.L != gameManager.game.level || (this.fhStyle != settingsManager.settings.fhStyle) || this.calc != settingsManager.settings.calculate) {
+          this.C = Math.max(2, gameManager.characterManager.characterCount());
+          this.L = gameManager.game.level;
+          this.locale = settingsManager.settings.locale;
+          this.calc = settingsManager.settings.calculate;
+          this.fhStyle = settingsManager.settings.fhStyle;
+          this.apply();
         }
-      });
+      }
+    });
     this.apply();
   }
 
@@ -346,7 +353,7 @@ export class GhsLabelDirective implements OnInit, OnDestroy, OnChanges {
   }
 
   apply(): void {
-    let args = this.args || [];
+    let args: string[] = this.args.map((arg) => '' + arg) || [];
     if (this.argLabel) {
       args = args.map((arg) => applyPlaceholder(settingsManager.getLabel(arg, [], false, this.empty), [], this.relative, this.style));
     }
@@ -361,7 +368,8 @@ export class GhsLabelDirective implements OnInit, OnDestroy, OnChanges {
 }
 
 @Directive({
-  selector: ' [ghs-label-element]'
+  standalone: false,
+  selector: '[ghs-label-element]'
 })
 export class GhsLabelElementDirective implements OnInit {
 
@@ -379,6 +387,35 @@ export class GhsLabelElementDirective implements OnInit {
 
   apply(): void {
     const value = this.value && applyPlaceholder(settingsManager.getLabel((this.prefix ? this.prefix + '.' : '') + this.value)) || "";
+    if (value) {
+      this.el.nativeElement.innerHTML = value;
+    }
+  }
+}
+
+@Directive({
+  standalone: false,
+  selector: '[ghs-placeholder]'
+})
+export class GhsPlaceholderDirective implements OnInit, OnChanges {
+
+  @Input('ghs-placeholder') value: string = "";
+
+  constructor(private el: ElementRef) {
+    el.nativeElement.classList.add('placeholder');
+  }
+
+  ngOnInit(): void {
+    this.value = this.el.nativeElement.textContent;
+    this.apply();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    this.apply();
+  }
+
+  apply(): void {
+    const value = this.value && applyPlaceholder('%' + this.value + '%') || "";
     if (value) {
       this.el.nativeElement.innerHTML = value;
     }

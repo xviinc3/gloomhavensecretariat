@@ -1,27 +1,32 @@
 import { Dialog, DialogRef } from "@angular/cdk/dialog";
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild, ViewEncapsulation } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from "@angular/core";
+import { Subscription } from "rxjs";
 import { GameManager, gameManager } from "src/app/game/businesslogic/GameManager";
 import { SettingsManager, settingsManager } from "src/app/game/businesslogic/SettingsManager";
 import { Character, GameCharacterModel } from "src/app/game/model/Character";
 import { CharacterProgress } from "src/app/game/model/CharacterProgress";
 import { EntityValueFunction } from "src/app/game/model/Entity";
 import { GameState } from "src/app/game/model/Game";
+import { Identifier } from "src/app/game/model/data/Identifier";
 import { LootType } from "src/app/game/model/data/Loot";
 import { PerkType } from "src/app/game/model/data/Perks";
 import { PersonalQuest } from "src/app/game/model/data/PersonalQuest";
 import { ghsDialogClosingHelper, ghsInputFullScreenCheck, ghsValueSign } from "src/app/ui/helper/Static";
+import { StatisticsDialogComponent } from "../../party/statistics/statistics-dialog";
+import { TrialDialogComponent } from "../../trials/dialog/trial-dialog";
 import { AbilityCardsDialogComponent } from "./ability-cards-dialog";
 import { CharacterMoveResourcesDialog } from "./move-resources";
 import { CharacterRetirementDialog } from "./retirement-dialog";
 
 
 @Component({
+  standalone: false,
   selector: 'ghs-character-sheet',
   templateUrl: 'character-sheet.html',
   styleUrls: ['./character-sheet.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class CharacterSheetComponent implements OnInit, AfterViewInit {
+export class CharacterSheetComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() character!: Character;
   @Input() editable: boolean = true;
@@ -39,12 +44,13 @@ export class CharacterSheetComponent implements OnInit, AfterViewInit {
   PerkType = PerkType;
   LootType = LootType;
   availablePerks: number = 0;
-  retired: boolean = false;
   personalQuest: PersonalQuest | undefined;
+  retireEnabled: boolean = false;
   hasAbilities: boolean = false;
 
   goldTimeout: any = null;
   xpTimeout: any = null;
+  replayable: boolean = false;
 
   fhSheet: boolean = false;
   csSheet: boolean = false;
@@ -56,7 +62,6 @@ export class CharacterSheetComponent implements OnInit, AfterViewInit {
   constructor(private dialog: Dialog) { }
 
   ngOnInit(): void {
-    this.retired = this.character.progress.retired;
     if (this.character.identities && this.character.identities.length > 1 && settingsManager.settings.characterIdentities) {
       this.titles = this.character.title.split('|');
       if (this.titles.length < this.character.identities.length) {
@@ -77,7 +82,7 @@ export class CharacterSheetComponent implements OnInit, AfterViewInit {
 
     this.character.progress.perks = this.character.progress.perks || [];
 
-    this.fhSheet = gameManager.fhRules();
+    this.fhSheet = gameManager.fhRules(true);
     this.csSheet = !this.fhSheet && (this.character.edition == 'cs' || gameManager.editionExtensions(this.character.edition).indexOf('cs') != -1);
 
     this.donations = !this.fhSheet;
@@ -112,9 +117,18 @@ export class CharacterSheetComponent implements OnInit, AfterViewInit {
       }
     }
 
-    this.hasAbilities = gameManager.deckData(this.character, true).abilities.length > 0;
+    if (!gameManager.game.scenario) {
+      if (this.personalQuest) {
+        this.retireEnabled = this.personalQuest.requirements.every((requirement, i) => this.character.progress.personalQuestProgress[i] >= EntityValueFunction(requirement.counter));
+      } else {
+        this.retireEnabled = true;
+      }
+    }
 
-    gameManager.uiChange.subscribe({
+    this.hasAbilities = gameManager.deckData(this.character, true).abilities.length > 0;
+    this.replayable = !gameManager.game.scenario && gameManager.game.figures.find((figure) => figure instanceof Character && figure.name == this.character.name && figure.number == this.character.number) == undefined;
+
+    this.uiChangeSubscription = gameManager.uiChange.subscribe({
       next: () => {
         this.availablePerks = this.character.level + Math.floor(this.character.progress.battleGoals / 3) - (this.character.progress.perks && this.character.progress.perks.length > 0 ? this.character.progress.perks.reduce((a, b) => a + b) : 0) - 1 + this.character.progress.extraPerks + this.character.progress.retirements + this.character.progress.masteries.length;
 
@@ -124,11 +138,25 @@ export class CharacterSheetComponent implements OnInit, AfterViewInit {
           }
         }
 
-        if (this.personalQuest) {
-          this.retired = this.personalQuest.requirements.every((requirement, i) => this.character.progress.personalQuestProgress[i] >= EntityValueFunction(requirement.counter));
+        this.retireEnabled = false;
+        if (!gameManager.game.scenario) {
+          if (this.personalQuest) {
+            this.retireEnabled = this.personalQuest.requirements.every((requirement, i) => this.character.progress.personalQuestProgress[i] >= EntityValueFunction(requirement.counter));
+          } else {
+            this.retireEnabled = true;
+          }
         }
+
       }
     })
+  }
+
+  uiChangeSubscription: Subscription | undefined;
+
+  ngOnDestroy(): void {
+    if (this.uiChangeSubscription) {
+      this.uiChangeSubscription.unsubscribe();
+    }
   }
 
   applyValues() {
@@ -163,33 +191,9 @@ export class CharacterSheetComponent implements OnInit, AfterViewInit {
       gameManager.stateManager.after();
     }
 
-
-    if (this.retired != this.character.progress.retired && this.editable) {
-      if (settingsManager.settings.applyRetirement && gameManager.game.party.campaignMode && this.retired) {
-        this.dialog.open(CharacterRetirementDialog, {
-          panelClass: ['dialog'],
-          data: this.character
-        });
-      } else {
-        gameManager.stateManager.before(this.character.progress.retired ? "setRetired" : "unsetRetired", gameManager.characterManager.characterName(this.character));
-        this.character.progress.retired = this.retired;
-        if (this.retired && gameManager.game.party.campaignMode) {
-          gameManager.game.party.retirements.push(this.character.toModel());
-          gameManager.characterManager.removeCharacter(this.character);
-        }
-        gameManager.stateManager.after();
-      }
-    }
   }
 
   titleChange() {
-    if (this.standalone) {
-      this.applyValues();
-    }
-  }
-
-  toggleRetired() {
-    this.retired = !this.retired;
     if (this.standalone) {
       this.applyValues();
     }
@@ -286,9 +290,11 @@ export class CharacterSheetComponent implements OnInit, AfterViewInit {
       this.character.progress.personalQuest = event.target.value;
       this.character.progress.personalQuestProgress = [];
       this.personalQuest = gameManager.characterManager.personalQuestByCard(gameManager.currentEdition(), this.character.progress.personalQuest);
-      if (this.personalQuest && this.character.progress.personalQuest != this.personalQuest.cardId) {
+      if (this.personalQuest) {
         this.character.progress.personalQuest = this.personalQuest.cardId;
+        this.retireEnabled = this.personalQuest.requirements.every((requirement, i) => this.character.progress.personalQuestProgress[i] >= EntityValueFunction(requirement.counter));
       }
+
       gameManager.stateManager.after();
     }
   }
@@ -311,9 +317,48 @@ export class CharacterSheetComponent implements OnInit, AfterViewInit {
       value--;
     }
 
-    gameManager.stateManager.before("setPQProgress", gameManager.characterManager.characterName(this.character), '' + (index + 1), '' + value);
+    gameManager.stateManager.before("setPQProgress", gameManager.characterManager.characterName(this.character), (index + 1), value);
     this.character.progress.personalQuestProgress[index] = value;
     gameManager.stateManager.after();
+
+    if (!gameManager.game.scenario) {
+      const retiredEnabled = this.retireEnabled;
+      if (this.personalQuest) {
+        this.retireEnabled = this.personalQuest.requirements.every((requirement, i) => this.character.progress.personalQuestProgress[i] >= EntityValueFunction(requirement.counter));
+      }
+
+      if (!retiredEnabled && this.retireEnabled && settingsManager.settings.applyRetirement && gameManager.game.party.campaignMode) {
+        this.retire(false, true);
+      }
+    }
+  }
+
+  retire(force: boolean = false, dialogOnly: boolean = false) {
+    if (force || this.retireEnabled) {
+      if (settingsManager.settings.applyRetirement && gameManager.game.party.campaignMode) {
+        this.dialog.open(CharacterRetirementDialog, {
+          panelClass: ['dialog'],
+          data: this.character
+        }).closed.subscribe({
+          next: (retired) => {
+            if (retired && this.dialogRef) {
+              ghsDialogClosingHelper(this.dialogRef);
+            }
+          }
+        });
+      } else if (!dialogOnly) {
+        if (this.dialogRef) {
+          ghsDialogClosingHelper(this.dialogRef);
+        }
+        gameManager.stateManager.before(this.character.progress.retired ? "setRetired" : "unsetRetired", gameManager.characterManager.characterName(this.character));
+        this.character.progress.retired = true;
+        if (gameManager.game.party.campaignMode) {
+          gameManager.game.party.retirements.push(this.character.toModel());
+          gameManager.characterManager.removeCharacter(this.character);
+        }
+        gameManager.stateManager.after();
+      }
+    }
   }
 
   personalQuestRequirementUnlocked(index: number): boolean {
@@ -483,15 +528,84 @@ export class CharacterSheetComponent implements OnInit, AfterViewInit {
     }
   }
 
+  replay() {
+    if (this.replayable) {
+      gameManager.stateManager.before("characterReplay", gameManager.characterManager.characterName(this.character, true, true), gameManager.game.party.players[this.character.number - 1] ? gameManager.game.party.players[this.character.number - 1] : '' + this.character.number);
+      gameManager.game.party.availableCharacters = gameManager.game.party.availableCharacters.filter((availableCharacter) => availableCharacter.name != this.character.name || availableCharacter.edition != this.character.edition || availableCharacter.number != this.character.number);
+      gameManager.game.figures.forEach((figure) => {
+        if (figure instanceof Character && figure.number == this.character.number) {
+          gameManager.game.party.availableCharacters.push(figure.toModel());
+          gameManager.characterManager.removeCharacter(figure);
+        }
+      })
+      gameManager.game.figures.push(this.character);
+      gameManager.stateManager.after();
+      if (this.dialogRef) {
+        ghsDialogClosingHelper(this.dialogRef);
+      }
+    }
+  }
+
   toggleFhSheet() {
     this.fhSheet = !this.fhSheet;
     this.csSheet = !this.fhSheet && (this.character.edition == 'cs' || gameManager.editionExtensions(this.character.edition).indexOf('cs') != -1);
   }
 
-  openGhCards() {
+  openAbilityCards() {
     this.dialog.open(AbilityCardsDialogComponent, {
       panelClass: ['dialog'],
       data: { character: this.character }
     });
+  }
+
+  statistics() {
+    this.dialog.open(StatisticsDialogComponent, {
+      panelClass: ['dialog-invert'],
+      data: this.character
+    })
+  }
+
+  openTrial() {
+    if (this.character.progress.trial) {
+      this.dialog.open(TrialDialogComponent, {
+        panelClass: ['fullscreen-panel'],
+        data: {
+          edition: this.character.progress.trial.edition,
+          trial: +this.character.progress.trial.name
+        }
+      })
+    }
+  }
+
+  setTrial(event: any) {
+    event.target.classList.add('error');
+    let trial = +event.target.value;
+    if (settingsManager.settings.fhSecondEdition) {
+      trial = gameManager.trialsManager.cardIdSecondPrinting(trial);
+    }
+    if (!this.character.progress.trial || this.character.progress.trial.name != '' + trial) {
+      const editionData = gameManager.editionData.find((editionData) => editionData.edition == gameManager.currentEdition() && editionData.trials && editionData.trials.length);
+      if (editionData) {
+        const trialCard = editionData.trials.find((trialCard) => trialCard.cardId == trial && trialCard.edition == gameManager.currentEdition());
+        if (trialCard) {
+          event.target.classList.remove('error');
+          event.target.classList.add('warning');
+          if (!gameManager.game.figures.find((figure) => figure instanceof Character && figure.progress.trial && figure.progress.trial.edition == gameManager.currentEdition() && figure.progress.trial.name == '' + trial)) {
+            gameManager.stateManager.before("setTrial", gameManager.characterManager.characterName(this.character), event.target.value);
+            this.character.progress.trial = new Identifier('' + trial, gameManager.currentEdition());
+            const currentTrialIndex = Math.max(...gameManager.game.figures.filter((figure) => figure instanceof Character).map((character) =>
+              editionData.trials.find((trialCard) => character.progress.trial && trialCard.cardId == +character.progress.trial.name && trialCard.edition == character.progress.trial.edition)).map((trialCard) => trialCard ? editionData.trials.indexOf(trialCard) : -1));
+            if (!gameManager.game.party.trials || gameManager.game.party.trials != currentTrialIndex) {
+              gameManager.game.party.trials = currentTrialIndex;
+            }
+            event.target.classList.remove('warning');
+            gameManager.stateManager.after();
+          } else if (this.character.progress.trial) {
+            trial = settingsManager.settings.fhSecondEdition ? gameManager.trialsManager.cardIdSecondPrinting(+this.character.progress.trial.name) : +this.character.progress.trial.name;
+            event.target.value = trial;
+          }
+        }
+      }
+    }
   }
 }

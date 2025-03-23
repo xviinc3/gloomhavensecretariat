@@ -7,6 +7,7 @@ import { LootDeckChange } from "../../figures/loot/loot-deck";
 import { storageManager } from "src/app/game/businesslogic/StorageManager";
 
 @Component({
+	standalone: false,
     selector: 'ghs-loot-deck-standalone',
     templateUrl: './loot-deck-standalone.html',
     styleUrls: ['./loot-deck-standalone.scss',]
@@ -20,7 +21,7 @@ export class LootDeckStandaloneComponent implements OnInit {
     async ngOnInit() {
         try {
             await storageManager.init();
-        } catch {
+        } catch (e) {
             // continue
         }
         await settingsManager.init(!environment.production);

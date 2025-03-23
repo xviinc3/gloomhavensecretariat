@@ -9,6 +9,7 @@ import { ObjectiveContainer } from "src/app/game/model/ObjectiveContainer";
 import { ghsDialogClosingHelper } from "src/app/ui/helper/Static";
 
 @Component({
+    standalone: false,
     selector: 'ghs-character-initiative-dialog',
     templateUrl: 'initiative-dialog.html',
     styleUrls: ['./initiative-dialog.scss']
@@ -22,10 +23,10 @@ export class CharacterInitiativeDialogComponent {
     settingsManager: SettingsManager = settingsManager;
     GameState = GameState;
     character: Character | undefined;
-    objective:  ObjectiveContainer | undefined;
+    objective: ObjectiveContainer | undefined;
 
 
-    constructor(@Inject(DIALOG_DATA) public figure: Character |  ObjectiveContainer, private dialogRef: DialogRef) {
+    constructor(@Inject(DIALOG_DATA) public figure: Character | ObjectiveContainer, private dialogRef: DialogRef) {
         if (this.figure instanceof Character) {
             this.character = this.figure;
         } else if (this.figure instanceof ObjectiveContainer) {
@@ -42,10 +43,14 @@ export class CharacterInitiativeDialogComponent {
 
     @HostListener('document:keydown', ['$event'])
     onKeyPress(event: KeyboardEvent) {
-        if (event.key in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
-            this.pickNumber(+event.key);
-            event.preventDefault();
-            event.stopPropagation();
+        if (settingsManager.settings.keyboardShortcuts) {
+            if (event.key in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
+                this.pickNumber(+event.key);
+                event.preventDefault();
+                event.stopPropagation();
+            } else if (event.key === 'Enter') {
+                ghsDialogClosingHelper(this.dialogRef);
+            }
         }
     }
 

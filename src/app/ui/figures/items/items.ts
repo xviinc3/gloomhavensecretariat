@@ -1,18 +1,22 @@
+import { Dialog } from "@angular/cdk/dialog";
 import { Component, Input, OnDestroy, OnInit, ViewEncapsulation } from "@angular/core";
+import { Subscription } from "rxjs";
 import { GameManager, gameManager } from "src/app/game/businesslogic/GameManager";
+import { SettingsManager, settingsManager } from "src/app/game/businesslogic/SettingsManager";
 import { Character } from "src/app/game/model/Character";
-import { ItemData } from "src/app/game/model/data/ItemData";
 import { Identifier } from "src/app/game/model/data/Identifier";
+import { ItemData } from "src/app/game/model/data/ItemData";
 import { getLootClass, LootClass, LootType } from "src/app/game/model/data/Loot";
 import { GameState } from "src/app/game/model/Game";
-import { Subscription } from "rxjs";
-import { Dialog } from "@angular/cdk/dialog";
 import { ItemsBrewDialog } from "./brew/brew";
+import { ItemDistillDialogComponent } from "./character/item-distill";
+import { ItemDialogComponent } from "./dialog/item-dialog";
 import { ItemsDialogComponent } from "./dialog/items-dialog";
-import { SettingsManager, settingsManager } from "src/app/game/businesslogic/SettingsManager";
+import { ConfirmDialogComponent } from "../../helper/confirm/confirm";
 
 
 @Component({
+    standalone: false,
     selector: 'ghs-character-items',
     templateUrl: 'items.html',
     styleUrls: ['./items.scss'],
@@ -63,7 +67,7 @@ export class CharacterItemsComponent implements OnInit, OnDestroy {
         this.items = [];
         if (this.character.progress.items) {
             this.character.progress.items.forEach((item) => {
-                const itemData = gameManager.itemManager.getItem(+item.name, item.edition, true);
+                const itemData = gameManager.itemManager.getItem(item.name, item.edition, true);
                 if (itemData) {
                     this.items.push(itemData);
                 } else {
@@ -71,7 +75,7 @@ export class CharacterItemsComponent implements OnInit, OnDestroy {
                 }
             });
 
-            this.items.sort((a, b) => a.id - b.id);
+            this.items.sort(gameManager.itemManager.sortItems);
         }
 
         this.brewing = 0;
@@ -128,7 +132,7 @@ export class CharacterItemsComponent implements OnInit, OnDestroy {
         if (this.itemEdition) {
             const editionData = gameManager.editionData.find((editionData) => editionData.edition == this.itemEdition);
             if (editionData && editionData.items) {
-                this.itemIndex = Math.min(...editionData.items.map((itemData) => itemData.id));
+                this.itemIndex = Math.min(...editionData.items.filter((itemData) => typeof itemData.id === 'number').map((itemData) => +itemData.id));
             }
         }
         this.itemChange();
@@ -198,7 +202,7 @@ export class CharacterItemsComponent implements OnInit, OnDestroy {
             gameManager.stateManager.before("addItem", gameManager.characterManager.characterName(this.character), item.id + "", item.edition);
             this.character.progress.items.push(new Identifier(item.id + "", item.edition));
             this.items.push(item);
-            this.items.sort((a, b) => a.id - b.id);
+            this.items.sort(gameManager.itemManager.sortItems);
             gameManager.stateManager.after();
             this.itemChange();
         }
@@ -210,7 +214,7 @@ export class CharacterItemsComponent implements OnInit, OnDestroy {
             this.character.progress.gold -= (item.cost + gameManager.itemManager.pricerModifier());
             this.character.progress.items.push(new Identifier(item.id + "", item.edition));
             this.items.push(item);
-            this.items.sort((a, b) => a.id - b.id);
+            this.items.sort(gameManager.itemManager.sortItems);
             gameManager.stateManager.after();
             this.itemChange();
         }
@@ -265,38 +269,75 @@ export class CharacterItemsComponent implements OnInit, OnDestroy {
             this.craftItemResources(item);
             this.character.progress.items.push(new Identifier(item.id + "", item.edition));
             this.items.push(item);
-            this.items.sort((a, b) => a.id - b.id);
+            this.items.sort(gameManager.itemManager.sortItems);
             gameManager.stateManager.after();
             this.itemChange();
         }
     }
 
+    openItem(itemData: ItemData) {
+        this.dialog.open(ItemDialogComponent, {
+            panelClass: ['fullscreen-panel'],
+            data: { character: settingsManager.settings.characterItems ? this.character : undefined, item: itemData, setup: gameManager.game.state == GameState.draw && gameManager.roundManager.firstRound }
+        })
+    }
 
     removeItem(itemData: ItemData) {
         const item = this.character.progress.items.find((identifier) => identifier.name == '' + itemData.id && identifier.edition == itemData.edition);
         if (item) {
-            const index = this.character.progress.items.indexOf(item)
-            gameManager.stateManager.before("removeItem", gameManager.characterManager.characterName(this.character), this.character.progress.items[index].name, this.character.progress.items[index].edition);
-            this.character.progress.items.splice(index, 1);
-            this.character.progress.equippedItems = this.character.progress.equippedItems.filter((identifier) => identifier.name != '' + itemData.id || identifier.edition != itemData.edition);
-            this.items.splice(index, 1);
-            gameManager.stateManager.after();
-            this.itemChange();
+            this.dialog.open(ConfirmDialogComponent, {
+                panelClass: ['dialog'],
+                data: {
+                    label: 'game.items.remove',
+                    args: ['data.items.' + item.edition + '-' + itemData.id]
+                }
+            }).closed.subscribe({
+                next: (result) => {
+                    if (result) {
+                        const index = this.character.progress.items.indexOf(item)
+                        gameManager.stateManager.before("removeItem", gameManager.characterManager.characterName(this.character), this.character.progress.items[index].name, this.character.progress.items[index].edition);
+                        this.character.progress.items.splice(index, 1);
+                        this.character.progress.equippedItems = this.character.progress.equippedItems.filter((identifier) => identifier.name != '' + itemData.id || identifier.edition != itemData.edition);
+                        this.items.splice(index, 1);
+                        gameManager.stateManager.after();
+                        this.itemChange();
+                    }
+                }
+            })
         }
     }
 
     sellItem(itemData: ItemData) {
         const item = this.character.progress.items.find((identifier) => identifier.name == '' + itemData.id && identifier.edition == itemData.edition);
         if (item && gameManager.itemManager.itemSellValue(itemData)) {
-            const index = this.character.progress.items.indexOf(item)
-            gameManager.stateManager.before("sellItem", gameManager.characterManager.characterName(this.character), this.character.progress.items[index].name, this.character.progress.items[index].edition);
-            this.character.progress.gold += gameManager.itemManager.itemSellValue(itemData);
-            this.character.progress.items.splice(index, 1);
-            this.character.progress.equippedItems = this.character.progress.equippedItems.filter((identifier) => identifier.name != '' + itemData.id || identifier.edition != itemData.edition);
-            this.items.splice(index, 1);
-            gameManager.stateManager.after();
-            this.itemChange();
+            this.dialog.open(ConfirmDialogComponent, {
+                panelClass: ['dialog'],
+                data: {
+                    label: 'game.items.sell',
+                    args: ['data.items.' + item.edition + '-' + itemData.id, gameManager.itemManager.itemSellValue(itemData)]
+                }
+            }).closed.subscribe({
+                next: (result) => {
+                    if (result) {
+                        const index = this.character.progress.items.indexOf(item)
+                        gameManager.stateManager.before("sellItem", gameManager.characterManager.characterName(this.character), this.character.progress.items[index].name, this.character.progress.items[index].edition);
+                        this.character.progress.gold += gameManager.itemManager.itemSellValue(itemData);
+                        this.character.progress.items.splice(index, 1);
+                        this.character.progress.equippedItems = this.character.progress.equippedItems.filter((identifier) => identifier.name != '' + itemData.id || identifier.edition != itemData.edition);
+                        this.items.splice(index, 1);
+                        gameManager.stateManager.after();
+                        this.itemChange();
+                    }
+                }
+            })
         }
+    }
+
+    distillItem(itemData: ItemData) {
+        this.dialog.open(ItemDistillDialogComponent, {
+            panelClass: ['dialog'],
+            data: { character: this.character, item: itemData }
+        })
     }
 
     isEquipped(item: ItemData) {
@@ -306,7 +347,7 @@ export class CharacterItemsComponent implements OnInit, OnDestroy {
     toggleEquippedItem(itemData: ItemData, force: boolean = false) {
         const disabled = gameManager.game.state != GameState.draw || gameManager.game.round > 0;
         if ((!disabled || force) && this.character.progress.items.find((identifier) => identifier.name == '' + itemData.id && identifier.edition == itemData.edition) != undefined) {
-            gameManager.stateManager.before(gameManager.itemManager.isEquipped(itemData, this.character) ? 'unequipItem' : 'equipItem', gameManager.characterManager.characterName(this.character), '' + itemData.id, itemData.edition)
+            gameManager.stateManager.before(gameManager.itemManager.isEquipped(itemData, this.character) ? 'unequipItem' : 'equipItem', gameManager.characterManager.characterName(this.character), itemData.id, itemData.edition)
             gameManager.itemManager.toggleEquippedItem(itemData, this.character, force)
             gameManager.stateManager.after();
         }

@@ -1,6 +1,7 @@
 import { EventEmitter } from "@angular/core";
 import { FigureError, FigureErrorType } from "src/app/game/model/data/FigureError";
 import { AdditionalIdentifier } from "src/app/game/model/data/Identifier";
+import { ghsShuffleArray } from "src/app/ui/helper/Static";
 import { Character } from "../model/Character";
 import { Entity, EntityCounter } from "../model/Entity";
 import { Figure } from "../model/Figure";
@@ -13,6 +14,7 @@ import { Party } from "../model/Party";
 import { Summon } from "../model/Summon";
 import { Ability } from "../model/data/Ability";
 import { Action, ActionType } from "../model/data/Action";
+import { ChallengeCard } from "../model/data/Challenges";
 import { CharacterData } from "../model/data/CharacterData";
 import { Condition, ConditionName, ConditionType, Conditions } from "../model/data/Condition";
 import { DeckData } from "../model/data/DeckData";
@@ -22,9 +24,11 @@ import { ItemData } from "../model/data/ItemData";
 import { MonsterData } from "../model/data/MonsterData";
 import { MonsterStat } from "../model/data/MonsterStat";
 import { ScenarioData } from "../model/data/ScenarioData";
+import { ActionsManager } from "./ActionsManager";
 import { AttackModifierManager } from "./AttackModifierManager";
 import { BattleGoalManager } from "./BattleGoalManager";
 import { BuildingsManager } from "./BuildingsManager";
+import { ChallengesManager } from "./ChallengesManager";
 import { CharacterManager } from "./CharacterManager";
 import { EntityManager } from "./EntityManager";
 import { EventCardManager } from "./EventCardManager";
@@ -36,10 +40,10 @@ import { ObjectiveManager } from "./ObjectiveManager";
 import { RoundManager } from "./RoundManager";
 import { ScenarioManager } from "./ScenarioManager";
 import { ScenarioRulesManager } from "./ScenarioRulesManager";
+import { ScenarioStatsManager } from "./ScenarioStatsManager";
 import { settingsManager } from "./SettingsManager";
 import { StateManager } from "./StateManager";
-import { ActionsManager } from "./ActionsManager";
-import { ghsShuffleArray } from "src/app/ui/helper/Static";
+import { TrialsManager } from "./TrialsManager";
 
 declare global {
   interface Window { gameManager: GameManager }
@@ -69,6 +73,9 @@ export class GameManager {
   battleGoalManager: BattleGoalManager;
   eventCardManager: EventCardManager;
   buildingsManager: BuildingsManager;
+  challengesManager: ChallengesManager;
+  scenarioStatsManager: ScenarioStatsManager;
+  trialsManager: TrialsManager;
 
   uiChange = new EventEmitter<boolean>();
 
@@ -89,6 +96,9 @@ export class GameManager {
     this.battleGoalManager = new BattleGoalManager(this.game);
     this.eventCardManager = new EventCardManager(this.game);
     this.buildingsManager = new BuildingsManager(this.game);
+    this.challengesManager = new ChallengesManager(this.game);
+    this.scenarioStatsManager = new ScenarioStatsManager(this.game);
+    this.trialsManager = new TrialsManager(this.game);
     this.uiChange.subscribe({
       next: () => {
         this.checkEntitiesKilled();
@@ -100,6 +110,9 @@ export class GameManager {
           this.scenarioRulesManager.applyScenarioRulesAlways();
         }
         this.roundManager.firstRound = this.game.round == 0 && this.game.roundResets.length == 0 && this.game.roundResetsHidden.length == 0;
+        this.buildingsManager.update();
+        this.challengesManager.update();
+        this.trialsManager.update();
       }
     })
   }
@@ -242,11 +255,28 @@ export class GameManager {
   }
 
   sectionData(edition: string | undefined = undefined, extension: boolean = false): ScenarioData[] {
-    return this.editionData.filter((editionData) => (!edition || settingsManager.settings.editions.indexOf(editionData.edition) != -1) && (!edition || editionData.edition == edition || editionData.additional && this.editionExtensions(editionData.edition).indexOf(edition) != -1 || extension && this.editionExtensions(edition).indexOf(editionData.edition) != -1)).flatMap((editionData) => editionData.sections).filter((sectionData) => !edition || sectionData.edition == edition || extension);
+    return this.editionData.filter((editionData) => (!edition || settingsManager.settings.editions.indexOf(editionData.edition) != -1) && (!edition || editionData.edition == edition || editionData.additional && this.editionExtensions(editionData.edition).indexOf(edition) != -1 || extension && this.editionExtensions(edition).indexOf(editionData.edition) != -1)).flatMap((editionData) => editionData.sections).filter((sectionData) => !edition || sectionData.edition == edition || extension).map((sectionData) => {
+      if (!settingsManager.settings.fhSecondEdition || sectionData.edition != 'fh') {
+        return sectionData;
+      } else if (sectionData.index == '6.2') {
+        let section = new ScenarioData(sectionData);
+        section.index = "60.2";
+        return section;
+      } else if (sectionData.index == '60.2') {
+        let section = new ScenarioData(sectionData);
+        section.index = "6.2";
+        return section;
+      }
+      return sectionData;
+    });
   }
 
   itemData(edition: string | undefined = undefined, all: boolean = false): ItemData[] {
     return this.editionData.filter((editionData) => (all || settingsManager.settings.editions.indexOf(editionData.edition) != -1) && (!edition || editionData.edition == edition || this.editionExtensions(editionData.edition, true).indexOf(edition) != -1)).flatMap((editionData) => editionData.items).filter((itemData, index, items) => (itemData.replace || !itemData.replace && !items.find((itemDataReplacement) => itemDataReplacement.replace && itemDataReplacement.id == itemData.id && itemDataReplacement.edition == itemData.edition)));
+  }
+
+  challengesData(edition: string | undefined = undefined, all: boolean = false): ChallengeCard[] {
+    return this.editionData.filter((editionData) => (all || settingsManager.settings.editions.indexOf(editionData.edition) != -1) && (!edition || editionData.edition == edition || this.editionExtensions(editionData.edition, true).indexOf(edition) != -1)).flatMap((editionData) => editionData.challenges);
   }
 
   conditions(edition: string | undefined = undefined, forceEdition: boolean = false): Condition[] {
@@ -364,14 +394,16 @@ export class GameManager {
         if (a.getInitiative() == b.getInitiative()) {
           return this.sortFiguresByTypeAndName(a, b);
         }
+
+        // apply Challenge #1491
+        if (gameManager.challengesManager.apply && gameManager.challengesManager.isActive(1491, 'fh')) {
+          return b.getInitiative() - a.getInitiative();
+        }
+
         return a.getInitiative() - b.getInitiative();
-      } else if (a.getInitiative() > 0) {
-        return 1;
-      } else if (b.getInitiative() > 0) {
-        return -1;
       }
 
-      return this.sortFiguresByTypeAndName(a, b);
+      return 0;
     });
   }
 
@@ -421,6 +453,10 @@ export class GameManager {
       } else if (b.marker) {
         return -1;
       }
+    }
+
+    if (a instanceof Character && b instanceof Character && settingsManager.settings.characterSortIndex) {
+      return a.number - b.number;
     }
 
     return aName < bName ? -1 : 1;
@@ -479,6 +515,18 @@ export class GameManager {
     let characterData = this.charactersData().find((value) => value.name == name && (!edition || value.edition == edition));
     if (!characterData) {
       characterData = this.charactersData().find((value) => value.name == name);
+
+      if (!characterData && !edition) {
+        edition = name.split('-')[0];
+        name = name.split('-').slice(1).join('-');
+        characterData = this.charactersData().find((value) => value.name == name && value.edition == edition);
+        while (name && !characterData) {
+          edition = edition + '-' + name.split('-')[0];
+          name = name.split('-').slice(1).join('-');
+          characterData = this.charactersData().find((value) => value.name == name && value.edition == edition);
+        }
+      }
+
       if (!characterData) {
         characterData = new CharacterData();
         characterData.name = name;
@@ -576,6 +624,7 @@ export class GameManager {
           case "monster":
             return figures.filter((figure) => figure instanceof Monster && (!edition || figure.edition == edition) && figure.name.match(name) && (!identifier.marker || figure.entities.some((entity) => entity.marker == identifier.marker)) && (!identifier.tags || identifier.tags.length == 0 || figure.entities.some((entity) => identifier.tags && identifier.tags.every((tag) => entity.tags && entity.tags.indexOf(tag) != -1))));
           case "character":
+          case "characterWithSummon":
             return figures.filter((figure) => {
               if (figure instanceof Character && !figure.absent && (!edition || figure.edition == edition) && figure.name.match(name) && (!identifier.tags || identifier.tags.length == 0 || identifier.tags && identifier.tags.every((tag) => figure.tags && figure.tags.indexOf(tag) != -1))) {
                 if (scenarioEffect) {
@@ -602,6 +651,9 @@ export class GameManager {
       if (figure instanceof Monster || figure instanceof ObjectiveContainer) {
         return figure.entities;
       } else if (figure instanceof Character) {
+        if (identifier && identifier.type == "characterWithSummon") {
+          return [figure as Entity, ...figure.summons];
+        }
         return figure as Entity;
       } else {
         return undefined;
@@ -656,8 +708,12 @@ export class GameManager {
     return ticks;
   }
 
-  fhRules(): boolean {
-    return this.editionRules('fh');
+  fhRules(gh2e: boolean = false): boolean {
+    return this.editionRules('fh') || gh2e && this.editionRules('gh2e');
+  }
+
+  bbRules(): boolean {
+    return this.editionRules('bb');
   }
 
   editionRules(edition: string, current: boolean = true): boolean {
@@ -766,6 +822,14 @@ export class GameManager {
   }
 
   nextElementState(element: ElementModel, double: boolean = false, draw: boolean = false): ElementState {
+    if (gameManager.bbRules()) {
+      if (element.state != ElementState.strong) {
+        return ElementState.strong;
+      } else {
+        return ElementState.inert;
+      }
+    }
+
     if (gameManager.game.state == GameState.draw || draw) {
       if (element.state == ElementState.new) {
         if (!double) {
@@ -852,10 +916,10 @@ export class GameManager {
     this.game.battleGoalEditions = this.game.party.battleGoalEditions || [];
     this.game.filteredBattleGoals = this.game.party.filteredBattleGoals || [];
     this.game.unlockedCharacters = this.game.party.unlockedCharacters || [];
-    this.game.level = this.game.party.level || this.game.level;
+    this.game.level = this.game.party.level == 0 ? 0 : this.game.party.level || this.game.level;
     this.game.levelCalculation = this.game.party.levelCalculation == false ? false : this.game.party.levelCalculation || this.game.levelCalculation;
-    this.game.levelAdjustment = this.game.party.levelAdjustment || this.game.levelAdjustment;
-    this.game.bonusAdjustment = this.game.party.bonusAdjustment || this.game.bonusAdjustment;
+    this.game.levelAdjustment = this.game.party.levelAdjustment == 0 ? 0 : this.game.party.levelAdjustment || this.game.levelAdjustment;
+    this.game.bonusAdjustment = this.game.party.bonusAdjustment == 0 ? 0 : this.game.party.bonusAdjustment || this.game.bonusAdjustment;
     this.game.ge5Player = this.game.party.ge5Player == false ? false : this.game.party.ge5Player || this.game.ge5Player;
     this.game.playerCount = this.game.party.playerCount || this.game.playerCount;
     this.game.solo = this.game.party.solo == false ? false : this.game.party.solo || this.game.solo;
@@ -870,6 +934,44 @@ export class GameManager {
       character.fromModel(value);
       this.game.figures.push(character);
     });
+  }
+
+  resetCampaign() {
+    this.game.figures = [];
+    this.game.party.characters = [];
+    this.game.party.location = "";
+    this.game.party.achievements = "";
+    this.game.party.achievementsList = [];
+    this.game.party.reputation = 0;
+    this.game.party.prosperity = 0;
+    this.game.party.scenarios = [];
+    this.game.party.conclusions = [];
+    this.game.party.casualScenarios = [];
+    this.game.party.manualScenarios = [];
+    this.game.party.globalAchievements = "";
+    this.game.party.globalAchievementsList = [];
+    this.game.party.treasures = [];
+    this.game.party.donations = 0;
+    this.game.party.retirements = [];
+    this.game.party.unlockedItems = [];
+    this.game.party.unlockedCharacters = [];
+    this.game.party.envelopeB = false;
+    this.game.party.weeks = 0;
+    this.game.party.weekSections = [];
+    this.game.party.loot = {};
+    this.game.party.randomItemLooted = [];
+    this.game.party.inspiration = 0;
+    this.game.party.defense = 0;
+    this.game.party.soldiers = 0;
+    this.game.party.morale = 0;
+    this.game.party.townGuardPerks = 0;
+    this.game.party.townGuardPerkSections = [];
+    this.game.party.campaignStickers = [];
+    this.game.party.townGuardDeck = undefined;
+    this.game.party.buildings = [];
+    this.game.party.lootDeckEnhancements = [];
+    this.game.party.lootDeckFixed = [];
+    this.game.party.lootDeckSections = [];
   }
 
   toggleGameClock() {

@@ -2,6 +2,7 @@ import { Directive, ElementRef, Input, OnChanges, SimpleChanges } from '@angular
 import { ghsValueSign } from './Static';
 
 @Directive({
+	standalone: false,
   selector: '[value-sign]'
 })
 export class ValueSignDirective implements OnChanges {
@@ -10,6 +11,7 @@ export class ValueSignDirective implements OnChanges {
   @Input('colored') colored: boolean = true;
   @Input('empty') empty: boolean = true;
   @Input('hideEmpty') hideEmpty: boolean = false;
+  @Input('reverse') reverse: boolean = false;
   @Input('container') container: boolean = false;
 
   constructor(private el: ElementRef) {
@@ -21,9 +23,9 @@ export class ValueSignDirective implements OnChanges {
   }
 
   update() {
-    this.el.nativeElement.innerHTML = ghsValueSign(this.value, this.empty);
+    this.el.nativeElement.innerHTML = ghsValueSign(this.reverse ? - this.value : this.value, this.empty);
     if (this.container) {
-      this.el.nativeElement.innerHTML = '<span class="value">' + ghsValueSign(this.value, this.empty) + '</span>';
+      this.el.nativeElement.innerHTML = '<span class="value">' + ghsValueSign(this.reverse ? - this.value : this.value, this.empty) + '</span>';
     }
     this.el.nativeElement.classList.remove('hide-zero-value', 'positive-value', 'negative-value');
     if (this.value == 0 && this.hideEmpty) {

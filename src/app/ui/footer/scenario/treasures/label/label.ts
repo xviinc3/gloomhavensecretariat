@@ -7,6 +7,7 @@ import { TreasureData, TreasureReward, TreasureRewardType } from "src/app/game/m
 import { ItemDialogComponent } from "src/app/ui/figures/items/dialog/item-dialog";
 
 @Component({
+    standalone: false,
     selector: 'ghs-treasure-label',
     templateUrl: './label.html',
     styleUrls: ['./label.scss'],
@@ -33,12 +34,15 @@ export class TreasureLabelComponent implements OnInit {
         if (!this.treasure) {
             const editionData = gameManager.editionData.find((editionData) => editionData.edition == this.edition);
             if (editionData && editionData.treasures) {
-                const index = this.index - (editionData.treasureOffset || 0);
+                const index = this.index < 0 ? this.index : this.index - (editionData.treasureOffset || 0);
                 if (index >= 0 && index < editionData.treasures.length) {
                     const tresureString = editionData.treasures[index];
                     this.treasure = new TreasureData(tresureString, this.index);
+                } else if (index < 0 && editionData.treasures.length + index + 1 > 0) {
+                    const tresureString = editionData.treasures[index + 1 + editionData.treasures.length];
+                    this.treasure = new TreasureData(tresureString, this.index);
                 } else {
-                    console.warn("Invalid treasure index: '" + this.index + "' for Edition " + this.edition);
+                    console.warn("Invalid treasure index: '" + this.index + "' for Edition " + this.edition, editionData.treasures.length);
                 }
             }
         } else {
@@ -68,7 +72,7 @@ export class TreasureLabelComponent implements OnInit {
                             this.items.push(itemData);
                         }
                     } else if ([TreasureRewardType.randomItem, TreasureRewardType.randomItemBlueprint, TreasureRewardType.randomItemDesign].indexOf(reward.type) != -1 && this.rewardResults && this.rewardResults[index] && this.rewardResults[index][0] && !isNaN(+this.rewardResults[index][0])) {
-                        const itemData = gameManager.itemManager.getItem(+this.rewardResults[index][0], this.rewardResults[index][2], true);
+                        const itemData = gameManager.itemManager.getItem(this.rewardResults[index][0], this.rewardResults[index][2], true);
                         if (itemData) {
                             this.items.push(itemData);
                         }
@@ -162,7 +166,7 @@ export class TreasureLabelComponent implements OnInit {
             case TreasureRewardType.scenario:
                 const scenarioData = gameManager.scenarioManager.getScenario(value, this.edition, undefined);
                 if (scenarioData) {
-                    return [this.labelPrefix + reward.type, scenarioData.index, 'data.scenario.' + scenarioData.name];
+                    return [this.labelPrefix + reward.type, scenarioData.index, gameManager.scenarioManager.scenarioTitle(scenarioData)];
                 } else {
                     console.warn("Invalid Scenario '" + value + "' on treasure " + this.index + "' for Edition " + this.edition);
                     return [this.labelPrefix + reward.type, value, '<img class="icon ghs-svg" src="./assets/images/warning.svg"> %scenario%'];

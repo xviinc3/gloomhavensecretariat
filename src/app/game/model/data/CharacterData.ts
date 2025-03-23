@@ -1,3 +1,4 @@
+import { AttackModifier } from "./AttackModifier";
 import { CharacterSpecialAction, CharacterStat } from "./CharacterStat";
 import { Editional } from "./Editional";
 import { FigureError } from "./FigureError";
@@ -35,6 +36,7 @@ export class CharacterData implements Editional, Spoilable {
   characterClass: CharacterClass | undefined;
   gender: CharacterGender = CharacterGender.unknown;
   identities: string[] = [];
+  defaultIdentity: number | undefined = undefined;
   tokens: string[] = [];
   primaryToken: number = -1;
   handSize: number | string = 0;
@@ -63,6 +65,9 @@ export class CharacterData implements Editional, Spoilable {
 
   masteries: string[] = [];
 
+  bb: boolean = false;
+  amTables: (AttackModifier | String)[][] = [];
+
   // from Editional
   edition: string = "";
   // from Spoilable
@@ -83,6 +88,7 @@ export class CharacterData implements Editional, Spoilable {
       this.characterClass = characterData.characterClass || undefined;
       this.gender = characterData.gender || CharacterGender.unknown;
       this.identities = characterData.identities || [];
+      this.defaultIdentity = characterData.defaultIdentity;
       this.tokens = characterData.tokens || [];
       this.primaryToken = characterData.primaryToken >= 0 ? characterData.primaryToken : -1;
       this.handSize = characterData.handSize || 0;
@@ -108,6 +114,8 @@ export class CharacterData implements Editional, Spoilable {
       this.masteries = characterData.masteries || [];
       this.replace = characterData.replace || false;
       this.merge = characterData.merge || false;
+      this.bb = characterData.bb || false;
+      this.amTables = characterData.amTables || [];
     }
   }
 } 

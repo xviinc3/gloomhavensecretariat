@@ -1,14 +1,20 @@
-import { Component } from "@angular/core";
-import { gameManager, GameManager } from "src/app/game/businesslogic/GameManager";
+import { DIALOG_DATA, DialogRef } from "@angular/cdk/dialog";
+import { Component, Inject } from "@angular/core";
+import { GameManager, gameManager } from "src/app/game/businesslogic/GameManager";
 import { settingsManager } from "src/app/game/businesslogic/SettingsManager";
 import { storageManager } from "src/app/game/businesslogic/StorageManager";
-import { ObjectiveData } from "src/app/game/model/data/ObjectiveData";
-import { ScenarioData } from "src/app/game/model/data/ScenarioData";
 import { Monster } from "src/app/game/model/Monster";
 import { ObjectiveContainer } from "src/app/game/model/ObjectiveContainer";
+import { ObjectiveData } from "src/app/game/model/data/ObjectiveData";
+import { ScenarioData } from "src/app/game/model/data/ScenarioData";
 import packageJson from '../../../../../package.json';
+import { ghsDialogClosingHelper } from "../../helper/Static";
+
+
+export type FEEDBACK_ISSUE_TYPE = "abilityCard" | "monsterStat" | "characterStat" | "artwork" | "software" | "feedback" | "automatic";
 
 @Component({
+	standalone: false,
     selector: 'ghs-feedback-dialog',
     templateUrl: './feedback-dialog.html',
     styleUrls: ['./feedback-dialog.scss']
@@ -16,7 +22,21 @@ import packageJson from '../../../../../package.json';
 export class FeedbackDialogComponent {
 
     gameManager: GameManager = gameManager;
+
+    issueTypes: FEEDBACK_ISSUE_TYPE[] = ["abilityCard", "monsterStat", "characterStat", "artwork", "software", "feedback"];
+
     form: string = "issue";
+    issueType: FEEDBACK_ISSUE_TYPE = "abilityCard";
+    issuerText: string = "";
+    automaticText: string = "";
+
+    constructor(@Inject(DIALOG_DATA) public error: Error | undefined, public dialogRef: DialogRef) {
+        if (error) {
+            this.automaticText = settingsManager.getLabel('tools.feedback.reportIssue.errorText', [error.message, error.stack || '']);
+            this.issueTypes.push("automatic");
+            this.issueType = "automatic";
+        }
+    }
 
     scenarioMail(scenarioName: string, index: string, notes: string): string {
         let mailto = 'mailto:scenario@gloomhaven-secretariat.de';
@@ -30,17 +50,14 @@ export class FeedbackDialogComponent {
         scenario.allied = gameManager.game.figures.filter((figure) => figure instanceof Monster && figure.isAllied).map((figure) => (figure as Monster).name);
         scenario.drawExtra = gameManager.game.figures.filter((figure) => figure instanceof Monster && figure.drawExtra).map((figure) => (figure as Monster).name);
         scenario.objectives = gameManager.game.figures.filter((figure) => figure instanceof ObjectiveContainer).map((figure) => {
-            if (figure instanceof ObjectiveContainer) {
-                if (figure.objectiveId) {
-                    const objectiveData = gameManager.objectiveManager.objectiveDataByObjectiveIdentifier(figure.objectiveId);
-                    if (objectiveData) {
-                        return objectiveData;
-                    }
+            if (figure.objectiveId) {
+                const objectiveData = gameManager.objectiveManager.objectiveDataByObjectiveIdentifier(figure.objectiveId);
+                if (objectiveData) {
+                    return objectiveData;
                 }
-                const objective = figure as ObjectiveContainer;
-                return new ObjectiveData(objective.name, objective.health, objective.escort, -1, objective.marker, [], objective.initiative);
             }
-            return new ObjectiveData(figure.name, 0, false);
+            const objective = figure as ObjectiveContainer;
+            return new ObjectiveData(objective.name, objective.health, objective.escort, -1, objective.marker, [], objective.initiative);
         });
         scenario.rooms = gameManager.game.scenario?.rooms || [];
         scenario.marker = gameManager.game.scenario?.marker || "";
@@ -63,7 +80,11 @@ export class FeedbackDialogComponent {
 
         mailto += '?subject=[GHS v' + packageJson.version + '] ' + settingsManager.getLabel('tools.feedback.reportIssue.type.' + type + '.subject');
 
-        mailto += '&body=' + settingsManager.getLabel('tools.feedback.reportIssue.type.' + type + '.hint') + '%0D%0A%0D%0A' + text;
+        if (this.automaticText) {
+            text += (text ? "\n\n" : "") + this.automaticText;
+        }
+
+        mailto += '&body=' + settingsManager.getLabel('tools.feedback.reportIssue.type.' + type + '.hint') + '%0D%0A%0D%0A' + text.replaceAll("\n", '%0D%0A');
 
         return mailto;
     }
@@ -77,8 +98,20 @@ export class FeedbackDialogComponent {
             document.body.appendChild(downloadButton);
             downloadButton.click();
             document.body.removeChild(downloadButton);
-        } catch {
+        } catch (e) {
             console.warn("Could not read datadump");
+        }
+    }
+
+    ignoreError() {
+        if (this.error) {
+            const errorId = this.error.message + (this.error.stack ? this.error.stack.split('\n')[0] : '');
+            settingsManager.settings.feedbackErrorsIgnore = settingsManager.settings.feedbackErrorsIgnore || [];
+            if (settingsManager.settings.feedbackErrorsIgnore.indexOf(errorId) == -1) {
+                settingsManager.settings.feedbackErrorsIgnore.push(errorId);
+                settingsManager.storeSettings();
+                ghsDialogClosingHelper(this.dialogRef);
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ import { MonsterData } from "src/app/game/model/data/MonsterData";
 import { ghsHasSpoilers, ghsIsSpoiled, ghsNotSpoiled, ghsTextSearch } from "src/app/ui/helper/Static";
 
 @Component({
+	standalone: false,
     selector: 'ghs-monster-menu',
     templateUrl: 'monster.html',
     styleUrls: ['../menu.scss', 'monster.scss']
@@ -82,7 +83,8 @@ export class MonsterMenuComponent {
 
     addMonster(monsterData: MonsterData) {
         gameManager.stateManager.before("addMonster", "data.monster." + monsterData.name);
-        gameManager.monsterManager.addMonster(monsterData, gameManager.game.level);
+        let monster = gameManager.monsterManager.addMonster(monsterData, gameManager.game.level);
+        monster.tags.push('addedManually');
         gameManager.stateManager.after();
     }
 

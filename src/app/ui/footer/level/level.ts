@@ -7,6 +7,7 @@ import { LevelDialogComponent } from './level-dialog';
 import { Subscription } from 'rxjs';
 
 @Component({
+	standalone: false,
   selector: 'ghs-level',
   templateUrl: './level.html',
   styleUrls: ['./level.scss']
@@ -21,6 +22,7 @@ export class LevelComponent implements OnInit, OnDestroy {
   experience: number = 0;
   loot: number = 0;
   hazardousTerrain: number = 0;
+  monsterDifficulty: number = 0;
 
   constructor(private dialog: Dialog, private overlay: Overlay) { }
 
@@ -63,6 +65,11 @@ export class LevelComponent implements OnInit, OnDestroy {
     this.experience = gameManager.levelManager.experience();
     this.loot = gameManager.levelManager.loot();
     this.hazardousTerrain = gameManager.levelManager.terrain();
+    this.monsterDifficulty = gameManager.levelManager.bbMonsterDifficutly();
+
+    if (gameManager.trialsManager.activeFavor('fh', 'wealth')) {
+      this.loot += gameManager.trialsManager.activeFavor('fh', 'wealth');
+    }
   }
 
 }

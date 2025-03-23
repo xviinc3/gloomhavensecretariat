@@ -8,6 +8,7 @@ import { ItemDialogComponent } from "../../items/dialog/item-dialog";
 import { ItemData } from "src/app/game/model/data/ItemData";
 
 @Component({
+	standalone: false,
     selector: 'ghs-character-loot-cards',
     templateUrl: 'loot-cards.html',
     styleUrls: ['./loot-cards.scss']
@@ -42,7 +43,7 @@ export class CharacterLootCardsDialog {
         if (loot.type == LootType.random_item) {
             const itemIdentifier = this.character.progress.equippedItems.find((value) => value.marker == "loot-random-item");
             if (itemIdentifier) {
-                const itemData = gameManager.itemManager.getItem(+itemIdentifier.name, itemIdentifier.edition, true);
+                const itemData = gameManager.itemManager.getItem(itemIdentifier.name, itemIdentifier.edition, true);
                 return itemData;
             }
         }

@@ -42,9 +42,11 @@ export class ScenarioData implements Editional, Spoilable {
   rewards: ScenarioRewards | undefined;
   retirement: string = "";
   conclusion: boolean = false;
+  repeatable: boolean = false;
   named: boolean = false;
   hideIndex: boolean = false;
   complexity: number = 0;
+  level: number | undefined;
 
   // from Editional
   edition: string = "";
@@ -85,11 +87,13 @@ export class ScenarioData implements Editional, Spoilable {
       this.rewards = scenarioData.rewards;
       this.retirement = scenarioData.retirement;
       this.conclusion = scenarioData.conclusion;
+      this.repeatable = scenarioData.repeatable;
       this.edition = scenarioData.edition;
       this.spoiler = scenarioData.spoiler;
       this.named = scenarioData.named;
       this.hideIndex = scenarioData.hideIndex;
       this.complexity = scenarioData.complexity;
+      this.level = scenarioData.level;
     }
   }
 }
@@ -101,7 +105,8 @@ export class ScenarioRequirement {
   buildings: string[] | undefined;
   campaignSticker: string[] | undefined;
   puzzle: string[] | undefined;
-  solo: string | undefined;
+  characters: string[] | undefined;
+  scenarios: string[][] | undefined;
 
 }
 
@@ -138,6 +143,7 @@ export class ScenarioRewards {
   calendarSection: string[] = [];
   calendarSectionConditional: string[] = [];
   calendarSectionManual: { section: string, hint: string }[] = [];
+  calendarIgnore: boolean = false;
   lootDeckCards: number[] = [];
   removeLootDeckCards: number[] = [];
   townGuardAm: string[] = [];
@@ -148,6 +154,7 @@ export class ScenarioRewards {
   ignoredBonus: string[] = [];
   overlaySticker: WorldMapOverlay | undefined = undefined;
   overlayCampaignSticker: WorldMapOverlay | undefined = undefined;
+  pet: string | undefined = undefined;
   hints: ScenarioRewardHints | undefined = undefined;
 
 }
@@ -189,6 +196,7 @@ export class ScenarioRewardHints {
   chooseUnlockCharacter: string[] = [];
   overlaySticker: string = "";
   overlayCampaignSticker: string = "";
+  pet: string = "";
 }
 
 export class ScenarioFinish {
@@ -209,5 +217,6 @@ export class ScenarioFinish {
   randomItemIndex: number = -1;
   randomItems: (Identifier | undefined)[] = [];
   randomItemBlueprints: number[] = [];
+  trials: boolean[] = [];
 
 }

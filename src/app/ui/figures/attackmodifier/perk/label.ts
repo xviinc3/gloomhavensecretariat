@@ -5,6 +5,7 @@ import { AttackModifier, AttackModifierEffect, AttackModifierEffectType, AttackM
 import { Perk, PerkType } from "src/app/game/model/data/Perks";
 
 @Component({
+	standalone: false,
     selector: 'ghs-perk-label',
     templateUrl: './label.html',
     styleUrls: ['./label.scss'],
@@ -212,7 +213,23 @@ export class PerkLabelComponent {
                         html += this.attackModifierEffectHtml(subEffect, true);
                     })
                 }
-                
+
+                if (!noQuotes) {
+                    html = '"' + html + '"';
+                }
+                return html;
+            case AttackModifierEffectType.required:
+                if (effect.value) {
+                    html += '<span>' + effect.value + '</span>';
+                } else {
+                    html += '<span>!</span>';
+                }
+                if (effect.effects) {
+                    effect.effects.forEach((subEffect) => {
+                        html += this.attackModifierEffectHtml(subEffect, true);
+                    })
+                }
+
                 if (!noQuotes) {
                     html = '"' + html + '"';
                 }

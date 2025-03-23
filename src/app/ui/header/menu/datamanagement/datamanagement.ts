@@ -9,6 +9,7 @@ import { Settings } from "src/app/game/model/Settings";
 import { ghsInputFullScreenCheck } from "src/app/ui/helper/Static";
 
 @Component({
+  standalone: false,
   selector: 'ghs-datamanagement-menu',
   templateUrl: 'datamanagement.html',
   styleUrls: ['../menu.scss', 'datamanagement.scss']
@@ -30,7 +31,7 @@ export class DatamanagementMenuComponent implements OnInit {
       if (backups && backups.length > 0) {
         this.backups = backups.length;
       }
-    } catch {
+    } catch (e) {
       this.backups = 0;
     }
   }
@@ -44,6 +45,7 @@ export class DatamanagementMenuComponent implements OnInit {
       if (success) {
         target.value = "";
         target.disabled = false;
+        this.settingsManager.addEdition(success.edition);
       } else {
         setTimeout(() => {
           target.classList.add("error");
@@ -141,7 +143,7 @@ export class DatamanagementMenuComponent implements OnInit {
         downloadButton.click();
         document.body.removeChild(downloadButton);
       }
-    } catch {
+    } catch (e) {
       console.warn("No game found");
     }
   }
@@ -158,7 +160,7 @@ export class DatamanagementMenuComponent implements OnInit {
         downloadButton.click();
         document.body.removeChild(downloadButton);
       }
-    } catch {
+    } catch (e) {
       console.warn("No backup found");
     }
   }
@@ -176,7 +178,7 @@ export class DatamanagementMenuComponent implements OnInit {
           document.body.removeChild(downloadButton);
         })
       }
-    } catch {
+    } catch (e) {
       console.warn("No backups found");
     }
   }
@@ -190,40 +192,57 @@ export class DatamanagementMenuComponent implements OnInit {
     }
   }
 
-  importGameCheck() {
-    if (this.confirm != "importGame") {
+  importFileCheck(event: any) {
+    event.target.classList.remove("warning");
+    event.target.parentElement.classList.remove("warning");
+    if (this.confirm != "importFile") {
       setTimeout(() => {
-        this.confirm = "importGame";
+        this.confirm = "importFile";
       }, 100);
     } else {
       ghsInputFullScreenCheck();
     }
   }
 
-  importGame(event: any) {
-    event.target.parentElement.classList.remove("error");
+  importFile(inputEvent: any) {
+    this.working = "importFile";
+    inputEvent.target.parentElement.classList.remove("warning");
+    const reader = new FileReader();
     try {
-      const reader = new FileReader();
-      reader.addEventListener('load', (event: any) => {
-        gameManager.stateManager.before("loadGameFromFile");
-        const gameModel: GameModel = Object.assign(new GameModel(), JSON.parse(event.target.result));
-        if (gameModel.revision < gameManager.game.revision) {
-          storageManager.addBackup(gameManager.game.toModel());
-          gameModel.revision = gameManager.game.revision;
-          gameModel.revisionOffset = gameManager.game.revisionOffset;
+      reader.addEventListener('load', async (event: any) => {
+        const data = JSON.parse(event.target.result);
+        if (data.revision && typeof data.revision === 'number') {
+          this.importGame(Object.assign(new GameModel(), data));
+        } else if (data.zoom && typeof data.zoom === 'number') {
+          this.importSettings(Object.assign(new Settings(), data));
+        } else if (data.game && data.settings || typeof data === 'object' && data['ghs-game'] && data['ghs-settings']) {
+          this.importDataDump(data);
+        } else {
+          inputEvent.target.parentElement.classList.add("warning");
         }
-        gameManager.game.fromModel(gameModel);
-        gameManager.stateManager.after();
-      });
+        this.working = "";
+      })
 
-      if (event.target.files.length > 0) {
-        reader.readAsText(event.target.files[0]);
-        event.target.value = "";
+      if (inputEvent.target.files.length > 0) {
+        reader.readAsText(inputEvent.target.files[0]);
+        inputEvent.target.value = "";
       }
     } catch (e: any) {
       console.warn(e);
-      event.target.parentElement.classList.add("error");
+      inputEvent.target.parentElement.classList.add("warning");
+      this.working = "";
     }
+  }
+
+  importGame(gameModel: GameModel) {
+    gameManager.stateManager.before("loadGameFromFile");
+    if (gameModel.revision < gameManager.game.revision) {
+      storageManager.addBackup(gameManager.game.toModel());
+      gameModel.revision = gameManager.game.revision;
+      gameModel.revisionOffset = gameManager.game.revisionOffset;
+    }
+    gameManager.game.fromModel(gameModel);
+    gameManager.stateManager.after();
   }
 
   resetGame(): void {
@@ -247,36 +266,14 @@ export class DatamanagementMenuComponent implements OnInit {
         downloadButton.click();
         document.body.removeChild(downloadButton);
       }
-    } catch {
+    } catch (e) {
       console.warn("No settings found");
     }
   }
 
-  importSettingsCheck() {
-    if (this.confirm != "importSettings") {
-      setTimeout(() => {
-        this.confirm = "importSettings";
-      }, 100);
-    } else {
-      ghsInputFullScreenCheck();
-    }
-  }
-
-  importSettings(event: any) {
-    event.target.parentElement.classList.remove("error");
-    try {
-      const reader = new FileReader();
-      reader.addEventListener('load', async (event: any) => {
-        const settings: Settings = Object.assign(new Settings(), JSON.parse(event.target.result));
-        settingsManager.settings = settings;
-        await storageManager.write('settings', 'default', settingsManager.settings);
-      });
-
-      reader.readAsText(event.target.files[0]);
-    } catch (e: any) {
-      console.warn(e);
-      event.target.parentElement.classList.add("error");
-    }
+  async importSettings(settings: Settings) {
+    settingsManager.settings = settings;
+    await storageManager.write('settings', 'default', settingsManager.settings);
   }
 
   resetSettings(): void {
@@ -292,60 +289,30 @@ export class DatamanagementMenuComponent implements OnInit {
     await gameManager.stateManager.autoBackup("ghs-data-dump-" + new Date().toISOString() + ".json", true);
   }
 
-  importDataDumpCheck() {
-    if (this.confirm != "importDataDump") {
-      setTimeout(() => {
-        this.confirm = "importDataDump";
-      }, 100);
-    } else {
-      ghsInputFullScreenCheck();
+  async importDataDump(data: any) {
+    gameManager.stateManager.errorLog = data.errorLog || [];
+    const keys = Object.keys(data);
+    let success = false;
+    for (let i = 0; i < keys.length; i++) {
+      const origKey = keys[i];
+      const key = origKey.startsWith('ghs-') ? origKey.replace('ghs-', '') : origKey;
+      if (key === 'game') {
+        await storageManager.write('game', 'default', data[origKey]);
+        success = true;
+      } else if (key === 'settings') {
+        await storageManager.write('settings', 'default', Object.assign(new Settings(), data[origKey]));
+      } else if (key === 'undo') {
+        await storageManager.writeArray('undo', data[origKey]);
+      } else if (key === 'redo') {
+        await storageManager.writeArray('redo', data[origKey]);
+      } else if (key === 'undo-infos') {
+        await storageManager.writeArray('undo-infos', data[origKey]);
+      } else if (key === 'game-backup') {
+        await storageManager.writeArray('game-backup', data[origKey]);
+      }
     }
-  }
-
-
-  importDataDump(event: any) {
-    event.target.parentElement.classList.remove("error");
-    try {
-      this.working = "importDataDump";
-      const reader = new FileReader();
-      reader.addEventListener('load', async (event: any) => {
-        const datadump: any = JSON.parse(event.target.result);
-        gameManager.stateManager.errorLog = datadump.errorLog || [];
-        let migration = false;
-        const keys = Object.keys(datadump);
-        for (let i = 0; i < keys.length; i++) {
-          const key = keys[i];
-          if (key.startsWith('ghs-')) {
-            await localStorage.setItem(key, JSON.stringify(datadump[key]));
-            migration = true;
-          } else if (key === 'game') {
-            await storageManager.write('game', 'default', datadump[key]);
-          } else if (key === 'settings') {
-            await storageManager.write('settings', 'default', Object.assign(new Settings(), datadump[key]));
-          } else if (key === 'undo') {
-            await storageManager.writeArray('undo', datadump[key]);
-          } else if (key === 'redo') {
-            await storageManager.writeArray('redo', datadump[key]);
-          } else if (key === 'undo-infos') {
-            await storageManager.writeArray('undo-infos', datadump[key]);
-          } else if (key === 'game-backup') {
-            await storageManager.writeArray('game-backup', datadump[key]);
-          }
-        }
-
-        if (migration) {
-          storageManager.migrate();
-        }
-
-        this.working = "";
-        window.location.reload();
-      });
-
-      reader.readAsText(event.target.files[0]);
-    } catch (e: any) {
-      console.warn(e);
-      this.working = "";
-      event.target.parentElement.classList.add("error");
+    if (success) {
+      window.location.reload();
     }
   }
 
@@ -359,7 +326,7 @@ export class DatamanagementMenuComponent implements OnInit {
         gameManager.stateManager.storageBlocked = true;
         console.info("Reload...");
         window.location.reload();
-      } catch {
+      } catch (e) {
         console.error("Could clear storage");
       }
     }

@@ -1,25 +1,30 @@
 import { Dialog } from "@angular/cdk/dialog";
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Subscription } from "rxjs";
 import { gameManager, GameManager } from "src/app/game/businesslogic/GameManager";
-import { Party } from "src/app/game/model/Party";
-import { BuildingCosts, BuildingData, BuildingModel } from "src/app/game/model/data/BuildingData";
-import { LootType } from "src/app/game/model/data/Loot";
-import { Character } from "src/app/game/model/Character";
-import { SelectResourceResult, BuildingUpgradeDialog } from "./upgrade-dialog/upgrade-dialog";
 import { SettingsManager, settingsManager } from "src/app/game/businesslogic/SettingsManager";
+import { BuildingModel } from "src/app/game/model/Building";
+import { Character } from "src/app/game/model/Character";
+import { Party } from "src/app/game/model/Party";
 import { Scenario } from "src/app/game/model/Scenario";
-import { ScenarioSummaryComponent } from "src/app/ui/footer/scenario/summary/scenario-summary";
+import { BuildingCosts, BuildingData, SelectResourceResult } from "src/app/game/model/data/BuildingData";
+import { LootType } from "src/app/game/model/data/Loot";
 import { ScenarioData } from "src/app/game/model/data/ScenarioData";
 import { ScenarioConclusionComponent } from "src/app/ui/footer/scenario/scenario-conclusion/scenario-conclusion";
+import { ScenarioSummaryComponent } from "src/app/ui/footer/scenario/summary/scenario-summary";
+import { GardenComponent } from "./garden/garden";
+import { StablesComponent } from "./stables/stables";
+import { BuildingUpgradeDialog } from "./upgrade-dialog/upgrade-dialog";
 
 export type Building = { model: BuildingModel, data: BuildingData };
 
 @Component({
+  standalone: false,
   selector: 'ghs-party-buildings',
   templateUrl: 'buildings.html',
   styleUrls: ['./buildings.scss']
 })
-export class PartyBuildingsComponent implements OnInit {
+export class PartyBuildingsComponent implements OnInit, OnDestroy {
   @Input() party!: Party;
 
   gameManager: GameManager = gameManager;
@@ -31,12 +36,20 @@ export class PartyBuildingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateBuildings();
-    gameManager.uiChange.subscribe({
+    this.uiChangeSubscription = gameManager.uiChange.subscribe({
       next: () => {
         this.party = gameManager.game.party;
         this.updateBuildings();
       }
     })
+  }
+
+  uiChangeSubscription: Subscription | undefined;
+
+  ngOnDestroy(): void {
+    if (this.uiChangeSubscription) {
+      this.uiChangeSubscription.unsubscribe();
+    }
   }
 
   updateBuildings() {
@@ -106,11 +119,6 @@ export class PartyBuildingsComponent implements OnInit {
   }
 
   upgradeable(building: Building): boolean {
-
-    if (building.data.manualUpgrades > 0 && building.data.manualUpgrades >= building.model.level) {
-      return true;
-    }
-
     let costs: BuildingCosts = building.model.level ? building.data.upgrades[building.model.level - 1] : building.data.costs;
     if (building.model.level && !building.data.repair) {
       return false;
@@ -177,7 +185,9 @@ export class PartyBuildingsComponent implements OnInit {
         }
       }
 
-      if ((costs.gold || 0) > gameManager.game.figures.filter((figure) => figure instanceof Character).map((figure) => (figure as Character).progress.gold).reduce((a, b) => a + b)) {
+      const characterGold = gameManager.game.figures.filter((figure) => figure instanceof Character).map((figure) => (figure as Character).progress.gold);
+
+      if (!characterGold.length || (costs.gold || 0) > characterGold.reduce((a, b) => a + b)) {
         return false;
       }
 
@@ -192,7 +202,7 @@ export class PartyBuildingsComponent implements OnInit {
   }
 
   upgrade(building: Building, force: boolean = false) {
-    if (building.model.level < building.data.upgrades.length + 1 || building.model.level < building.data.manualUpgrades + 1) {
+    if (building.model.level < building.data.upgrades.length + 1) {
       if (this.upgradeable(building) || force) {
         const costs = building.model.level ? building.data.upgrades[building.model.level - 1] : building.data.costs;
         this.dialog.open(BuildingUpgradeDialog, {
@@ -207,9 +217,9 @@ export class PartyBuildingsComponent implements OnInit {
           next: (result) => {
             if (force && result == true || result instanceof SelectResourceResult) {
               setTimeout(() => {
-                gameManager.stateManager.before(building.model.level ? "upgradeBuilding" : "buildBuilding", building.data.id, building.model.name, '' + (building.model.level + 1));
+                gameManager.stateManager.before(building.model.level ? "upgradeBuilding" : "buildBuilding", building.data.id, building.model.name, (building.model.level + 1));
                 if (!force && result instanceof SelectResourceResult) {
-                  this.applySelectResources(result);
+                  gameManager.lootManager.applySelectResources(result);
                 }
                 building.model.level++;
                 if (gameManager.game.party.campaignMode && settingsManager.settings.applyBuildingRewards && building.data.rewards && building.data.rewards[building.model.level - 1]) {
@@ -252,7 +262,7 @@ export class PartyBuildingsComponent implements OnInit {
   }
 
   openConclusions(section: string) {
-    let conclusions: ScenarioData[] = gameManager.sectionData(gameManager.game.edition).filter((sectionData) => sectionData.conclusion && !sectionData.parent && sectionData.parentSections && sectionData.parentSections.find((parentSections) => parentSections.length == 1 && parentSections.indexOf(section) != -1)).map((conclusion) => {
+    let conclusions: ScenarioData[] = gameManager.sectionData(gameManager.game.edition).filter((sectionData) => sectionData.conclusion && !sectionData.parent && sectionData.parentSections && sectionData.parentSections.find((parentSections) => parentSections.length == 1 && parentSections.indexOf(section) != -1) && gameManager.scenarioManager.getRequirements(sectionData).length == 0).map((conclusion) => {
       return conclusion;
     });
 
@@ -287,7 +297,7 @@ export class PartyBuildingsComponent implements OnInit {
             if (force && result == true || result instanceof SelectResourceResult) {
               gameManager.stateManager.before("rebuildBuilding", building.data.id, building.model.name);
               if (!force && result instanceof SelectResourceResult) {
-                this.applySelectResources(result);
+                gameManager.lootManager.applySelectResources(result);
               }
               building.model.state = 'normal';
               gameManager.stateManager.after();
@@ -314,7 +324,7 @@ export class PartyBuildingsComponent implements OnInit {
             if (force && result == true || result instanceof SelectResourceResult) {
               gameManager.stateManager.before("repairBuilding", building.data.id, building.data.name);
               if (!force && result instanceof SelectResourceResult) {
-                this.applySelectResources(result);
+                gameManager.lootManager.applySelectResources(result);
               }
               building.model.state = 'normal';
               gameManager.stateManager.after();
@@ -339,33 +349,6 @@ export class PartyBuildingsComponent implements OnInit {
       }
     }
   }
-
-  applySelectResources(result: SelectResourceResult) {
-    result.characters.forEach((character, index) => {
-      if (result.characterSpent[index].gold) {
-        character.progress.gold -= result.characterSpent[index].gold;
-      }
-      if (result.characterSpent[index].hide) {
-        character.progress.loot[LootType.hide] = (character.progress.loot[LootType.hide] || 0) - (result.characterSpent[index].hide);
-      }
-      if (result.characterSpent[index].lumber) {
-        character.progress.loot[LootType.lumber] = (character.progress.loot[LootType.lumber] || 0) - (result.characterSpent[index].lumber);
-      }
-      if (result.characterSpent[index].metal) {
-        character.progress.loot[LootType.metal] = (character.progress.loot[LootType.metal] || 0) - (result.characterSpent[index].metal);
-      }
-    })
-    if (result.fhSupportSpent.hide) {
-      gameManager.game.party.loot[LootType.hide] = (gameManager.game.party.loot[LootType.hide] || 0) - (result.fhSupportSpent.hide);
-    }
-    if (result.fhSupportSpent.lumber) {
-      gameManager.game.party.loot[LootType.lumber] = (gameManager.game.party.loot[LootType.lumber] || 0) - (result.fhSupportSpent.lumber);
-    }
-    if (result.fhSupportSpent.metal) {
-      gameManager.game.party.loot[LootType.metal] = (gameManager.game.party.loot[LootType.metal] || 0) - (result.fhSupportSpent.metal);
-    }
-  }
-
 
   toggleState(building: Building, force: boolean = false) {
     if (building.data.repair) {
@@ -406,7 +389,7 @@ export class PartyBuildingsComponent implements OnInit {
 
         gameManager.stateManager.after();
       } else if (!gameManager.buildingsManager.initialBuilding(building.data) && !gameManager.buildingsManager.availableBuilding(building.data) || building.model.level > 1) {
-        gameManager.stateManager.before("downgradeBuilding", building.data.id, building.model.name, '' + (building.model.level - 1));
+        gameManager.stateManager.before("downgradeBuilding", building.data.id, building.model.name, (building.model.level - 1));
         building.model.level--;
         if (building.model.level == 0) {
           building.model.state = 'normal';
@@ -426,4 +409,15 @@ export class PartyBuildingsComponent implements OnInit {
     }
   }
 
+  openStables() {
+    this.dialog.open(StablesComponent, {
+      panelClass: ['dialog']
+    })
+  }
+
+  openGarden() {
+    this.dialog.open(GardenComponent, {
+      panelClass: ['dialog']
+    })
+  }
 }

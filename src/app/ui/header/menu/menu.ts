@@ -10,7 +10,6 @@ import { Monster } from "src/app/game/model/Monster";
 import { ObjectiveContainer } from "src/app/game/model/ObjectiveContainer";
 import { MonsterData } from "src/app/game/model/data/MonsterData";
 import { ObjectiveData } from "src/app/game/model/data/ObjectiveData";
-import packageJson from '../../../../../package.json';
 import { ghsDialogClosingHelper, ghsHasSpoilers, ghsIsSpoiled, ghsNotSpoiled } from "../../helper/Static";
 import { FeedbackDialogComponent } from "../../tools/feedback/feedback-dialog";
 import { KeyboardShortcutsComponent } from "./keyboard-shortcuts/keyboard-shortcuts";
@@ -36,6 +35,7 @@ export enum SubMenu {
 }
 
 @Component({
+	standalone: false,
   selector: 'ghs-main-menu',
   templateUrl: 'menu.html',
   styleUrls: ['./menu.scss']
@@ -51,9 +51,7 @@ export class MainMenuComponent implements OnInit, OnDestroy {
   hasSpoilers = ghsHasSpoilers;
   isSpoiled = ghsIsSpoiled;
   notSpoiled = ghsNotSpoiled;
-  version = packageJson.version;
   WebSocket = WebSocket;
-
 
   undoInfo: string[] = [];
   undoOffset: number = 0;
@@ -99,7 +97,7 @@ export class MainMenuComponent implements OnInit, OnDestroy {
       this.undoOffset = (gameManager.game.revision
         - (gameManager.game.revisionOffset || 0)) - (undos[undos.length - 1].revision - (undos[undos.length - 1].revisionOffset || 0)) - 1;
       if (this.undoInfo && this.undoInfo.length > 1 && this.undoInfo[0] == "serverSync") {
-        if (this.undoInfo[1] == "setInitiative" && this.undoInfo.length > 3) {
+        if (gameManager.game.state == GameState.draw && this.undoInfo[1] == "setInitiative" && this.undoInfo.length > 3) {
           this.undoInfo = ["serverSync", settingsManager.getLabel('state.info.' + this.undoInfo[1], [this.undoInfo[2], ""])];
         } else {
           this.undoInfo = ["serverSync", settingsManager.getLabel('state.info.' + this.undoInfo[1], this.undoInfo.slice(2))];
@@ -170,7 +168,7 @@ export class MainMenuComponent implements OnInit, OnDestroy {
     return gameManager.game.figures.filter((figure) => {
       return figure instanceof ObjectiveContainer;
     }).map((figure) => {
-        return figure as ObjectiveContainer;
+      return figure as ObjectiveContainer;
     }).sort((a, b) => {
       const aName = (a.title ? a.title : settingsManager.getLabel(a.name ? 'data.objective.' + a.name : (a.escort ? 'escort' : 'objective'))).toLowerCase();
       const bName = (b.title ? b.title : settingsManager.getLabel(b.name ? 'data.objective.' + b.name : (b.escort ? 'escort' : 'objective'))).toLowerCase();
@@ -222,7 +220,7 @@ export class MainMenuComponent implements OnInit, OnDestroy {
 
   addObjectiveContainer(escort: boolean = false) {
     gameManager.stateManager.before("addObjective" + (escort ? '.escort' : ''));
-    const objectiveContainer = gameManager.objectiveManager.addObjective(new ObjectiveData("", escort ? 3 : 7, escort));
+    const objectiveContainer = gameManager.objectiveManager.addObjective(new ObjectiveData("", escort ? 3 : 7, escort), escort ? '%escort%' : '%objective%');
     gameManager.objectiveManager.addObjectiveEntity(objectiveContainer);
     this.close();
     gameManager.stateManager.after();

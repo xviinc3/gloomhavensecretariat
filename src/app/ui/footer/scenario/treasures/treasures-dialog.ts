@@ -9,6 +9,7 @@ import { Identifier } from "src/app/game/model/data/Identifier";
 import { ghsDialogClosingHelper } from "src/app/ui/helper/Static";
 
 @Component({
+	standalone: false,
     selector: 'ghs-scenario-treasures-dialog',
     templateUrl: './treasures-dialog.html',
     styleUrls: ['./treasures-dialog.scss']
@@ -105,13 +106,16 @@ export class ScenarioTreasuresDialogComponent implements OnInit, OnDestroy {
 
     removeTreasure(character: Character, treasure: string | number) {
         if (typeof treasure === 'number') {
-            gameManager.stateManager.before('removeCharTresure', '' + treasure, this.edition, gameManager.characterManager.characterName(character));
+            gameManager.stateManager.before('removeCharTresure', treasure >= 0 ? '' + treasure : '???', this.edition, gameManager.characterManager.characterName(character));
             this.looted.splice(this.treasures.indexOf(treasure), 1);
         } else {
             gameManager.stateManager.before('removeCharTresure', 'G', this.edition);
             this.looted.splice(+treasure.replace('G-', ''), 1);
         }
         character.treasures.splice(character.treasures.indexOf(treasure), 1);
+        if (typeof treasure === 'number') {
+            gameManager.game.party.treasures = gameManager.game.party.treasures.filter((value) => value.edition != this.edition || value.name != '' + treasure);
+        }
         gameManager.stateManager.after();
     }
 
@@ -121,7 +125,7 @@ export class ScenarioTreasuresDialogComponent implements OnInit, OnDestroy {
             this.rewardResults = [];
             const treasure = this.treasures[this.treasureIndex];
             if (this.character && treasure && this.character.treasures.indexOf(treasure == 'G' ? 'G-' + this.treasureIndex : treasure) == -1) {
-                gameManager.stateManager.before('lootCharTreasure', '' + treasure, this.edition, gameManager.characterManager.characterName(this.character));
+                gameManager.stateManager.before('lootCharTreasure', ('' + treasure).startsWith('G') || +treasure >= 0 ? '' + treasure : '???', this.edition, gameManager.characterManager.characterName(this.character));
                 this.looted.push(this.treasureIndex);
                 if (treasure != 'G' && settingsManager.settings.treasuresLoot) {
                     this.rewardResults = gameManager.lootManager.lootTreasure(this.character, treasure - 1, this.edition);

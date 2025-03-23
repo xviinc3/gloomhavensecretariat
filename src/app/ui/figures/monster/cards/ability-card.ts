@@ -10,6 +10,7 @@ import { AbiltiesDialogComponent } from '../../ability/abilities-dialog';
 import { AbilityDialogComponent } from '../../ability/ability-dialog';
 
 @Component({
+	standalone: false,
   selector: 'ghs-monster-ability-card',
   templateUrl: './ability-card.html',
   styleUrls: ['./ability-card.scss']
@@ -24,6 +25,8 @@ export class MonsterAbilityCardComponent implements OnInit, OnDestroy {
   gameManager: GameManager = gameManager;
   settingsManager: SettingsManager = settingsManager;
   flipped: boolean = false;
+  hasBottomActions: boolean = false;
+  drawnAbilities: number = 0;
 
   constructor(private dialog: Dialog) { }
 
@@ -41,6 +44,8 @@ export class MonsterAbilityCardComponent implements OnInit, OnDestroy {
   }
 
   update() {
+    this.hasBottomActions = gameManager.monsterManager.hasBottomActions(this.monster);
+    this.drawnAbilities = gameManager.monsterManager.drawnAbilities(this.monster);
     this.flipped = this.calcFlipped();
   }
 
@@ -55,7 +60,7 @@ export class MonsterAbilityCardComponent implements OnInit, OnDestroy {
       this.ability = gameManager.abilities(this.monster)[this.index];
     }
 
-    if (!this.ability && gameManager.monsterManager.hasBottomActions(this.monster)) {
+    if (!this.ability && this.hasBottomActions) {
       this.ability = gameManager.abilities(this.monster)[0];
       this.secondAbility = gameManager.abilities(this.monster)[1];
     }
@@ -79,7 +84,7 @@ export class MonsterAbilityCardComponent implements OnInit, OnDestroy {
 
     return flipped && reveal;
   }
-  
+
   openAbilities(event: any): void {
     if (settingsManager.settings.abilities && (!event.srcEvent || !event.srcEvent.defaultPrevented)) {
       this.dialog.open(AbiltiesDialogComponent, {
